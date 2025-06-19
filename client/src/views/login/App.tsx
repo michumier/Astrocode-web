@@ -3,7 +3,11 @@ import './App.css';
 import Register from './Register';
 
 
-function App() {
+interface LoginAppProps {
+  onLoginSuccess?: () => void;
+}
+
+function App({ onLoginSuccess }: LoginAppProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -61,9 +65,11 @@ function App() {
         
         setMessage('¡Login exitoso! Bienvenido ' + result.data.login.usuario.nombre_usuario);
         
-        // Redirigir a la pantalla principal después de 1.5 segundos
+        // Llamar a la función de login exitoso después de 1.5 segundos
         setTimeout(() => {
-          window.location.href = '/main';
+          if (onLoginSuccess) {
+            onLoginSuccess();
+          }
         }, 1500);
       }
     } catch (error: any) {

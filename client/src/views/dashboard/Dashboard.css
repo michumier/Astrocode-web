@@ -1,0 +1,821 @@
+/* Dashboard Styles */
+.dashboard {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Arial', sans-serif;
+  color: white;
+}
+
+/* Stars Background */
+.stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 3s infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Header */
+.dashboard-header {
+  position: relative;
+  z-index: 10;
+  padding: 40px 80px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.dashboard-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.dashboard-title {
+  font-size: 4rem;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  letter-spacing: 2px;
+}
+
+.logout-btn {
+  padding: 12px 24px;
+  background: rgba(244, 67, 54, 0.2);
+  border: 1px solid #f44336;
+  border-radius: 10px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(244, 67, 54, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Main Content */
+.dashboard-main {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 80px;
+  min-height: 60vh;
+}
+
+/* Leaderboard */
+.leaderboard-container {
+  flex: 0 0 300px;
+}
+
+.leaderboard {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.leaderboard-title {
+  font-size: 1.8rem;
+  margin: 0 0 25px 0;
+  text-align: center;
+  font-weight: bold;
+}
+
+.leaderboard-list {
+  margin-bottom: 25px;
+}
+
+.leaderboard-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.leaderboard-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.leaderboard-item .rank {
+  font-weight: bold;
+  color: #ffd700;
+  min-width: 30px;
+}
+
+.leaderboard-item .name {
+  flex: 1;
+  margin: 0 15px;
+  text-align: left;
+}
+
+.leaderboard-item .score {
+  font-weight: bold;
+  color: #00d4ff;
+  font-size: 0.9em;
+}
+
+.loading-leaderboard {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-style: italic;
+}
+
+.leaderboard-error {
+  text-align: center;
+  padding: 10px;
+  color: #ff6b6b;
+  font-size: 0.9em;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 6px;
+  margin-top: 10px;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.view-full-ranking-btn {
+  width: 100%;
+  padding: 12px;
+  background: rgba(100, 181, 246, 0.2);
+  border: 1px solid #64b5f6;
+  border-radius: 10px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-full-ranking-btn:hover {
+  background: rgba(100, 181, 246, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Solar System */
+.solar-system {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 500px;
+}
+
+/* Sol en el centro */
+.sun {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background: radial-gradient(circle, #ffeb3b 0%, #ff9800 50%, #ff5722 100%);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 25px rgba(255, 235, 59, 0.8),
+    0 0 50px rgba(255, 152, 0, 0.6),
+    0 0 75px rgba(255, 87, 34, 0.4);
+  animation: sunPulse 4s ease-in-out infinite;
+  z-index: 10;
+}
+
+@keyframes sunPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.orbit {
+  position: absolute;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  animation: rotate 20s linear infinite;
+  pointer-events: none;
+}
+
+.orbit-earth {
+  width: 200px;
+  height: 200px;
+  animation-duration: 20s;
+}
+
+.orbit-mars {
+  width: 350px;
+  height: 350px;
+  animation-duration: 30s;
+}
+
+.orbit-saturn {
+  width: 500px;
+  height: 500px;
+  animation-duration: 45s;
+}
+
+.planet {
+  position: absolute;
+  border-radius: 50%;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.planet:hover {
+  transform: translateX(-50%) scale(1.3);
+  filter: brightness(1.2);
+}
+
+.planet:active {
+  transform: translateX(-50%) scale(1.1);
+  transition: all 0.1s ease;
+}
+
+.planet.selected {
+  border: 3px solid #64b5f6;
+  box-shadow: 0 0 20px rgba(100, 181, 246, 0.8);
+  transform: translateX(-50%) scale(1.15);
+}
+
+/* Tierra - Nivel Fácil */
+.earth {
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle at 30% 30%, #4fc3f7 0%, #2196f3 40%, #1976d2 100%);
+  box-shadow: 
+    0 0 20px rgba(33, 150, 243, 0.6),
+    inset -6px -6px 12px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.earth::before {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #4caf50;
+  border-radius: 50%;
+  top: 6px;
+  left: 4px;
+  box-shadow: 
+    8px 2px 0 2px #4caf50,
+    -2px 8px 0 1px #4caf50;
+}
+
+/* Marte - Nivel Intermedio */
+.mars {
+  width: 38px;
+  height: 38px;
+  background: radial-gradient(circle at 30% 30%, #ff7043 0%, #d84315 60%, #bf360c 100%);
+  box-shadow: 
+    0 0 18px rgba(255, 112, 67, 0.6),
+    inset -5px -5px 10px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.mars::before {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #8d4004;
+  border-radius: 50%;
+  top: 4px;
+  left: 6px;
+  box-shadow: 
+    6px 4px 0 1px #8d4004,
+    2px 8px 0 0px #8d4004;
+}
+
+/* Saturno - Nivel Difícil */
+.saturn {
+  width: 50px;
+  height: 50px;
+  background: radial-gradient(circle at 30% 30%, #ffb74d 0%, #ff9800 50%, #f57c00 100%);
+  box-shadow: 
+    0 0 25px rgba(255, 183, 77, 0.6),
+    inset -7px -7px 14px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.saturn-rings {
+  position: absolute;
+  width: 62px;
+  height: 62px;
+  border: 2px solid rgba(255, 183, 77, 0.4);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotateX(75deg);
+  pointer-events: none;
+}
+
+.saturn-rings::before {
+  content: '';
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 183, 77, 0.3);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Etiquetas de planetas */
+.planet-label {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.planet:hover .planet-label {
+  opacity: 1;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Daily Challenge */
+.daily-challenge-container {
+  flex: 0 0 300px;
+}
+
+.daily-challenge {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.challenge-title {
+  font-size: 1.8rem;
+  margin: 0 0 20px 0;
+  font-weight: bold;
+}
+
+.challenge-description {
+  font-size: 1.1rem;
+  margin: 0 0 30px 0;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.start-challenge-btn {
+  padding: 15px 40px;
+  background: linear-gradient(45deg, #42a5f5, #1976d2);
+  border: none;
+  border-radius: 25px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(66, 165, 245, 0.4);
+}
+
+.start-challenge-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(66, 165, 245, 0.6);
+}
+
+/* Panel Layout Styles */
+.dashboard.panel-open {
+  overflow: hidden;
+}
+
+.dashboard-main {
+  transition: all 0.3s ease;
+}
+
+.dashboard-main.with-panel {
+  margin-right: 50%;
+  transition: margin-right 0.3s ease;
+}
+
+.dashboard.panel-open .leaderboard-container,
+.dashboard.panel-open .daily-challenge-container {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.leaderboard-container,
+.daily-challenge-container {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Exercise Panel Styles */
+.exercise-panel {
+  position: fixed;
+  top: 80px;
+  right: -50%;
+  width: 45%;
+  height: calc(100vh - 200px);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  padding: 30px;
+  margin: 20px;
+  bottom: 40px;
+  overflow-y: auto;
+  transition: right 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  /* Ocultar barra de scroll */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+/* Ocultar barra de scroll en WebKit browsers */
+.exercise-panel::-webkit-scrollbar {
+  display: none;
+}
+
+.exercise-panel.open {
+  right: 0;
+}
+
+.exercise-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.exercise-panel-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0;
+}
+
+.close-panel-btn {
+  background: linear-gradient(45deg, #ff4757, #ff3742);
+  border: none;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+}
+
+.close-panel-btn:hover {
+  background: linear-gradient(45deg, #ff3742, #ff2f3a);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.6);
+}
+
+.exercise-panel-content {
+  padding: 0;
+  margin-top: 10px;
+}
+
+.exercise-item {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.exercise-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(66, 165, 245, 0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(66, 165, 245, 0.3);
+}
+
+.exercise-info {
+  flex: 1;
+}
+
+.exercise-title {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.exercise-meta {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.exercise-difficulty {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.exercise-difficulty.fácil {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+
+.exercise-difficulty.intermedio {
+  background: rgba(255, 152, 0, 0.2);
+  color: #ff9800;
+  border: 1px solid #ff9800;
+}
+
+.exercise-difficulty.difícil {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+  border: 1px solid #f44336;
+}
+
+.exercise-points {
+  color: #4a90e2;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.start-exercise-btn {
+  background: linear-gradient(45deg, #42a5f5, #1976d2);
+  border: none;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  box-shadow: 0 4px 15px rgba(66, 165, 245, 0.4);
+  white-space: nowrap;
+}
+
+.start-exercise-btn:hover {
+  background: linear-gradient(45deg, #1976d2, #1565c0);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(66, 165, 245, 0.6);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .dashboard-main {
+    flex-direction: column;
+    gap: 40px;
+    padding: 0 40px;
+  }
+  
+  .dashboard-main.with-panel {
+    margin-right: 50%;
+  }
+
+
+
+  .exercise-panel {
+    position: fixed;
+    top: 80px;
+    right: -50%;
+    width: 45%;
+    margin: 20px;
+    border-radius: 25px;
+    height: calc(100vh - 200px);
+    bottom: 40px;
+  }
+  
+  .leaderboard-container,
+  .daily-challenge-container {
+    flex: none;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .solar-system {
+    height: 400px;
+  }
+  
+  .sun {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .orbit-earth { width: 110px; height: 110px; }
+  .orbit-mars { width: 160px; height: 160px; }
+  .orbit-saturn { width: 220px; height: 220px; }
+  
+  .earth { width: 26px; height: 26px; }
+  .mars { width: 24px; height: 24px; }
+  .saturn { width: 30px; height: 30px; }
+  
+  .saturn-rings {
+    width: 42px;
+    height: 42px;
+  }
+  
+  .saturn-rings::before {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 20px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .logo-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .dashboard-logo {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .dashboard-title {
+    font-size: 2.5rem;
+  }
+  
+  .dashboard-main {
+    padding: 0 20px;
+  }
+
+  .dashboard-main.with-panel {
+    margin-right: 0;
+  }
+
+
+
+  .exercise-panel {
+    position: fixed;
+    top: 80px;
+    right: -100%;
+    width: calc(100% - 40px);
+    height: calc(100vh - 200px);
+    margin: 20px;
+    border-radius: 25px;
+    bottom: 40px;
+    /* Ocultar barra de scroll en móviles también */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .exercise-panel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .exercise-panel.open {
+    right: 0;
+  }
+
+  .exercise-panel-title {
+    font-size: 1.2rem;
+  }
+
+  .exercise-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .exercise-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .start-exercise-btn {
+    width: 100%;
+    padding: 12px;
+  }
+  
+  .solar-system {
+    height: 500px;
+  }
+  
+  .sun {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .orbit-earth { width: 120px; height: 120px; }
+  .orbit-mars { width: 170px; height: 170px; }
+  .orbit-saturn { width: 210px; height: 210px; }
+  
+  .earth { width: 22px; height: 22px; }
+  .mars { width: 20px; height: 20px; }
+  .saturn { width: 26px; height: 26px; }
+  
+  .saturn-rings {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .saturn-rings::before {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .planet-label {
+    font-size: 8px;
+    bottom: -20px;
+  }
+  
+  .earth::before {
+    width: 6px;
+    height: 6px;
+    top: 4px;
+    left: 3px;
+    box-shadow: 
+      6px 1px 0 1px #4caf50,
+      -1px 6px 0 0px #4caf50;
+  }
+  
+  .mars::before {
+    width: 2px;
+    height: 2px;
+    top: 3px;
+    left: 4px;
+    box-shadow: 
+      4px 3px 0 1px #8d4004,
+      1px 6px 0 0px #8d4004;
+  }
+}
