@@ -17,7 +17,7 @@ interface LeaderboardEntry {
 
 interface DashboardProps {
   onLogout?: () => void;
-  onNavigateToExercise?: () => void;
+  onNavigateToExercise?: (exercise?: any) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise }) => {
@@ -27,6 +27,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
   const [error, setError] = useState('');
   const [selectedPlanet, setSelectedPlanet] = useState<string | null>(null);
   const [showExercisePanel, setShowExercisePanel] = useState(false);
+  const [exercises, setExercises] = useState<any[]>([]);
+  const [loadingExercises, setLoadingExercises] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<any | null>(null);
+  const [showExerciseDetail, setShowExerciseDetail] = useState(false);
 
   useEffect(() => {
     fetchTopUsers();
@@ -119,42 +123,103 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
     setShowFullRanking(true);
   };
 
-  const handlePlanetClick = (planetName: string) => {
+  const handlePlanetClick = async (planetName: string) => {
     setSelectedPlanet(planetName);
     setShowExercisePanel(true);
+    setLoadingExercises(true);
     console.log(`Planeta seleccionado: ${planetName}`);
+    
+    try {
+      const exerciseData = await getExercisesByPlanet(planetName);
+      setExercises(exerciseData);
+    } catch (error) {
+      console.error('Error loading exercises:', error);
+      setExercises([]);
+    } finally {
+      setLoadingExercises(false);
+    }
   };
 
   const handleCloseExercisePanel = () => {
     setShowExercisePanel(false);
     setSelectedPlanet(null);
+    setExercises([]);
+    setShowExerciseDetail(false);
+    setSelectedExercise(null);
   };
 
-  const getExercisesByPlanet = (planet: string) => {
-    const exercises = {
-      tierra: [
-        { id: 1, title: "Variables y Tipos de Datos", difficulty: "Fácil", points: 50 },
-        { id: 2, title: "Operadores Básicos", difficulty: "Fácil", points: 75 },
-        { id: 3, title: "Estructuras Condicionales", difficulty: "Fácil", points: 100 },
-        { id: 4, title: "Bucles Simples", difficulty: "Fácil", points: 125 },
-        { id: 5, title: "Funciones Básicas", difficulty: "Fácil", points: 150 }
-      ],
-      marte: [
-        { id: 6, title: "Arrays y Listas", difficulty: "Intermedio", points: 200 },
-        { id: 7, title: "Objetos y Clases", difficulty: "Intermedio", points: 250 },
-        { id: 8, title: "Algoritmos de Ordenamiento", difficulty: "Intermedio", points: 300 },
-        { id: 9, title: "Recursión", difficulty: "Intermedio", points: 350 },
-        { id: 10, title: "Estructuras de Datos", difficulty: "Intermedio", points: 400 }
-      ],
-      saturno: [
-        { id: 11, title: "Algoritmos Avanzados", difficulty: "Difícil", points: 500 },
-        { id: 12, title: "Programación Dinámica", difficulty: "Difícil", points: 600 },
-        { id: 13, title: "Grafos y Árboles", difficulty: "Difícil", points: 700 },
-        { id: 14, title: "Optimización", difficulty: "Difícil", points: 800 },
-        { id: 15, title: "Algoritmos de Búsqueda", difficulty: "Difícil", points: 900 }
-      ]
-    };
-    return exercises[planet as keyof typeof exercises] || [];
+  const getExercisesByPlanet = async (planet: string) => {
+    try {
+      // Mapear planetas a niveles de dificultad
+      const planetLevelMap: { [key: string]: number } = {
+        'tierra': 1,   // Fácil
+        'marte': 2,    // Intermedio
+        'saturno': 3   // Difícil
+      };
+
+      const nivelId = planetLevelMap[planet];
+      if (!nivelId) return [];
+
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:4001/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({
+          query: `
+            query TareasPorNivel($nivelId: ID!) {
+              tareasPorNivel(nivelId: $nivelId) {
+                id
+                titulo
+                descripcion
+                puntosBase
+                codigoBase
+                resultadoEsperado
+                categoria {
+                  nombre
+                }
+                nivel {
+                  nombre
+                }
+              }
+            }
+          `,
+          variables: { nivelId: nivelId.toString() }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.errors) {
+        console.error('GraphQL errors:', data.errors);
+        return [];
+      }
+
+      // Transformar los datos para que coincidan con el formato esperado
+      console.log('Raw data from API:', data.data.tareasPorNivel);
+      const mappedExercises = data.data.tareasPorNivel.map((tarea: any) => {
+        console.log('Mapping tarea:', tarea.titulo, 'puntosBase:', tarea.puntosBase, 'type:', typeof tarea.puntosBase);
+        const mappedExercise = {
+          id: tarea.id,
+          title: tarea.titulo,
+          difficulty: tarea.nivel.nombre,
+          points: tarea.puntosBase || 0,
+          description: tarea.descripcion,
+          codigoBase: tarea.codigoBase,
+          resultadoEsperado: tarea.resultadoEsperado,
+          categoria: tarea.categoria.nombre
+        };
+        console.log('Mapped exercise points:', mappedExercise.points);
+        return mappedExercise;
+      });
+      console.log('Final mapped exercises:', mappedExercises);
+      return mappedExercises;
+    } catch (error) {
+      console.error('Error fetching exercises:', error);
+      return [];
+    }
   };
 
   const handleBackFromRanking = () => {
@@ -280,22 +345,78 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
             </button>
           </div>
           <div className="exercise-panel-content">
-            {selectedPlanet && getExercisesByPlanet(selectedPlanet).map((exercise) => (
-              <div key={exercise.id} className="exercise-item">
-                <div className="exercise-info">
-                  <h3 className="exercise-title">{exercise.title}</h3>
-                  <div className="exercise-meta">
-                    <span className={`exercise-difficulty ${exercise.difficulty.toLowerCase()}`}>
-                      {exercise.difficulty}
-                    </span>
-                    <span className="exercise-points">{exercise.points} pts</span>
+            {!showExerciseDetail ? (
+              loadingExercises ? (
+                <div className="loading-exercises">Cargando ejercicios...</div>
+              ) : exercises.length > 0 ? (
+                exercises.map((exercise) => (
+                  <div key={exercise.id} className="exercise-item">
+                    <div className="exercise-info">
+                      <h3 className="exercise-title">{exercise.title}</h3>
+                      <div className="exercise-meta">
+                        <span className={`exercise-difficulty ${exercise.difficulty.toLowerCase()}`}>
+                          {exercise.difficulty}
+                        </span>
+                        <span className="exercise-points">{exercise.points} pts</span>
+                      </div>
+                    </div>
+                    <button 
+                      className="view-exercise-btn"
+                      onClick={() => {
+                        setSelectedExercise(exercise);
+                        setShowExerciseDetail(true);
+                      }}
+                    >
+                      VER
+                    </button>
                   </div>
-                </div>
-                <button className="start-exercise-btn">
-                  Comenzar
+                ))
+              ) : (
+                <div className="no-exercises">No hay ejercicios disponibles para este nivel.</div>
+              )
+            ) : (
+              /* Exercise Detail View */
+              <div className="exercise-detail">
+                <button 
+                  className="back-to-list-btn"
+                  onClick={() => {
+                    setShowExerciseDetail(false);
+                    setSelectedExercise(null);
+                  }}
+                >
+                  ← Volver a la lista
                 </button>
+                {selectedExercise && (
+                  <div className="exercise-detail-content">
+                    <h2 className="exercise-detail-title">{selectedExercise.title}</h2>
+                    <p className="exercise-detail-type">{selectedExercise.categoria}</p>
+                    <div className="exercise-detail-meta">
+                      <span className={`exercise-difficulty ${selectedExercise.difficulty.toLowerCase()}`}>
+                        {selectedExercise.difficulty}
+                      </span>
+                      <span className="exercise-points">{selectedExercise.points} pts</span>
+                    </div>
+                    <hr className="exercise-detail-separator" />
+                    <div className="exercise-detail-description">
+                      {selectedExercise.description || 'No hay descripción disponible para este ejercicio.'}
+                    </div>
+                    <button 
+                      className="start-exercise-btn"
+                      onClick={() => {
+                        console.log('Iniciando ejercicio:', selectedExercise.title);
+                        console.log('Código base:', selectedExercise.codigoBase);
+                        console.log('Resultado esperado:', selectedExercise.resultadoEsperado);
+                        if (onNavigateToExercise) {
+                          onNavigateToExercise(selectedExercise);
+                        }
+                      }}
+                    >
+                      Comenzar
+                    </button>
+                  </div>
+                )}
               </div>
-            ))}
+            )}
           </div>
         </div>
       </main>

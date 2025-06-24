@@ -217,6 +217,37 @@
   color: #ffb74d;
 }
 
+.expected-result {
+  background: rgba(76, 175, 80, 0.1);
+  border-left: 4px solid #4caf50;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.expected-result h5 {
+  margin: 0 0 10px 0;
+  color: #4caf50;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.expected-result pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.expected-result code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  display: block;
+  color: #c8e6c9;
+}
+
 .exercise-info {
   display: flex;
   gap: 10px;

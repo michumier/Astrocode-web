@@ -7,6 +7,7 @@ const Router: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<'dashboard' | 'exercise'>('dashboard');
+  const [selectedExercise, setSelectedExercise] = useState<any>(null);
 
   useEffect(() => {
     // Verificar si el usuario está autenticado al cargar la aplicación
@@ -34,7 +35,10 @@ const Router: React.FC = () => {
   };
 
   // Función para navegar al ejercicio
-  const handleNavigateToExercise = () => {
+  const handleNavigateToExercise = (exercise?: any) => {
+    if (exercise) {
+      setSelectedExercise(exercise);
+    }
     setCurrentView('exercise');
   };
 
@@ -68,7 +72,10 @@ const Router: React.FC = () => {
             onNavigateToExercise={handleNavigateToExercise}
           />
         ) : (
-          <Exercise onBackToDashboard={handleBackToDashboard} />
+          <Exercise 
+            onBackToDashboard={handleBackToDashboard} 
+            exerciseData={selectedExercise}
+          />
         )
       ) : (
         <LoginApp onLoginSuccess={handleLoginSuccess} />

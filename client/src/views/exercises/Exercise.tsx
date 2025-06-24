@@ -1,16 +1,43 @@
 import React, { useState, useEffect } from 'react';
+import { gql, useMutation } from '@apollo/client';
 import './Exercise.css';
+
+const EXECUTE_CODE = gql`
+  mutation ExecuteCode($input: ExecuteCodeInput!) {
+    executeCode(input: $input) {
+      stdout
+      stderr
+      compile_output
+      status {
+        id
+        description
+      }
+      time
+      memory
+    }
+  }
+`;
 
 interface ExerciseProps {
   onBackToDashboard?: () => void;
+  exerciseData?: any;
 }
 
-const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard }) => {
-  const [code, setCode] = useState('def sum_numbers(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\n# Test the function\nnumbers = [1, 2, 3, 4, 5]\nresult = sum_numbers(numbers)\nprint(f"Sum: {result}")');
+const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) => {
+  const [code, setCode] = useState(exerciseData?.codigoBase || 'def sum_numbers(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\n# Test the function\nnumbers = [1, 2, 3, 4, 5]\nresult = sum_numbers(numbers)\nprint(f"Sum: {result}")');
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [timer, setTimer] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(true);
+  
+  const [executeCode] = useMutation(EXECUTE_CODE);
+
+  // Actualizar código cuando cambie exerciseData
+  useEffect(() => {
+    if (exerciseData?.codigoBase) {
+      setCode(exerciseData.codigoBase);
+    }
+  }, [exerciseData]);
 
   // Generar estrellas para el fondo
   useEffect(() => {
@@ -51,26 +78,71 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard }) => {
   };
 
   const handleReset = () => {
-    setCode('def sum_numbers(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\n# Test the function\nnumbers = [1, 2, 3, 4, 5]\nresult = sum_numbers(numbers)\nprint(f"Sum: {result}")');
+    setCode(exerciseData?.codigoBase || 'def sum_numbers(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\n# Test the function\nnumbers = [1, 2, 3, 4, 5]\nresult = sum_numbers(numbers)\nprint(f"Sum: {result}")');
     setOutput('');
   };
 
-  const handleRun = () => {
+  const handleRun = async () => {
     setIsRunning(true);
     setOutput('Ejecutando código...\n');
     
-    // Simular ejecución del código
-    setTimeout(() => {
-      try {
-        // Aquí se implementaría la lógica real para ejecutar el código
-        // Por ahora simulamos una salida
-        setOutput('>>> Ejecutando código Python...\n\nSum: 15\n\n>>> Ejecución completada exitosamente.');
-      } catch (error) {
-        setOutput(`Error: ${error}`);
-      } finally {
-        setIsRunning(false);
+    try {
+      const result = await executeCode({
+        variables: {
+          input: {
+            sourceCode: code,
+            languageId: 71 // Python 3
+          }
+        }
+      });
+      
+      const execution = result.data.executeCode;
+      let outputText = '>>> Ejecutando código Python...\n\n';
+      
+      if (execution.stdout) {
+        outputText += `Salida:\n${execution.stdout}\n\n`;
       }
-    }, 1500);
+      
+      if (execution.stderr) {
+        outputText += `Errores:\n${execution.stderr}\n\n`;
+      }
+      
+      if (execution.compile_output) {
+        outputText += `Compilación:\n${execution.compile_output}\n\n`;
+      }
+      
+      outputText += `Estado: ${execution.status.description}\n`;
+      
+      if (execution.time) {
+        outputText += `Tiempo de ejecución: ${execution.time}s\n`;
+      }
+      
+      if (execution.memory) {
+        outputText += `Memoria utilizada: ${execution.memory} KB\n`;
+      }
+      
+      // Comparar con resultado esperado si existe
+      if (exerciseData?.resultadoEsperado && execution.stdout) {
+        const expectedOutput = exerciseData.resultadoEsperado.trim();
+        const actualOutput = execution.stdout.trim();
+        
+        if (expectedOutput === actualOutput) {
+          outputText += '\n✅ ¡Resultado correcto! Tu código produce la salida esperada.';
+        } else {
+          outputText += '\n❌ El resultado no coincide con el esperado.';
+          outputText += `\n\nEsperado:\n${expectedOutput}`;
+          outputText += `\n\nObtenido:\n${actualOutput}`;
+        }
+      }
+      
+      setOutput(outputText);
+      
+    } catch (error: any) {
+      console.error('Error ejecutando código:', error);
+      setOutput(`Error al ejecutar el código:\n${error.message || 'Error desconocido'}`);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   return (
@@ -145,26 +217,38 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard }) => {
               <div className="panel-header">
                 <h3>Enunciado del Ejercicio</h3>
                 <div className="exercise-info">
-                  <span className="difficulty-badge easy">Fácil</span>
-                  <span className="points-badge">100 pts</span>
+                  <span className={`difficulty-badge ${exerciseData?.difficulty?.toLowerCase() || 'easy'}`}>
+                    {exerciseData?.difficulty || 'Fácil'}
+                  </span>
+                  <span className="points-badge">{exerciseData?.points || 100} pts</span>
                 </div>
               </div>
               <div className="statement-content">
-                <h4>Suma de Números</h4>
-                <p>Crea una función que reciba una lista de números y devuelva la suma de todos ellos.</p>
-                <div className="requirements">
-                  <h5>Requisitos:</h5>
-                  <ul>
-                    <li>La función debe llamarse <code>sum_numbers</code></li>
-                    <li>Debe recibir un parámetro <code>numbers</code> (lista)</li>
-                    <li>Debe retornar la suma total</li>
-                    <li>Maneja listas vacías retornando 0</li>
-                  </ul>
-                </div>
-                <div className="example">
-                  <h5>Ejemplo:</h5>
-                  <code>sum_numbers([1, 2, 3, 4, 5]) → 15</code>
-                </div>
+                <h4>{exerciseData?.title || 'Suma de Números'}</h4>
+                <p>{exerciseData?.description || 'Crea una función que reciba una lista de números y devuelva la suma de todos ellos.'}</p>
+                {exerciseData?.resultadoEsperado && (
+                  <div className="expected-result">
+                    <h5>Resultado Esperado:</h5>
+                    <pre><code>{exerciseData.resultadoEsperado}</code></pre>
+                  </div>
+                )}
+                {!exerciseData && (
+                  <>
+                    <div className="requirements">
+                      <h5>Requisitos:</h5>
+                      <ul>
+                        <li>La función debe llamarse <code>sum_numbers</code></li>
+                        <li>Debe recibir un parámetro <code>numbers</code> (lista)</li>
+                        <li>Debe retornar la suma total</li>
+                        <li>Maneja listas vacías retornando 0</li>
+                      </ul>
+                    </div>
+                    <div className="example">
+                      <h5>Ejemplo:</h5>
+                      <code>sum_numbers([1, 2, 3, 4, 5]) → 15</code>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
