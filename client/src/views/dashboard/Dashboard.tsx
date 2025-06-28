@@ -18,9 +18,10 @@ interface LeaderboardEntry {
 interface DashboardProps {
   onLogout?: () => void;
   onNavigateToExercise?: (exercise?: any) => void;
+  onNavigateToPythonGuide?: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, onNavigateToPythonGuide }) => {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFullRanking, setShowFullRanking] = useState(false);
@@ -31,10 +32,44 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
   const [loadingExercises, setLoadingExercises] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<any | null>(null);
   const [showExerciseDetail, setShowExerciseDetail] = useState(false);
+  const [userPoints, setUserPoints] = useState<number>(0);
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
 
   useEffect(() => {
     fetchTopUsers();
+    fetchUserPoints();
   }, []);
+
+  const fetchUserPoints = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:4000/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          query: `
+            query GetCurrentUser {
+              me {
+                puntos
+              }
+            }
+          `
+        })
+      });
+
+      const result = await response.json();
+      if (result.data?.me?.puntos !== undefined) {
+        setUserPoints(result.data.me.puntos);
+      }
+    } catch (error) {
+      console.error('Error fetching user points:', error);
+    }
+  };
 
   const fetchTopUsers = async () => {
     const query = `
@@ -50,7 +85,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:4001/graphql', {
+      const response = await fetch('http://localhost:4000/graphql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +128,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
     } catch (error: any) {
       console.error('Error fetching users:', error);
       if (error.message.includes('Failed to fetch')) {
-        setError('No se puede conectar al servidor (puerto 4001)');
+        setError('No se puede conectar al servidor (puerto 4000)');
       } else if (error.message.includes('HTTP error')) {
         setError(`Error del servidor: ${error.message}`);
       } else {
@@ -114,16 +149,36 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
 
   const handleStartChallenge = () => {
     console.log('Starting daily challenge...');
-    if (onNavigateToExercise) {
-      onNavigateToExercise();
-    }
+    // TODO: Implementar lógica para obtener el desafío diario
+    // Por ahora, comentamos esta funcionalidad hasta que se implemente correctamente
+    console.warn('Desafío diario no implementado aún');
+    // if (onNavigateToExercise) {
+    //   onNavigateToExercise();
+    // }
   };
 
   const handleViewFullRanking = () => {
     setShowFullRanking(true);
   };
 
+  const planetRequirements = {
+    'tierra': 0,    // Siempre disponible
+    'marte': 100,   // Requiere 100 puntos
+    'saturno': 250  // Requiere 250 puntos
+  };
+
+  const isPlanetUnlocked = (planetName: string): boolean => {
+    const requiredPoints = planetRequirements[planetName as keyof typeof planetRequirements];
+    return userPoints >= requiredPoints;
+  };
+
   const handlePlanetClick = async (planetName: string) => {
+    if (!isPlanetUnlocked(planetName)) {
+      setShowAccessDenied(true);
+      setTimeout(() => setShowAccessDenied(false), 3000);
+      return;
+    }
+
     setSelectedPlanet(planetName);
     setShowExercisePanel(true);
     setLoadingExercises(true);
@@ -161,7 +216,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
       if (!nivelId) return [];
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:4001/graphql', {
+      const response = await fetch('http://localhost:4000/graphql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -198,9 +253,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
       }
 
       // Transformar los datos para que coincidan con el formato esperado
+      console.log('=== DEBUG API RESPONSE ===');
       console.log('Raw data from API:', data.data.tareasPorNivel);
       const mappedExercises = data.data.tareasPorNivel.map((tarea: any) => {
-        console.log('Mapping tarea:', tarea.titulo, 'puntosBase:', tarea.puntosBase, 'type:', typeof tarea.puntosBase);
+        console.log('=== MAPPING TAREA ===');
+        console.log('tarea completa:', tarea);
+        console.log('tarea.titulo:', tarea.titulo);
+        console.log('tarea.codigoBase:', tarea.codigoBase);
+        console.log('tarea.resultadoEsperado:', tarea.resultadoEsperado);
+        console.log('tarea.descripcion:', tarea.descripcion);
+        console.log('tarea.puntosBase:', tarea.puntosBase, 'type:', typeof tarea.puntosBase);
+        
         const mappedExercise = {
           id: tarea.id,
           title: tarea.titulo,
@@ -211,10 +274,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
           resultadoEsperado: tarea.resultadoEsperado,
           categoria: tarea.categoria.nombre
         };
-        console.log('Mapped exercise points:', mappedExercise.points);
+        // Debug logs removed to reduce console noise
         return mappedExercise;
       });
-      console.log('Final mapped exercises:', mappedExercises);
+      // Debug logs removed to reduce console noise
       return mappedExercises;
     } catch (error) {
       console.error('Error fetching exercises:', error);
@@ -283,54 +346,93 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
           </div>
         </div>
 
-        {/* Solar System Animation */}
-        <div className="solar-system">
+        {/* Central Content */}
+        <div className="central-content">
+          {/* Access Denied Message */}
+          {showAccessDenied && (
+            <div className="access-denied-message">
+              ¡Necesitas más puntos para desbloquear este planeta!
+            </div>
+          )}
+
+          {/* Solar System Animation */}
+          <div className="solar-system">
           {/* Sol en el centro */}
           <div className="sun"></div>
           
           {/* Tierra - Nivel Fácil */}
           <div className="orbit orbit-earth">
             <div 
-              className={`planet earth ${selectedPlanet === 'tierra' ? 'selected' : ''}`}
+              className={`planet earth ${selectedPlanet === 'tierra' ? 'selected' : ''} ${isPlanetUnlocked('tierra') ? 'unlocked' : 'locked'}`}
               onClick={() => handlePlanetClick('tierra')}
             >
               <span className="planet-label">Tierra</span>
+              {!isPlanetUnlocked('tierra') && <span className="lock-icon">🔒</span>}
             </div>
           </div>
           
           {/* Marte - Nivel Intermedio */}
           <div className="orbit orbit-mars">
             <div 
-              className={`planet mars ${selectedPlanet === 'marte' ? 'selected' : ''}`}
+              className={`planet mars ${selectedPlanet === 'marte' ? 'selected' : ''} ${isPlanetUnlocked('marte') ? 'unlocked' : 'locked'}`}
               onClick={() => handlePlanetClick('marte')}
+              title={!isPlanetUnlocked('marte') ? `Requiere ${planetRequirements.marte} puntos` : ''}
             >
               <span className="planet-label">Marte</span>
+              {!isPlanetUnlocked('marte') && <span className="lock-icon">🔒</span>}
+              {!isPlanetUnlocked('marte') && <span className="points-required">{planetRequirements.marte}pts</span>}
             </div>
           </div>
           
           {/* Saturno - Nivel Difícil */}
           <div className="orbit orbit-saturn">
             <div 
-              className={`planet saturn ${selectedPlanet === 'saturno' ? 'selected' : ''}`}
+              className={`planet saturn ${selectedPlanet === 'saturno' ? 'selected' : ''} ${isPlanetUnlocked('saturno') ? 'unlocked' : 'locked'}`}
               onClick={() => handlePlanetClick('saturno')}
+              title={!isPlanetUnlocked('saturno') ? `Requiere ${planetRequirements.saturno} puntos` : ''}
             >
               <div className="saturn-rings"></div>
               <span className="planet-label">Saturno</span>
+              {!isPlanetUnlocked('saturno') && <span className="lock-icon">🔒</span>}
+              {!isPlanetUnlocked('saturno') && <span className="points-required">{planetRequirements.saturno}pts</span>}
             </div>
+          </div>
+          </div>
+
+          {/* Planet Selection Message */}
+          <div className="planet-selection-message">
+            <h2>Elige tu planeta de aventura</h2>
           </div>
         </div>
 
-        {/* Daily Challenge */}
-        <div className="daily-challenge-container">
-          <div className="daily-challenge">
-            <h2 className="challenge-title">Reto diario</h2>
-            <p className="challenge-description">Resuelve el reto diario</p>
-            <button 
-              className="start-challenge-btn"
-              onClick={handleStartChallenge}
-            >
-              Start
-            </button>
+        {/* Right Side Content */}
+        <div className="right-side-content">
+          {/* Daily Challenge */}
+          <div className="daily-challenge-container">
+            <div className="daily-challenge">
+              <h2 className="challenge-title">Reto diario</h2>
+              <p className="challenge-description">Resuelve el reto diario</p>
+              <button 
+                className="start-challenge-btn"
+                onClick={handleStartChallenge}
+              >
+                Start
+              </button>
+            </div>
+          </div>
+
+          {/* Python Guide */}
+          <div className="python-guide-container">
+            <div className="python-guide">
+              <h2 className="guide-title">Guía de Python</h2>
+              <p className="guide-description">Aprende los fundamentos de Python desde cero</p>
+              <button 
+                className="start-guide-btn"
+                onClick={onNavigateToPythonGuide}
+              >
+                Explorar
+              </button>
+            </div>
           </div>
         </div>
 
@@ -401,17 +503,26 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise })
                       {selectedExercise.description || 'No hay descripción disponible para este ejercicio.'}
                     </div>
                     <button 
-                      className="start-exercise-btn"
+                      className={`start-exercise-btn ${!isPlanetUnlocked(selectedPlanet || '') ? 'disabled' : ''}`}
                       onClick={() => {
-                        console.log('Iniciando ejercicio:', selectedExercise.title);
-                        console.log('Código base:', selectedExercise.codigoBase);
-                        console.log('Resultado esperado:', selectedExercise.resultadoEsperado);
+                        if (!selectedPlanet || !isPlanetUnlocked(selectedPlanet)) {
+                          setShowAccessDenied(true);
+                          setTimeout(() => setShowAccessDenied(false), 3000);
+                          return;
+                        }
+                        console.log('=== DEBUG DASHBOARD ===');
+                        // Debug logs removed to reduce console noise
+                        console.log('=== FIN DEBUG ===');
                         if (onNavigateToExercise) {
                           onNavigateToExercise(selectedExercise);
                         }
                       }}
+                      disabled={!isPlanetUnlocked(selectedPlanet || '')}
                     >
-                      Comenzar
+                      {!isPlanetUnlocked(selectedPlanet || '') ? 
+                        `Requiere ${planetRequirements[selectedPlanet as keyof typeof planetRequirements] || 0} puntos` : 
+                        'Comenzar'
+                      }
                     </button>
                   </div>
                 )}

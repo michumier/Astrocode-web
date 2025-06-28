@@ -1,0 +1,342 @@
+.python-guide-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%);
+  position: relative;
+  overflow: hidden;
+  color: white;
+  padding: 40px 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Stars Background */
+.stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 3s infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.back-button-container {
+  max-width: 1200px;
+  margin: 0 auto 30px;
+  position: relative;
+  z-index: 10;
+}
+
+.back-to-dashboard-btn {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.back-to-dashboard-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(-3px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.guide-header {
+  text-align: center;
+  margin-bottom: 50px;
+  position: relative;
+  z-index: 10;
+}
+
+.guide-header h1 {
+  font-size: 3rem;
+  margin: 0 0 20px 0;
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.guide-header p {
+  font-size: 1.3rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.guide-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 30px;
+  margin-bottom: 50px;
+  position: relative;
+  z-index: 10;
+}
+
+.guide-section {
+  margin-bottom: 60px;
+}
+
+.guide-section h2 {
+  font-size: 2.2rem;
+  margin-bottom: 30px;
+  text-align: center;
+  background: linear-gradient(45deg, #4caf50, #81c784);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.concept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.concept-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.concept-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.concept-card h3 {
+  font-size: 1.5rem;
+  margin: 0 0 20px 0;
+  color: #ffd700;
+  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+  padding-bottom: 10px;
+}
+
+.concept-description {
+  margin-bottom: 20px;
+}
+
+.concept-description p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border-left: 3px solid #64b5f6;
+}
+
+.level-selector {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 30px 0 50px 0;
+  flex-wrap: wrap;
+}
+
+.level-btn {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 25px;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.level-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.level-btn.active {
+  background: linear-gradient(135deg, #ffd700, #ffb300);
+  border-color: #ffd700;
+  color: #1a237e;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.code-example {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 15px;
+  border-left: 4px solid #4caf50;
+}
+
+.code-example code {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #e8f5e8;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.external-resources {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 40px;
+  margin: 60px auto;
+  max-width: 1000px;
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+
+.external-resources h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  background: linear-gradient(45deg, #ff6b6b, #ffa726);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.external-resources p {
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+.resource-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.resource-btn {
+  padding: 15px 25px;
+  background: linear-gradient(45deg, #9c27b0, #673ab7);
+  border: none;
+  border-radius: 15px;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.resource-btn:hover {
+  background: linear-gradient(45deg, #ad42c4, #7e57c2);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(156, 39, 176, 0.6);
+}
+
+.guide-footer {
+  text-align: center;
+  margin-top: 60px;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  max-width: 600px;
+  margin: 60px auto 0;
+  position: relative;
+  z-index: 10;
+}
+
+.guide-footer p {
+  font-size: 1.2rem;
+  margin: 0;
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .python-guide-page {
+    padding: 20px 10px;
+  }
+  
+  .guide-header h1 {
+    font-size: 2.2rem;
+  }
+  
+  .guide-header p {
+    font-size: 1.1rem;
+  }
+  
+  .concept-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .concept-card {
+    padding: 20px;
+  }
+  
+  .code-example {
+    padding: 15px;
+  }
+  
+  .code-example code {
+    font-size: 0.8rem;
+  }
+  
+  .resource-buttons {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .external-resources {
+    padding: 30px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .guide-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .guide-section h2 {
+    font-size: 1.8rem;
+  }
+  
+  .concept-card h3 {
+    font-size: 1.3rem;
+  }
+  
+  .code-example code {
+    font-size: 0.75rem;
+  }
+}

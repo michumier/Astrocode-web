@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import LoginApp from './views/login/App';
 import Dashboard from './views/dashboard/Dashboard';
 import Exercise from './views/exercises/Exercise';
+import PythonGuide from './views/python-guide/PythonGuide';
 
 const Router: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'exercise'>('dashboard');
+  const [currentView, setCurrentView] = useState<'login' | 'home' | 'exercise' | 'python-guide'>('login');
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
 
   useEffect(() => {
@@ -16,6 +17,13 @@ const Router: React.FC = () => {
     
     if (token && usuario) {
       setIsAuthenticated(true);
+      // Si está autenticado, ir a Home
+      setCurrentView('home');
+      window.history.pushState(null, '', '/Home');
+    } else {
+      // Si no está autenticado, ir a Login
+      setCurrentView('login');
+      window.history.pushState(null, '', '/Login');
     }
     
     setLoading(false);
@@ -24,6 +32,8 @@ const Router: React.FC = () => {
   // Función para manejar el login exitoso
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
+    setCurrentView('home');
+    window.history.pushState(null, '', '/Home');
   };
 
   // Función para manejar el logout
@@ -31,7 +41,8 @@ const Router: React.FC = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     setIsAuthenticated(false);
-    setCurrentView('dashboard');
+    setCurrentView('login');
+    window.history.pushState(null, '', '/Login');
   };
 
   // Función para navegar al ejercicio
@@ -44,7 +55,14 @@ const Router: React.FC = () => {
 
   // Función para volver al dashboard
   const handleBackToDashboard = () => {
-    setCurrentView('dashboard');
+    setCurrentView('home');
+    window.history.pushState(null, '', '/Home');
+  };
+
+  // Función para navegar a la guía de Python
+  const handleNavigateToPythonGuide = () => {
+    setCurrentView('python-guide');
+    window.history.pushState(null, '', '/python-guide');
   };
 
   if (loading) {
@@ -65,20 +83,21 @@ const Router: React.FC = () => {
 
   return (
     <>
-      {isAuthenticated ? (
-        currentView === 'dashboard' ? (
-          <Dashboard 
-            onLogout={handleLogout} 
-            onNavigateToExercise={handleNavigateToExercise}
-          />
-        ) : (
-          <Exercise 
-            onBackToDashboard={handleBackToDashboard} 
-            exerciseData={selectedExercise}
-          />
-        )
-      ) : (
+      {currentView === 'login' ? (
         <LoginApp onLoginSuccess={handleLoginSuccess} />
+      ) : currentView === 'home' ? (
+        <Dashboard 
+          onLogout={handleLogout} 
+          onNavigateToExercise={handleNavigateToExercise}
+          onNavigateToPythonGuide={handleNavigateToPythonGuide}
+        />
+      ) : currentView === 'exercise' ? (
+        <Exercise 
+          onBackToDashboard={handleBackToDashboard} 
+          exerciseData={selectedExercise}
+        />
+      ) : (
+        <PythonGuide onBackToDashboard={handleBackToDashboard} />
       )}
     </>
   );

@@ -89,10 +89,32 @@
   position: relative;
   z-index: 10;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
+  align-items: flex-start;
   padding: 0 80px;
-  min-height: 60vh;
+  min-height: 40vh;
+  gap: 40px;
+}
+
+/* Central Content */
+.central-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 20vh;
+  padding-top: 10px;
+}
+
+/* Right Side Content */
+.right-side-content {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-top: 10px;
 }
 
 /* Leaderboard */
@@ -192,12 +214,13 @@
 
 /* Solar System */
 .solar-system {
-  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  height: 500px;
+  width: 600px;
+  height: 600px;
+  margin: -120px auto 0 auto;
 }
 
 /* Sol en el centro */
@@ -394,7 +417,9 @@
 
 /* Daily Challenge */
 .daily-challenge-container {
-  flex: 0 0 300px;
+  width: 100%;
+  max-width: 280px;
+  margin: 0;
 }
 
 .daily-challenge {
@@ -438,6 +463,55 @@
   box-shadow: 0 6px 20px rgba(66, 165, 245, 0.6);
 }
 
+/* Python Guide */
+.python-guide-container {
+  width: 100%;
+  max-width: 280px;
+  margin: 0;
+}
+
+.python-guide {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.guide-title {
+  font-size: 1.8rem;
+  margin: 0 0 20px 0;
+  font-weight: bold;
+}
+
+.guide-description {
+  font-size: 1.1rem;
+  margin: 0 0 30px 0;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.start-guide-btn {
+  padding: 15px 40px;
+  background: linear-gradient(45deg, #4caf50, #2e7d32);
+  border: none;
+  border-radius: 25px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+  transition: all 0.3s ease;
+}
+
+.start-guide-btn:hover {
+  background: linear-gradient(45deg, #66bb6a, #388e3c);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+}
+
 /* Panel Layout Styles */
 .dashboard.panel-open {
   overflow: hidden;
@@ -453,14 +527,14 @@
 }
 
 .dashboard.panel-open .leaderboard-container,
-.dashboard.panel-open .daily-challenge-container {
+.dashboard.panel-open .right-side-content {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .leaderboard-container,
-.daily-challenge-container {
+.right-side-content {
   opacity: 1;
   visibility: visible;
   transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -951,4 +1025,101 @@
     width: 100%;
     padding: 12px;
   }
+}
+
+/* Planet Selection Message */
+.planet-selection-message {
+  text-align: center;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  z-index: 10;
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.planet-selection-message h2 {
+  font-size: 2rem;
+  margin: 0;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+/* Access Denied Message */
+.access-denied-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 0, 0, 0.9);
+  color: white;
+  padding: 20px 40px;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  z-index: 1000;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+  animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+/* Locked Planet Styles */
+.planet.locked {
+  opacity: 0.5;
+  filter: grayscale(70%);
+  cursor: not-allowed;
+  position: relative;
+}
+
+.planet.locked:hover {
+  transform: scale(1.05);
+  filter: grayscale(50%);
+}
+
+.planet.unlocked {
+  cursor: pointer;
+}
+
+.lock-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  z-index: 5;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+.points-required {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 215, 0, 0.9);
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  white-space: nowrap;
+  z-index: 5;
+}
+
+/* Disabled Exercise Button */
+.start-exercise-btn.disabled {
+  background: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.start-exercise-btn.disabled:hover {
+  background: #666;
+  transform: none;
 }

@@ -24,6 +24,7 @@ interface ExerciseProps {
 }
 
 const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) => {
+  // All hooks must be declared at the top before any conditional logic
   const [code, setCode] = useState(exerciseData?.codigoBase || 'def sum_numbers(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\n# Test the function\nnumbers = [1, 2, 3, 4, 5]\nresult = sum_numbers(numbers)\nprint(f"Sum: {result}")');
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
@@ -31,7 +32,8 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   const [isTimerRunning, setIsTimerRunning] = useState(true);
   
   const [executeCode] = useMutation(EXECUTE_CODE);
-
+  
+  // All useEffect hooks must also be at the top
   // Actualizar código cuando cambie exerciseData
   useEffect(() => {
     if (exerciseData?.codigoBase) {
@@ -69,6 +71,42 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
     }
     return () => clearInterval(interval);
   }, [isTimerRunning]);
+  
+  // Debug: Imprimir datos del ejercicio
+  // Debug logs removed to reduce console noise
+  
+  // Validar que exerciseData existe
+  if (!exerciseData) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        background: 'linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%)',
+        color: 'white',
+        textAlign: 'center'
+      }}>
+        <h2>Error: No se ha seleccionado ningún ejercicio</h2>
+        <p>Por favor, regresa al dashboard y selecciona un ejercicio válido.</p>
+        <button 
+          onClick={onBackToDashboard}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            marginTop: '20px'
+          }}
+        >
+          Volver al Dashboard
+        </button>
+      </div>
+    );
+  }
 
   // Formatear tiempo en MM:SS
   const formatTime = (seconds: number) => {

@@ -49,7 +49,7 @@ AstroCode Web es la interfaz frontend de la plataforma AstroCode, diseñada para
 3. **Configurar variables de entorno**
    ```bash
    # Crear archivo .env en la carpeta client
-   REACT_APP_API_URL=http://localhost:4001/graphql
+   REACT_APP_API_URL=http://localhost:4000/graphql
    ```
 
 4. **Iniciar el servidor de desarrollo**
@@ -97,7 +97,7 @@ npm run analyze
 
 ## 🌐 Conexión con la API
 
-La aplicación web se conecta con la API de AstroCode a través de GraphQL. Asegúrate de que la API esté ejecutándose en `http://localhost:4001` antes de iniciar el frontend.
+La aplicación web se conecta con la API de AstroCode a través de GraphQL. Asegúrate de que la API esté ejecutándose en `http://localhost:4000` antes de iniciar el frontend.
 
 ## 🤝 Contribución
 
