@@ -3,11 +3,12 @@ import LoginApp from './views/login/App';
 import Dashboard from './views/dashboard/Dashboard';
 import Exercise from './views/exercises/Exercise';
 import PythonGuide from './views/python-guide/PythonGuide';
+import Profile from './views/profile/Profile';
 
 const Router: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState<'login' | 'home' | 'exercise' | 'python-guide'>('login');
+  const [currentView, setCurrentView] = useState<'login' | 'home' | 'exercise' | 'python-guide' | 'profile'>('login');
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
 
   useEffect(() => {
@@ -65,6 +66,12 @@ const Router: React.FC = () => {
     window.history.pushState(null, '', '/python-guide');
   };
 
+  // Función para navegar al perfil
+  const handleNavigateToProfile = () => {
+    setCurrentView('profile');
+    window.history.pushState(null, '', '/profile');
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -90,12 +97,15 @@ const Router: React.FC = () => {
           onLogout={handleLogout} 
           onNavigateToExercise={handleNavigateToExercise}
           onNavigateToPythonGuide={handleNavigateToPythonGuide}
+          onNavigateToProfile={handleNavigateToProfile}
         />
       ) : currentView === 'exercise' ? (
         <Exercise 
           onBackToDashboard={handleBackToDashboard} 
           exerciseData={selectedExercise}
         />
+      ) : currentView === 'profile' ? (
+        <Profile onBackToDashboard={handleBackToDashboard} />
       ) : (
         <PythonGuide onBackToDashboard={handleBackToDashboard} />
       )}

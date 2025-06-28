@@ -19,9 +19,10 @@ interface DashboardProps {
   onLogout?: () => void;
   onNavigateToExercise?: (exercise?: any) => void;
   onNavigateToPythonGuide?: () => void;
+  onNavigateToProfile?: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, onNavigateToPythonGuide }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, onNavigateToPythonGuide, onNavigateToProfile }) => {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFullRanking, setShowFullRanking] = useState(false);
@@ -34,6 +35,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   const [showExerciseDetail, setShowExerciseDetail] = useState(false);
   const [userPoints, setUserPoints] = useState<number>(0);
   const [showAccessDenied, setShowAccessDenied] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     fetchTopUsers();
@@ -162,9 +164,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   };
 
   const planetRequirements = {
-    'tierra': 0,    // Siempre disponible
-    'marte': 100,   // Requiere 100 puntos
-    'saturno': 250  // Requiere 250 puntos
+    'tierra': 0,     // Siempre disponible
+    'marte': 500,    // Requiere 500 puntos (aproximadamente 3-5 ejercicios fáciles)
+    'saturno': 1500  // Requiere 1500 puntos (aproximadamente 2-3 ejercicios difíciles + varios intermedios)
   };
 
   const isPlanetUnlocked = (planetName: string): boolean => {
@@ -290,10 +292,50 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   };
 
   const handleLogout = () => {
+    setShowUserMenu(false);
     if (onLogout) {
       onLogout();
     }
   };
+
+  const handleGoToProfile = () => {
+    setShowUserMenu(false);
+    if (onNavigateToProfile) {
+      onNavigateToProfile();
+    }
+  };
+
+  const getUserInitials = () => {
+    const usuario = localStorage.getItem('usuario');
+    if (usuario) {
+      try {
+        const userData = JSON.parse(usuario);
+        const name = userData.nombre_completo || userData.nombre_usuario || 'Usuario';
+        return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+      } catch (error) {
+        return 'U';
+      }
+    }
+    return 'U';
+  };
+
+  // Cerrar menú al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.user-avatar-container')) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu]);
 
   // Mostrar FullRanking si showFullRanking es true
   if (showFullRanking) {
@@ -309,9 +351,25 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
             <img src="/Logo.png" alt="AstroCode Logo" className="dashboard-logo" />
             <h1 className="dashboard-title">AstroCode</h1>
           </div>
-          <button className="logout-btn" onClick={handleLogout}>
-            Cerrar Sesión
-          </button>
+          <div className="user-avatar-container">
+            <div className="user-avatar" onClick={() => setShowUserMenu(!showUserMenu)}>
+              <div className="avatar-circle">
+                {getUserInitials()}
+              </div>
+            </div>
+            {showUserMenu && (
+              <div className="user-menu">
+                <div className="user-menu-item" onClick={handleGoToProfile}>
+                  <span>👤</span>
+                  Perfil
+                </div>
+                <div className="user-menu-item" onClick={handleLogout}>
+                  <span>🚪</span>
+                  Cerrar Sesión
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
