@@ -8,7 +8,17 @@
     <meta name="description" content="Web site created using create-react-app" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>React App</title>
+    <!-- Skulpt para ejecución de Python en el navegador -->
+    <script src="https://unpkg.com/skulpt@0.11.1/dist/skulpt.min.js"></script>
+    <script src="https://unpkg.com/skulpt@0.11.1/dist/skulpt-stdlib.js"></script>
+    <!-- Fallback CDN alternativo -->
+    <script>
+      if (typeof Sk === 'undefined') {
+        document.write('<script src="https://cdn.jsdelivr.net/npm/skulpt@0.11.1/dist/skulpt.min.js"><\/script>');
+        document.write('<script src="https://cdn.jsdelivr.net/npm/skulpt@0.11.1/dist/skulpt-stdlib.js"><\/script>');
+      }
+    </script>
+    <title>AstroCode</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

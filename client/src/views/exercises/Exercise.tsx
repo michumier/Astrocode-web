@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { gql, useMutation } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import './Exercise.css';
 
+// GraphQL mutation for code execution
 const EXECUTE_CODE = gql`
   mutation ExecuteCode($input: ExecuteCodeInput!) {
     executeCode(input: $input) {
@@ -18,6 +19,25 @@ const EXECUTE_CODE = gql`
   }
 `;
 
+// GraphQL mutation for completing task
+const COMPLETAR_TAREA = gql`
+  mutation CompletarTarea($tareaId: ID!, $tiempoCompletado: Int!) {
+    completarTarea(tareaId: $tareaId, tiempoCompletado: $tiempoCompletado) {
+      success
+      puntos
+      tiempo
+      mensaje
+    }
+  }
+`;
+
+// GraphQL query for checking if task is completed
+const ES_TAREA_COMPLETADA = gql`
+  query EsTareaCompletada($tareaId: ID!) {
+    esTareaCompletada(tareaId: $tareaId)
+  }
+`;
+
 interface ExerciseProps {
   onBackToDashboard?: () => void;
   exerciseData?: any;
@@ -30,8 +50,18 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   const [isRunning, setIsRunning] = useState(false);
   const [timer, setTimer] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(true);
+  const [showCongratulations, setShowCongratulations] = useState(false);
+  const [completionData, setCompletionData] = useState<any>(null);
   
+  // GraphQL mutation hooks
   const [executeCode] = useMutation(EXECUTE_CODE);
+  const [completarTarea] = useMutation(COMPLETAR_TAREA);
+  
+  // GraphQL query hook
+  const { data: tareaCompletadaData } = useQuery(ES_TAREA_COMPLETADA, {
+    variables: { tareaId: exerciseData?.id },
+    skip: !exerciseData?.id
+  });
   
   // All useEffect hooks must also be at the top
   // Actualizar código cuando cambie exerciseData
@@ -125,51 +155,69 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
     setOutput('Ejecutando código...\n');
     
     try {
-      const result = await executeCode({
+      const startTime = Date.now();
+      
+      const { data } = await executeCode({
         variables: {
           input: {
             sourceCode: code,
-            languageId: 71 // Python 3
+            languageId: 71, // Python 3
+            stdin: ""
           }
         }
       });
       
-      const execution = result.data.executeCode;
-      let outputText = '>>> Ejecutando código Python...\n\n';
+      const endTime = Date.now();
+      const executionTime = ((endTime - startTime) / 1000).toFixed(3);
       
-      if (execution.stdout) {
-        outputText += `Salida:\n${execution.stdout}\n\n`;
-      }
-      
-      if (execution.stderr) {
-        outputText += `Errores:\n${execution.stderr}\n\n`;
-      }
-      
-      if (execution.compile_output) {
-        outputText += `Compilación:\n${execution.compile_output}\n\n`;
-      }
-      
-      outputText += `Estado: ${execution.status.description}\n`;
-      
-      if (execution.time) {
-        outputText += `Tiempo de ejecución: ${execution.time}s\n`;
-      }
-      
-      if (execution.memory) {
-        outputText += `Memoria utilizada: ${execution.memory} KB\n`;
-      }
+      let outputText = '>>> Ejecutando código...\n\n';
+       
+       if (data?.executeCode?.stdout) {
+         outputText += `Salida:\n${data.executeCode.stdout}\n\n`;
+       }
+       
+       if (data?.executeCode?.stderr) {
+         outputText += `Errores:\n${data.executeCode.stderr}\n\n`;
+       }
+       
+       if (data?.executeCode?.compile_output) {
+         outputText += `Errores de compilación:\n${data.executeCode.compile_output}\n\n`;
+       }
+       
+       outputText += `Tiempo de ejecución: ${data?.executeCode?.time || executionTime}s\n`;
       
       // Comparar con resultado esperado si existe
-      if (exerciseData?.resultadoEsperado && execution.stdout) {
-        const expectedOutput = exerciseData.resultadoEsperado.trim();
-        const actualOutput = execution.stdout.trim();
+       if (exerciseData?.resultadoEsperado && data?.executeCode?.stdout) {
+         const expectedOutput = exerciseData.resultadoEsperado.trim();
+         const actualOutput = data.executeCode.stdout.trim();
         
         if (expectedOutput === actualOutput) {
           outputText += '\n✅ ¡Resultado correcto! Tu código produce la salida esperada.';
+          
+          // Completar la tarea si es correcta
+          try {
+            const { data: completionResult } = await completarTarea({
+              variables: {
+                tareaId: exerciseData.id,
+                tiempoCompletado: timer
+              }
+            });
+            
+            if (completionResult?.completarTarea?.success) {
+              setCompletionData({
+                titulo: exerciseData.titulo,
+                puntos: completionResult.completarTarea.puntos,
+                tiempo: completionResult.completarTarea.tiempo,
+                mensaje: completionResult.completarTarea.mensaje
+              });
+              setShowCongratulations(true);
+              setIsTimerRunning(false);
+            }
+          } catch (completionError: any) {
+            console.log('Error al completar tarea:', completionError.message);
+          }
         } else {
           outputText += '\n❌ El resultado no coincide con el esperado.';
-          outputText += `\n\nEsperado:\n${expectedOutput}`;
-          outputText += `\n\nObtenido:\n${actualOutput}`;
         }
       }
       
@@ -177,7 +225,17 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
       
     } catch (error: any) {
       console.error('Error ejecutando código:', error);
-      setOutput(`Error al ejecutar el código:\n${error.message || 'Error desconocido'}`);
+      let errorMessage = 'Error desconocido';
+      
+      if (error.networkError) {
+        errorMessage = 'Error de conexión con el servidor GraphQL. Verifica que el servidor esté ejecutándose.';
+      } else if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        errorMessage = error.graphQLErrors[0].message;
+      } else {
+        errorMessage = error.message || 'Error desconocido';
+      }
+      
+      setOutput(`Error al ejecutar el código:\n${errorMessage}`);
     } finally {
       setIsRunning(false);
     }
@@ -309,6 +367,46 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
           </div>
         </div>
       </main>
+      
+      {/* Ventana de felicitación */}
+      {showCongratulations && completionData && (
+        <div className="congratulations-overlay">
+          <div className="congratulations-modal">
+            <div className="congratulations-header">
+              <h2>🎉 ¡Enhorabuena!</h2>
+            </div>
+            <div className="congratulations-content">
+              <h3>Has completado el ejercicio:</h3>
+              <h4 className="exercise-title">{completionData.titulo}</h4>
+              
+              <div className="completion-stats">
+                <div className="stat-item">
+                  <span className="stat-label">Puntos ganados:</span>
+                  <span className="stat-value">{completionData.puntos}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Tiempo empleado:</span>
+                  <span className="stat-value">{completionData.tiempo}</span>
+                </div>
+              </div>
+              
+              <p className="completion-message">{completionData.mensaje}</p>
+              
+              <button 
+                className="back-to-menu-btn"
+                onClick={() => {
+                  setShowCongratulations(false);
+                  if (onBackToDashboard) {
+                    onBackToDashboard();
+                  }
+                }}
+              >
+                Volver al Menú Principal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

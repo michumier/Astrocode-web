@@ -1,13 +1,33 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
 import './index.css';
 import Router from './Router';
 import reportWebVitals from './reportWebVitals';
 
-// Configurar Apollo Client
+// Crear el enlace HTTP
+const httpLink = createHttpLink({
+  uri: 'http://localhost:4000/graphql',
+});
+
+// Crear el enlace de autenticación
+const authLink = setContext((_, { headers }) => {
+  // Obtener el token del localStorage
+  const token = localStorage.getItem('token');
+  
+  // Retornar las cabeceras con el token
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    }
+  };
+});
+
+// Configurar Apollo Client con autenticación
 const client = new ApolloClient({
-  uri: 'http://localhost:4000/graphql', // URL del backend GraphQL
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 

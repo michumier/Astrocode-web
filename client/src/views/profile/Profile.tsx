@@ -40,77 +40,19 @@ const Profile: React.FC<ProfileProps> = ({ onBackToDashboard }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initializeProfile = async () => {
-      await loadUserData();
-      loadUserStats();
-    };
-    initializeProfile();
+    loadUserData();
+    loadUserStats();
   }, []);
 
-  const loadUserData = async () => {
+  const loadUserData = () => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        // Intentar obtener datos frescos desde la API
-        const userQuery = `
-          query GetMe {
-            me {
-              id
-              nombre_usuario
-              correo_electronico
-              nombre_completo
-              puntos
-              creado_el
-            }
-          }
-        `;
-
-        const response = await fetch('http://localhost:4000/graphql', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ query: userQuery })
-        });
-
-        const result = await response.json();
-        console.log('Usuario desde API:', result);
-        
-        if (result.data && result.data.me) {
-          const updatedUser = result.data.me;
-          console.log('Datos del usuario actualizados:', {
-            puntos: updatedUser.puntos,
-            tipo_puntos: typeof updatedUser.puntos,
-            creado_el: updatedUser.creado_el,
-            tipo_fecha: typeof updatedUser.creado_el
-          });
-          setUserData(updatedUser);
-          // Actualizar localStorage con datos frescos
-          localStorage.setItem('usuario', JSON.stringify(updatedUser));
-        } else {
-          console.log('No se pudieron obtener datos del usuario desde la API');
-        }
-      } else {
-        // Fallback a localStorage si no hay token
-        const usuario = localStorage.getItem('usuario');
-        if (usuario) {
-          const parsedUser = JSON.parse(usuario);
-          setUserData(parsedUser);
-        }
+      const usuario = localStorage.getItem('usuario');
+      if (usuario) {
+        const parsedUser = JSON.parse(usuario);
+        setUserData(parsedUser);
       }
     } catch (error) {
       console.error('Error loading user data:', error);
-      // Fallback a localStorage en caso de error
-      try {
-        const usuario = localStorage.getItem('usuario');
-        if (usuario) {
-          const parsedUser = JSON.parse(usuario);
-          setUserData(parsedUser);
-        }
-      } catch (fallbackError) {
-        console.error('Error loading fallback user data:', fallbackError);
-      }
     } finally {
       setLoading(false);
     }
@@ -191,66 +133,13 @@ const Profile: React.FC<ProfileProps> = ({ onBackToDashboard }) => {
 
   const formatDate = (dateString: string) => {
     try {
-      if (!dateString) {
-        console.log('No date string provided');
-        return 'Fecha no disponible';
-      }
-      
-      console.log('Formatting date:', dateString, 'Type:', typeof dateString);
-      
-      // Convertir a string si no lo es
-      const dateStr = String(dateString);
-      
-      // Manejar diferentes formatos de fecha
-      let date: Date;
-      
-      // Si es formato YYYY-MM-DD HH:MM:SS (como 2025-06-19 19:47:37)
-      if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}$/.test(dateStr)) {
-        // Extraer solo la parte de la fecha (YYYY-MM-DD)
-        const datePart = dateStr.split(' ')[0];
-        date = new Date(datePart + 'T00:00:00');
-      }
-      // Si es un timestamp numérico
-      else if (/^\d+$/.test(dateStr)) {
-        const timestamp = parseInt(dateStr);
-        // Si es timestamp en segundos, convertir a milisegundos
-        date = new Date(timestamp > 9999999999 ? timestamp : timestamp * 1000);
-      }
-      // Si contiene 'T' (formato ISO)
-      else if (dateStr.includes('T')) {
-        date = new Date(dateStr);
-      }
-      // Si contiene '-' pero no espacio (formato YYYY-MM-DD)
-      else if (dateStr.includes('-') && !dateStr.includes(' ')) {
-        date = new Date(dateStr + 'T00:00:00');
-      }
-      // Si contiene '/' (formato MM/DD/YYYY o DD/MM/YYYY)
-      else if (dateStr.includes('/')) {
-        date = new Date(dateStr);
-      }
-      // Intentar parsear directamente
-      else {
-        date = new Date(dateStr);
-      }
-      
-      console.log('Parsed date:', date);
-      
-      // Verificar si la fecha es válida
-      if (isNaN(date.getTime())) {
-        console.log('Invalid date after parsing');
-        return 'Fecha no disponible';
-      }
-      
-      const formatted = date.toLocaleDateString('es-ES', {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
       });
-      
-      console.log('Formatted date:', formatted);
-      return formatted;
     } catch (error) {
-      console.error('Error formatting date:', error, 'Input:', dateString);
       return 'Fecha no disponible';
     }
   };
