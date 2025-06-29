@@ -1197,3 +1197,49 @@
   background: #666;
   transform: none;
 }
+
+/* Estilos para ejercicios completados */
+.exercise-item.completed {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: rgba(76, 175, 80, 0.3);
+  opacity: 0.8;
+}
+
+.exercise-item.completed:hover {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: rgba(76, 175, 80, 0.4);
+  transform: none;
+  cursor: default;
+}
+
+.exercise-item.completed .exercise-title {
+  color: #a5d6a7;
+}
+
+.completed-badge {
+  background: linear-gradient(45deg, #4caf50, #66bb6a);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 10px;
+  display: inline-block;
+}
+
+.view-exercise-btn.completed {
+  background: linear-gradient(45deg, #4caf50, #66bb6a);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.view-exercise-btn.completed:hover {
+  background: linear-gradient(45deg, #4caf50, #66bb6a);
+  transform: none;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+.view-exercise-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}

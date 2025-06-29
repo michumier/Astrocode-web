@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { gql, useQuery } from '@apollo/client';
 import './Profile.css';
 
 interface ProfileProps {
@@ -13,6 +14,32 @@ interface UserData {
   puntos: number;
   creado_el: string;
 }
+
+// GraphQL query para estadísticas del usuario
+const GET_USER_STATS = gql`
+  query GetUserStats {
+    me {
+      id
+      nombre_usuario
+      correo_electronico
+      nombre_completo
+      puntos
+      creado_el
+    }
+    tareasCompletadas {
+      id
+      nivel {
+        nombre
+      }
+    }
+    tareas {
+      id
+      nivel {
+        nombre
+      }
+    }
+  }
+`;
 
 interface UserStats {
   ejerciciosCompletados: number;
@@ -39,10 +66,29 @@ const Profile: React.FC<ProfileProps> = ({ onBackToDashboard }) => {
   });
   const [loading, setLoading] = useState(true);
 
+  // Query para obtener estadísticas actualizadas
+  const { data: statsData, loading: queryLoading, refetch: refetchStats } = useQuery(GET_USER_STATS, {
+    fetchPolicy: 'cache-and-network',
+    pollInterval: 30000 // Actualizar cada 30 segundos
+  });
+
+  // Los datos del usuario ahora se obtienen desde el query GraphQL
+  // useEffect(() => {
+  //   loadUserData();
+  // }, []);
+
+  // Actualizar estadísticas cuando lleguen los datos de Apollo
   useEffect(() => {
-    loadUserData();
-    loadUserStats();
-  }, []);
+    if (statsData) {
+      updateUserStats(statsData);
+      setLoading(false);
+    }
+  }, [statsData]);
+
+  // Actualizar loading state
+  useEffect(() => {
+    setLoading(queryLoading);
+  }, [queryLoading]);
 
   const loadUserData = () => {
     try {
@@ -58,71 +104,46 @@ const Profile: React.FC<ProfileProps> = ({ onBackToDashboard }) => {
     }
   };
 
-  const loadUserStats = async () => {
+  const updateUserStats = (data: any) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      // Obtener estadísticas de ejercicios completados por el usuario
-      const statsQuery = `
-        query GetUserStats {
-          tareasCompletadas {
-            id
-            nivel {
-              nombre
-            }
-          }
-          tareas {
-            id
-            nivel {
-              nombre
-            }
-          }
-        }
-      `;
-
-      const response = await fetch('http://localhost:4001/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ query: statsQuery })
-      });
-
-      const result = await response.json();
-      
-      if (result.data) {
-        const tareasCompletadas = result.data.tareasCompletadas || [];
-        const todasLasTareas = result.data.tareas || [];
-        
-        // Contar ejercicios completados por dificultad
-        const ejerciciosFaciles = tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Fácil').length;
-        const ejerciciosIntermedios = tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Intermedio').length;
-        const ejerciciosDificiles = tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Difícil').length;
-        
-        // Contar total de ejercicios por dificultad
-        const totalEjerciciosFaciles = todasLasTareas.filter((t: any) => t.nivel.nombre === 'Fácil').length;
-        const totalEjerciciosIntermedios = todasLasTareas.filter((t: any) => t.nivel.nombre === 'Intermedio').length;
-        const totalEjerciciosDificiles = todasLasTareas.filter((t: any) => t.nivel.nombre === 'Difícil').length;
-        
-        const stats: UserStats = {
-          ejerciciosCompletados: tareasCompletadas.length,
-          ejerciciosFaciles,
-          ejerciciosIntermedios,
-          ejerciciosDificiles,
-          totalEjercicios: todasLasTareas.length,
-          totalEjerciciosFaciles,
-          totalEjerciciosIntermedios,
-          totalEjerciciosDificiles
-        };
-        
-        setUserStats(stats);
+      // Actualizar datos del usuario
+      if (data.me) {
+        setUserData(data.me);
       }
+      
+      const tareasCompletadas = data.tareasCompletadas || [];
+      const todasLasTareas = data.tareas || [];
+      
+      // Contar ejercicios completados por dificultad
+      const ejerciciosFaciles = tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Fácil').length;
+      const ejerciciosIntermedios = tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Intermedio').length;
+      const ejerciciosDificiles = tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Difícil').length;
+      
+      // Contar total de ejercicios por dificultad
+      const totalEjerciciosFaciles = todasLasTareas.filter((t: any) => t.nivel.nombre === 'Fácil').length;
+      const totalEjerciciosIntermedios = todasLasTareas.filter((t: any) => t.nivel.nombre === 'Intermedio').length;
+      const totalEjerciciosDificiles = todasLasTareas.filter((t: any) => t.nivel.nombre === 'Difícil').length;
+      
+      const stats: UserStats = {
+        ejerciciosCompletados: tareasCompletadas.length,
+        ejerciciosFaciles,
+        ejerciciosIntermedios,
+        ejerciciosDificiles,
+        totalEjercicios: todasLasTareas.length,
+        totalEjerciciosFaciles,
+        totalEjerciciosIntermedios,
+        totalEjerciciosDificiles
+      };
+      
+      setUserStats(stats);
     } catch (error) {
-      console.error('Error loading user stats:', error);
-      // En caso de error, mantener valores por defecto
+      console.error('Error updating user stats:', error);
     }
+  };
+
+  // Función para refrescar estadísticas manualmente
+  const refreshStats = () => {
+    refetchStats();
   };
 
   const getUserInitials = () => {

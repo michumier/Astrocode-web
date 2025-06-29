@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { gql, useQuery } from '@apollo/client';
 import './Dashboard.css';
 import FullRanking from '../ranking/FullRanking';
 
@@ -14,6 +15,16 @@ interface LeaderboardEntry {
   name: string;
   score: number;
 }
+
+// GraphQL query para verificar tareas completadas
+const TAREAS_COMPLETADAS = gql`
+  query TareasCompletadas {
+    tareasCompletadas {
+      id
+      titulo
+    }
+  }
+`;
 
 interface DashboardProps {
   onLogout?: () => void;
@@ -36,11 +47,27 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   const [userPoints, setUserPoints] = useState<number>(0);
   const [showAccessDenied, setShowAccessDenied] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
+
+  // Query para obtener tareas completadas
+  const { data: tareasCompletadasData } = useQuery(TAREAS_COMPLETADAS, {
+    fetchPolicy: 'cache-and-network'
+  });
 
   useEffect(() => {
     fetchTopUsers();
     fetchUserPoints();
   }, []);
+
+  // Actualizar ejercicios completados cuando lleguen los datos
+  useEffect(() => {
+    if (tareasCompletadasData?.tareasCompletadas) {
+      const completedIds = new Set<string>(
+        tareasCompletadasData.tareasCompletadas.map((tc: any) => tc.id as string)
+      );
+      setCompletedExercises(completedIds);
+    }
+  }, [tareasCompletadasData]);
 
   const fetchUserPoints = async () => {
     try {
@@ -509,28 +536,37 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
               loadingExercises ? (
                 <div className="loading-exercises">Cargando ejercicios...</div>
               ) : exercises.length > 0 ? (
-                exercises.map((exercise) => (
-                  <div key={exercise.id} className="exercise-item">
-                    <div className="exercise-info">
-                      <h3 className="exercise-title">{exercise.title}</h3>
-                      <div className="exercise-meta">
-                        <span className={`exercise-difficulty ${exercise.difficulty.toLowerCase()}`}>
-                          {exercise.difficulty}
-                        </span>
-                        <span className="exercise-points">{exercise.points} pts</span>
+                exercises.map((exercise) => {
+                  const isCompleted = completedExercises.has(exercise.id);
+                  return (
+                    <div key={exercise.id} className={`exercise-item ${isCompleted ? 'completed' : ''}`}>
+                      <div className="exercise-info">
+                        <h3 className="exercise-title">
+                          {exercise.title}
+                          {isCompleted && <span className="completed-badge">✓ Completado</span>}
+                        </h3>
+                        <div className="exercise-meta">
+                          <span className={`exercise-difficulty ${exercise.difficulty.toLowerCase()}`}>
+                            {exercise.difficulty}
+                          </span>
+                          <span className="exercise-points">{exercise.points} pts</span>
+                        </div>
                       </div>
+                      <button 
+                        className={`view-exercise-btn ${isCompleted ? 'completed' : ''}`}
+                        onClick={() => {
+                          if (!isCompleted) {
+                            setSelectedExercise(exercise);
+                            setShowExerciseDetail(true);
+                          }
+                        }}
+                        disabled={isCompleted}
+                      >
+                        {isCompleted ? 'COMPLETADO' : 'VER'}
+                      </button>
                     </div>
-                    <button 
-                      className="view-exercise-btn"
-                      onClick={() => {
-                        setSelectedExercise(exercise);
-                        setShowExerciseDetail(true);
-                      }}
-                    >
-                      VER
-                    </button>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="no-exercises">No hay ejercicios disponibles para este nivel.</div>
               )

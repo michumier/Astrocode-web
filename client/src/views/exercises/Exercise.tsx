@@ -55,7 +55,14 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   
   // GraphQL mutation hooks
   const [executeCode] = useMutation(EXECUTE_CODE);
-  const [completarTarea] = useMutation(COMPLETAR_TAREA);
+  const [completarTarea] = useMutation(COMPLETAR_TAREA, {
+    // Actualizar cache después de completar tarea
+    refetchQueries: [
+      'GetUserStats', // Refrescar estadísticas del perfil
+      'TareasCompletadas' // Refrescar tareas completadas del dashboard
+    ],
+    awaitRefetchQueries: true
+  });
   
   // GraphQL query hook
   const { data: tareaCompletadaData } = useQuery(ES_TAREA_COMPLETADA, {
