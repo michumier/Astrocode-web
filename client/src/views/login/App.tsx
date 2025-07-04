@@ -70,6 +70,8 @@ function App({ onLoginSuccess }: LoginAppProps) {
           if (onLoginSuccess) {
             onLoginSuccess();
           }
+          // Forzar recarga para que Apollo Client use el nuevo token
+          window.location.reload();
         }, 1500);
       }
     } catch (error: any) {
