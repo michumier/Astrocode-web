@@ -3,7 +3,7 @@ import { setContext } from '@apollo/client/link/context';
 
 // Crear el enlace HTTP
 const httpLink = createHttpLink({
-  uri: 'http://localhost:4000/graphql',
+  uri: process.env.REACT_APP_API_URL || 'http://localhost:4000/graphql',
 });
 
 // Crear el enlace de autenticación
