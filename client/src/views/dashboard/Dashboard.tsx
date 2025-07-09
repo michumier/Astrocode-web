@@ -1,6 +1,55 @@
 import React, { useState, useEffect } from 'react';
+import { gql, useQuery, ApolloClient, InMemoryCache } from '@apollo/client';
+import client from '../../apollo/client';
 import './Dashboard.css';
 import FullRanking from '../ranking/FullRanking';
+
+// GraphQL queries
+const GET_COMPLETED_TASKS = gql`
+  query GetCompletedTasks {
+    tareasCompletadas {
+      id
+    }
+  }
+`;
+
+const GET_CURRENT_USER = gql`
+  query GetCurrentUser {
+    me {
+      puntos
+    }
+  }
+`;
+
+const GET_TOP_USERS = gql`
+  query GetTopUsers {
+    usuarios {
+      id
+      nombre_usuario
+      puntos
+      nombre_completo
+    }
+  }
+`;
+
+const GET_TASKS_BY_LEVEL = gql`
+  query TareasPorNivel($nivelId: ID!) {
+    tareasPorNivel(nivelId: $nivelId) {
+      id
+      titulo
+      descripcion
+      puntosBase
+      codigoBase
+      resultadoEsperado
+      categoria {
+        nombre
+      }
+      nivel {
+        nombre
+      }
+    }
+  }
+`;
 
 interface User {
   id: string;
@@ -36,86 +85,296 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   const [userPoints, setUserPoints] = useState<number>(0);
   const [showAccessDenied, setShowAccessDenied] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [menuClosing, setMenuClosing] = useState(false);
+  const [completedTasks, setCompletedTasks] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetchTopUsers();
-    fetchUserPoints();
-  }, []);
-
-  const fetchUserPoints = async () => {
-    try {
+  // Usar Apollo Client para obtener tareas completadas
+  const { loading: loadingCompletedTasks, data: completedTasksData, refetch: refetchCompletedTasks } = useQuery(GET_COMPLETED_TASKS, {
+    fetchPolicy: 'network-only', // Siempre obtener datos frescos del servidor
+    errorPolicy: 'all', // Manejar errores sin fallar completamente
+    context: () => {
+      // Obtener el token actual en el momento de la consulta
       const token = localStorage.getItem('token');
-      if (!token) return;
-
-      const response = await fetch('http://localhost:4000/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          query: `
-            query GetCurrentUser {
-              me {
-                puntos
-              }
-            }
-          `
-        })
-      });
-
-      const result = await response.json();
-      if (result.data?.me?.puntos !== undefined) {
-        setUserPoints(result.data.me.puntos);
+      
+      // Verificar el token antes de la consulta
+      if (!token) {
+        console.warn('GET_COMPLETED_TASKS: No hay token de autenticación');
+        // Si no hay token, no tiene sentido hacer la consulta
+        if (onLogout) {
+          console.warn('GET_COMPLETED_TASKS: No hay token, redirigiendo a login');
+          setTimeout(() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            onLogout();
+          }, 100);
+        }
+        return { headers: {} };
       }
-    } catch (error) {
-      console.error('Error fetching user points:', error);
+      
+      try {
+        // Verificar que el token sea válido
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+          throw new Error('Formato de token inválido');
+        }
+        
+        const tokenData = JSON.parse(atob(tokenParts[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        const timeToExpiration = tokenData.exp - currentTime;
+        
+        console.log('GET_COMPLETED_TASKS: Verificando token:');
+        console.log(`- Tiempo actual: ${new Date(currentTime * 1000).toLocaleString()}`);
+        console.log(`- Token expira: ${new Date(tokenData.exp * 1000).toLocaleString()}`);
+        console.log(`- Diferencia: ${timeToExpiration} segundos (${(timeToExpiration / 60).toFixed(2)} minutos)`);
+        console.log(`- Tiempo a expiración en minutos: ${(timeToExpiration / 60).toFixed(2)}`);
+        console.log(`- Payload del token:`, JSON.stringify(tokenData, null, 2));
+        console.log(`- Valor del token: ${token ? token.substring(0, 20) + '...' : 'No presente'}`);
+        
+        if (tokenData.exp && tokenData.exp <= currentTime) {
+          console.warn('GET_COMPLETED_TASKS: Token EXPIRADO, será rechazado por el servidor');
+          console.warn(`- Tiempo expiración: ${tokenData.exp}, Tiempo actual: ${currentTime}, Diferencia: ${tokenData.exp - currentTime}`);
+          console.warn(`- Tiempo expirado hace ${Math.abs(timeToExpiration)} segundos (${Math.abs(timeToExpiration / 60).toFixed(2)} minutos)`);
+          
+          // Token expirado, redirigir a login
+          if (onLogout) {
+            setTimeout(() => {
+              localStorage.removeItem('token');
+              localStorage.removeItem('usuario');
+              onLogout();
+            }, 100);
+          }
+          return { headers: {} };
+        } else {
+          console.log('GET_COMPLETED_TASKS: Token VÁLIDO');
+          console.log(`- Expira en: ${new Date(tokenData.exp * 1000).toLocaleString()} (en ${(timeToExpiration / 60).toFixed(2)} minutos)`);
+        }
+      } catch (error) {
+        console.error('GET_COMPLETED_TASKS: Error al verificar el token:', error);
+        console.error('GET_COMPLETED_TASKS: Token inválido o malformado:', token);
+        console.error('GET_COMPLETED_TASKS: Se eliminará el token inválido del localStorage');
+        
+        // Token inválido, redirigir a login
+        if (onLogout) {
+          setTimeout(() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            onLogout();
+          }, 100);
+        }
+        return { headers: {} };
+      }
+      
+      console.log('GET_COMPLETED_TASKS: Token usado:', token ? 'Presente' : 'Ausente');
+      console.log(`GET_COMPLETED_TASKS: Valor del token: ${token ? token.substring(0, 20) + '...' : 'No presente'}`);
+      
+      // Asegurarse de que el token se envía correctamente en el encabezado
+      // Verificar si el token ya tiene el prefijo 'Bearer '
+      const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+      console.log(`GET_COMPLETED_TASKS: Authorization header: ${authHeader.substring(0, 20)}...`);
+      
+      return {
+        headers: {
+          authorization: authHeader
+        }
+      };
+    },
+    onCompleted: (data) => {
+      if (data?.tareasCompletadas) {
+        const completedTaskIds = data.tareasCompletadas.map((task: any) => task.id);
+        setCompletedTasks(completedTaskIds);
+        console.log(`GET_COMPLETED_TASKS: Recibidas ${completedTaskIds.length} tareas completadas`);
+      } else {
+        console.warn('GET_COMPLETED_TASKS: No se recibieron datos de tareas completadas');
+        setCompletedTasks([]);
+      }
+    },
+    onError: (error) => {
+      console.error('GET_COMPLETED_TASKS: Error:', error);
+      console.error('GET_COMPLETED_TASKS: Mensaje de error:', error.message);
+      // Si hay un error de autenticación, establecer una lista vacía
+      setCompletedTasks([]);
+      
+      // Verificar si es un error de autenticación
+      if (error.message.includes('autenticado') && onLogout) {
+        console.warn('GET_COMPLETED_TASKS: Error de autenticación detectado, redirigiendo a login');
+        // Eliminar token y usuario del localStorage
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        // Redirigir a login después de un pequeño retraso para asegurar que el localStorage se actualice
+        setTimeout(() => {
+          onLogout();
+        }, 100);
+      }
     }
-  };
+  });
 
-  const fetchTopUsers = async () => {
-    const query = `
-      query GetTopUsers {
-        usuarios {
-          id
-          nombre_usuario
-          puntos
-          nombre_completo
+  // Usar Apollo Client para obtener puntos del usuario
+  const { loading: loadingUserPoints, data: userPointsData, refetch: refetchUserPoints } = useQuery(GET_CURRENT_USER, {
+    fetchPolicy: 'network-only', // Siempre obtener datos frescos del servidor
+    errorPolicy: 'all', // Manejar errores sin fallar completamente
+    context: () => {
+      // Obtener el token actual en el momento de la consulta
+      const token = localStorage.getItem('token');
+      
+      // Verificar el token antes de la consulta
+      if (!token) {
+        console.warn('GET_CURRENT_USER: No hay token de autenticación');
+        // Si no hay token, no tiene sentido hacer la consulta
+        if (onLogout) {
+          console.warn('GET_CURRENT_USER: No hay token, redirigiendo a login');
+          setTimeout(() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            onLogout();
+          }, 100);
+        }
+        return { headers: {} };
+      }
+      
+      try {
+        // Verificar que el token sea válido
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+          throw new Error('Formato de token inválido');
+        }
+        
+        const tokenData = JSON.parse(atob(tokenParts[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        const timeToExpiration = tokenData.exp - currentTime;
+        
+        console.log('GET_CURRENT_USER: Verificando token:');
+        console.log(`- Tiempo actual: ${new Date(currentTime * 1000).toLocaleString()}`);
+        console.log(`- Token expira: ${new Date(tokenData.exp * 1000).toLocaleString()}`);
+        console.log(`- Diferencia: ${timeToExpiration} segundos (${(timeToExpiration / 60).toFixed(2)} minutos)`);
+        console.log(`- Payload del token:`, JSON.stringify(tokenData, null, 2));
+        
+        if (tokenData.exp && tokenData.exp <= currentTime) {
+          console.warn('GET_CURRENT_USER: Token EXPIRADO, será rechazado por el servidor');
+          console.warn(`- Tiempo expiración: ${tokenData.exp}, Tiempo actual: ${currentTime}, Diferencia: ${tokenData.exp - currentTime}`);
+          
+          // Token expirado, redirigir a login
+          if (onLogout) {
+            setTimeout(() => {
+              localStorage.removeItem('token');
+              localStorage.removeItem('usuario');
+              onLogout();
+            }, 100);
+          }
+          return { headers: {} };
+        } else {
+          console.log('GET_CURRENT_USER: Token VÁLIDO');
+          console.log(`- Expira en: ${new Date(tokenData.exp * 1000).toLocaleString()} (en ${(timeToExpiration / 60).toFixed(2)} minutos)`);
+        }
+      } catch (error) {
+        console.error('GET_CURRENT_USER: Error al verificar el token:', error);
+        console.error('GET_CURRENT_USER: Token inválido o malformado:', token);
+        
+        // Token inválido, redirigir a login
+        if (onLogout) {
+          setTimeout(() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            onLogout();
+          }, 100);
+        }
+        return { headers: {} };
+      }
+      
+      console.log('GET_CURRENT_USER: Token usado:', token ? 'Presente' : 'Ausente');
+      console.log(`GET_CURRENT_USER: Valor del token: ${token ? token.substring(0, 20) + '...' : 'No presente'}`);
+      
+      // Asegurarse de que el token se envía correctamente en el encabezado
+      const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+      console.log(`GET_CURRENT_USER: Authorization header: ${authHeader.substring(0, 20)}...`);
+      
+      return {
+        headers: {
+          authorization: authHeader
+        }
+      };
+    },
+    onCompleted: (data) => {
+      if (data?.me?.puntos !== undefined) {
+        setUserPoints(data.me.puntos);
+        console.log('GET_CURRENT_USER: Puntos del usuario:', data.me.puntos);
+      } else {
+        console.warn('GET_CURRENT_USER: No se recibieron datos de puntos del usuario');
+        setUserPoints(0);
+      }
+    },
+    onError: (error) => {
+      console.error('GET_CURRENT_USER: Error:', error);
+      console.error('GET_CURRENT_USER: Mensaje de error:', error.message);
+      // Si hay un error de autenticación, establecer puntos a 0
+      setUserPoints(0);
+      
+      // Verificar si es un error de autenticación
+      if (error.message.includes('autenticado') && onLogout) {
+        console.warn('GET_CURRENT_USER: Error de autenticación detectado, redirigiendo a login');
+        // Eliminar token y usuario del localStorage
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        // Redirigir a login después de un pequeño retraso para asegurar que el localStorage se actualice
+        setTimeout(() => {
+          onLogout();
+        }, 100);
+      }
+    }
+  });
+
+  // Usar Apollo Client para obtener los usuarios principales
+  const { loading: loadingTopUsers, data: topUsersData, refetch: refetchTopUsers } = useQuery(GET_TOP_USERS, {
+    fetchPolicy: 'network-only',
+    errorPolicy: 'all', // Manejar errores sin fallar completamente
+    context: () => {
+      // Obtener el token actual en el momento de la consulta
+      const token = localStorage.getItem('token');
+      
+      // Verificar el token antes de la consulta
+      if (!token) {
+        console.warn('GET_TOP_USERS: No hay token de autenticación');
+      } else {
+        try {
+          // Verificar que el token sea válido
+          const tokenParts = token.split('.');
+          if (tokenParts.length !== 3) {
+            throw new Error('Formato de token inválido');
+          }
+          
+          const tokenData = JSON.parse(atob(tokenParts[1]));
+          const currentTime = Math.floor(Date.now() / 1000);
+          const timeToExpiration = tokenData.exp - currentTime;
+          
+          console.log('GET_TOP_USERS: Verificando token:');
+          console.log(`- Payload del token:`, JSON.stringify(tokenData, null, 2));
+          
+          if (tokenData.exp && tokenData.exp <= currentTime) {
+            console.warn('GET_TOP_USERS: Token expirado, será rechazado por el servidor');
+          } else {
+            console.log('GET_TOP_USERS: Token válido, expira en:', new Date(tokenData.exp * 1000).toLocaleString());
+            console.log(`- Tiempo a expiración: ${(timeToExpiration / 60).toFixed(2)} minutos`);
+          }
+        } catch (error) {
+          console.error('GET_TOP_USERS: Error al verificar el token:', error);
         }
       }
-    `;
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:4000/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
-        body: JSON.stringify({ query })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
       
-      if (result.errors) {
-        console.error('GraphQL errors:', result.errors);
-        setError(`Error GraphQL: ${result.errors[0]?.message || 'Error desconocido'}`);
-        // Datos de fallback
-        setLeaderboardData([
-          { rank: 1, name: 'Williams', score: 2500 },
-          { rank: 2, name: 'Johnson', score: 2300 },
-          { rank: 3, name: 'Smith', score: 2100 },
-          { rank: 4, name: 'Brown', score: 1900 },
-          { rank: 5, name: 'Jones', score: 1700 }
-        ]);
-      } else if (result.data?.usuarios) {
+      console.log('GET_TOP_USERS: Token usado:', token ? 'Presente' : 'Ausente');
+      
+      // Asegurarse de que el token se envía correctamente en el encabezado
+      const authHeader = token ? (token.startsWith('Bearer ') ? token : `Bearer ${token}`) : '';
+      console.log(`GET_TOP_USERS: Authorization header: ${authHeader ? authHeader.substring(0, 20) + '...' : 'No presente'}`);
+      
+      return {
+        headers: {
+          authorization: authHeader
+        }
+      };
+    },
+    onCompleted: (data) => {
+      if (data?.usuarios) {
         // Ordenar usuarios por puntuación y tomar los top 5
-        const sortedUsers = result.data.usuarios
+        const sortedUsers = [...data.usuarios]
           .sort((a: User, b: User) => b.puntos - a.puntos)
           .slice(0, 5);
         
@@ -125,17 +384,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
           score: user.puntos
         }));
         
+        console.log(`GET_TOP_USERS: Recibidos ${data.usuarios.length} usuarios, mostrando top 5`);
         setLeaderboardData(formattedData);
-      }
-    } catch (error: any) {
-      console.error('Error fetching users:', error);
-      if (error.message.includes('Failed to fetch')) {
-        setError('No se puede conectar al servidor (puerto 4000)');
-      } else if (error.message.includes('HTTP error')) {
-        setError(`Error del servidor: ${error.message}`);
+        setLoading(false);
       } else {
-        setError(`Error de conexión: ${error.message}`);
+        console.warn('GET_TOP_USERS: No se recibieron datos de usuarios');
+        setLeaderboardData([]);
+        setLoading(false);
       }
+    },
+    onError: (error) => {
+      console.error('GET_TOP_USERS: Error:', error);
+      console.error('GET_TOP_USERS: Mensaje de error:', error.message);
+      setError(`Error GraphQL: ${error.message || 'Error desconocido'}`);
       // Datos de fallback
       setLeaderboardData([
         { rank: 1, name: 'Williams', score: 2500 },
@@ -144,10 +405,45 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
         { rank: 4, name: 'Brown', score: 1900 },
         { rank: 5, name: 'Jones', score: 1700 }
       ]);
-    } finally {
       setLoading(false);
+      
+      // Verificar si es un error de autenticación
+      if (error.message.includes('autenticado') && onLogout) {
+        console.warn('GET_TOP_USERS: Error de autenticación detectado, redirigiendo a login');
+        // Eliminar token y usuario del localStorage
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        // Redirigir a login después de un pequeño retraso para asegurar que el localStorage se actualice
+        setTimeout(() => {
+          onLogout();
+        }, 100);
+      }
     }
-  };
+  });
+
+  // Ya no necesitamos useEffect para cargar datos iniciales, los hooks useQuery se encargan de eso
+  
+  // Actualizar datos cuando el componente se vuelve visible
+  useEffect(() => {
+    // Esta función se ejecutará cuando el componente se monte o cuando
+    // el usuario regrese al Dashboard después de completar un ejercicio
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refetchUserPoints(); // Actualizar puntos del usuario
+        refetchCompletedTasks(); // Actualizar tareas completadas
+        refetchTopUsers(); // Actualizar ranking de usuarios
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Limpiar el event listener cuando el componente se desmonte
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [refetchCompletedTasks, refetchUserPoints, refetchTopUsers]); // Añadir todos los refetch como dependencias
+
+  // Las funciones fetchCompletedTasks, fetchUserPoints y fetchTopUsers han sido reemplazadas por hooks useQuery de Apollo Client
 
   const handleStartChallenge = () => {
     console.log('Starting daily challenge...');
@@ -172,6 +468,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   const isPlanetUnlocked = (planetName: string): boolean => {
     const requiredPoints = planetRequirements[planetName as keyof typeof planetRequirements];
     return userPoints >= requiredPoints;
+  };
+
+  const isTaskCompleted = (taskId: string): boolean => {
+    return completedTasks.includes(taskId);
   };
 
   const handlePlanetClick = async (planetName: string) => {
@@ -205,6 +505,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
     setSelectedExercise(null);
   };
 
+  // Función para obtener ejercicios por planeta usando Apollo Client
   const getExercisesByPlanet = async (planet: string) => {
     try {
       // Mapear planetas a niveles de dificultad
@@ -215,74 +516,136 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
       };
 
       const nivelId = planetLevelMap[planet];
-      if (!nivelId) return [];
+      if (!nivelId) {
+        console.error(`Nivel no encontrado para el planeta: ${planet}`);
+        return [];
+      }
 
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:4000/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
-        body: JSON.stringify({
-          query: `
-            query TareasPorNivel($nivelId: ID!) {
-              tareasPorNivel(nivelId: $nivelId) {
-                id
-                titulo
-                descripcion
-                puntosBase
-                codigoBase
-                resultadoEsperado
-                categoria {
-                  nombre
-                }
-                nivel {
-                  nombre
-                }
-              }
-            }
-          `,
-          variables: { nivelId: nivelId.toString() }
-        })
-      });
-
-      const data = await response.json();
+      console.log(`getExercisesByPlanet: Iniciando obtención de ejercicios para planeta ${planet} (nivel ${nivelId})`);
       
-      if (data.errors) {
-        console.error('GraphQL errors:', data.errors);
+      // Verificar el token justo antes de la consulta para asegurar que sea el más reciente
+      const token = localStorage.getItem('token');
+      
+      // Verificar el token antes de la consulta
+      if (!token) {
+        console.error('getExercisesByPlanet: No hay token de autenticación');
+        if (onLogout) {
+          console.warn('getExercisesByPlanet: No hay token, redirigiendo a login');
+          localStorage.removeItem('token');
+          localStorage.removeItem('usuario');
+          setTimeout(() => {
+            onLogout();
+          }, 100);
+        }
+        return [];
+      }
+      
+      try {
+        // Decodificar el token para verificar si ha expirado
+        const tokenData = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        const timeToExpiration = tokenData.exp - currentTime;
+        
+        console.log('getExercisesByPlanet: Verificando token:');
+        console.log(`- Tiempo actual: ${new Date(currentTime * 1000).toLocaleString()}`);
+        console.log(`- Token expira: ${new Date(tokenData.exp * 1000).toLocaleString()}`);
+        console.log(`- Diferencia: ${timeToExpiration} segundos (${(timeToExpiration / 60).toFixed(2)} minutos)`);
+        console.log(`- Tiempo a expiración en minutos: ${(timeToExpiration / 60).toFixed(2)}`);
+        console.log(`- Payload del token:`, JSON.stringify(tokenData, null, 2));
+        console.log(`- Valor del token: ${token ? token.substring(0, 20) + '...' : 'No presente'}`);
+        
+        if (tokenData.exp && tokenData.exp <= currentTime) {
+          console.warn('getExercisesByPlanet: Token EXPIRADO, redirigiendo a login');
+          console.warn(`- Tiempo expiración: ${tokenData.exp}, Tiempo actual: ${currentTime}, Diferencia: ${tokenData.exp - currentTime}`);
+          console.warn(`- Tiempo expirado hace ${Math.abs(timeToExpiration)} segundos (${Math.abs(timeToExpiration / 60).toFixed(2)} minutos)`);
+          localStorage.removeItem('token');
+          localStorage.removeItem('usuario');
+          if (onLogout) {
+            setTimeout(() => {
+              onLogout();
+            }, 100);
+          }
+          return [];
+        } else {
+          console.log(`getExercisesByPlanet: Token VÁLIDO`);
+          console.log(`- Expira en: ${new Date(tokenData.exp * 1000).toLocaleString()} (en ${(timeToExpiration / 60).toFixed(2)} minutos)`);
+        }
+      } catch (error) {
+        console.error('getExercisesByPlanet: Error al verificar el token:', error);
+        console.error('getExercisesByPlanet: Token inválido o malformado:', token);
+        console.error('getExercisesByPlanet: Se eliminará el token inválido del localStorage');
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        if (onLogout) {
+          setTimeout(() => {
+            onLogout();
+          }, 100);
+        }
+        return [];
+      }
+
+      // Usar el cliente Apollo global en lugar de crear uno nuevo
+      console.log(`getExercisesByPlanet: Obteniendo ejercicios para nivel: ${nivelId}`);
+      
+      // Obtener el token nuevamente justo antes de la consulta
+      const currentToken = localStorage.getItem('token');
+      if (!currentToken) {
+        console.error('getExercisesByPlanet: Token no disponible al momento de la consulta');
+        if (onLogout) {
+          setTimeout(() => {
+            onLogout();
+          }, 100);
+        }
+        return [];
+      }
+      
+      console.log(`getExercisesByPlanet: Token usado para GET_TASKS_BY_LEVEL: ${currentToken ? 'Presente' : 'Ausente'}`);
+      console.log(`getExercisesByPlanet: Valor del token: ${currentToken ? currentToken.substring(0, 20) + '...' : 'No presente'}`);
+      
+      const { data } = await client.query({
+        query: GET_TASKS_BY_LEVEL,
+        variables: { nivelId: nivelId.toString() },
+        fetchPolicy: 'network-only', // Asegurar datos frescos
+        context: {
+          headers: {
+            authorization: `Bearer ${currentToken}`
+          }
+        }
+      });
+      
+      if (!data || !data.tareasPorNivel) {
+        console.error('getExercisesByPlanet: No se recibieron datos de tareas');
         return [];
       }
 
       // Transformar los datos para que coincidan con el formato esperado
-      console.log('=== DEBUG API RESPONSE ===');
-      console.log('Raw data from API:', data.data.tareasPorNivel);
-      const mappedExercises = data.data.tareasPorNivel.map((tarea: any) => {
-        console.log('=== MAPPING TAREA ===');
-        console.log('tarea completa:', tarea);
-        console.log('tarea.titulo:', tarea.titulo);
-        console.log('tarea.codigoBase:', tarea.codigoBase);
-        console.log('tarea.resultadoEsperado:', tarea.resultadoEsperado);
-        console.log('tarea.descripcion:', tarea.descripcion);
-        console.log('tarea.puntosBase:', tarea.puntosBase, 'type:', typeof tarea.puntosBase);
-        
-        const mappedExercise = {
-          id: tarea.id,
-          title: tarea.titulo,
-          difficulty: tarea.nivel.nombre,
-          points: tarea.puntosBase || 0,
-          description: tarea.descripcion,
-          codigoBase: tarea.codigoBase,
-          resultadoEsperado: tarea.resultadoEsperado,
-          categoria: tarea.categoria.nombre
-        };
-        // Debug logs removed to reduce console noise
-        return mappedExercise;
-      });
-      // Debug logs removed to reduce console noise
+      console.log(`getExercisesByPlanet: Recibidos ${data.tareasPorNivel.length} ejercicios`);
+      
+      const mappedExercises = data.tareasPorNivel.map((tarea: any) => ({
+        id: tarea.id,
+        title: tarea.titulo,
+        difficulty: tarea.nivel?.nombre || 'Desconocido',
+        points: tarea.puntosBase || tarea.puntos || 0,
+        description: tarea.descripcion,
+        codigoBase: tarea.codigoBase,
+        resultadoEsperado: tarea.resultadoEsperado,
+        categoria: tarea.categoria?.nombre || 'General'
+      }));
+      
       return mappedExercises;
-    } catch (error) {
-      console.error('Error fetching exercises:', error);
+    } catch (error: any) {
+      console.error('getExercisesByPlanet: Error fetching exercises:', error);
+      
+      // Verificar si es un error de autenticación
+      if (error.message && error.message.includes('autenticado') && onLogout) {
+        console.warn('getExercisesByPlanet: Error de autenticación detectado, redirigiendo a login');
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        setTimeout(() => {
+          onLogout();
+        }, 100);
+      }
+      
       return [];
     }
   };
@@ -292,17 +655,25 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   };
 
   const handleLogout = () => {
-    setShowUserMenu(false);
-    if (onLogout) {
-      onLogout();
-    }
+    setMenuClosing(true);
+    setTimeout(() => {
+      setShowUserMenu(false);
+      setMenuClosing(false);
+      if (onLogout) {
+        onLogout();
+      }
+    }, 200); // Duración de la animación
   };
 
   const handleGoToProfile = () => {
-    setShowUserMenu(false);
-    if (onNavigateToProfile) {
-      onNavigateToProfile();
-    }
+    setMenuClosing(true);
+    setTimeout(() => {
+      setShowUserMenu(false);
+      setMenuClosing(false);
+      if (onNavigateToProfile) {
+        onNavigateToProfile();
+      }
+    }, 200); // Duración de la animación
   };
 
   const getUserInitials = () => {
@@ -324,7 +695,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest('.user-avatar-container')) {
-        setShowUserMenu(false);
+        setMenuClosing(true);
+        setTimeout(() => {
+          setShowUserMenu(false);
+          setMenuClosing(false);
+        }, 200); // Duración de la animación
       }
     };
 
@@ -352,20 +727,28 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
             <h1 className="dashboard-title">AstroCode</h1>
           </div>
           <div className="user-avatar-container">
-            <div className="user-avatar" onClick={() => setShowUserMenu(!showUserMenu)}>
+            <div className="user-avatar" onClick={() => {
+              if (showUserMenu) {
+                setMenuClosing(true);
+                setTimeout(() => {
+                  setShowUserMenu(false);
+                  setMenuClosing(false);
+                }, 200); // Duración de la animación
+              } else {
+                setShowUserMenu(true);
+              }
+            }}>
               <div className="avatar-circle">
                 {getUserInitials()}
               </div>
             </div>
             {showUserMenu && (
-              <div className="user-menu">
+              <div className={`user-menu ${menuClosing ? 'menu-closing' : ''}`}>
                 <div className="user-menu-item" onClick={handleGoToProfile}>
                   <span>👤</span>
-                  Perfil
                 </div>
                 <div className="user-menu-item" onClick={handleLogout}>
-                  <span>🚪</span>
-                  Cerrar Sesión
+                  <span>🔓</span>
                 </div>
               </div>
             )}
@@ -510,7 +893,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
                 <div className="loading-exercises">Cargando ejercicios...</div>
               ) : exercises.length > 0 ? (
                 exercises.map((exercise) => (
-                  <div key={exercise.id} className="exercise-item">
+                  <div key={exercise.id} className={`exercise-item ${isTaskCompleted(exercise.id) ? 'completed' : ''}`}>
                     <div className="exercise-info">
                       <h3 className="exercise-title">{exercise.title}</h3>
                       <div className="exercise-meta">
@@ -518,6 +901,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
                           {exercise.difficulty}
                         </span>
                         <span className="exercise-points">{exercise.points} pts</span>
+                        {isTaskCompleted(exercise.id) && <span className="completed-badge">✓ Completado</span>}
                       </div>
                     </div>
                     <button 
@@ -555,6 +939,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
                         {selectedExercise.difficulty}
                       </span>
                       <span className="exercise-points">{selectedExercise.points} pts</span>
+                      {isTaskCompleted(selectedExercise.id) && <span className="completed-badge">✓ Completado</span>}
                     </div>
                     <hr className="exercise-detail-separator" />
                     <div className="exercise-detail-description">
@@ -579,7 +964,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
                     >
                       {!isPlanetUnlocked(selectedPlanet || '') ? 
                         `Requiere ${planetRequirements[selectedPlanet as keyof typeof planetRequirements] || 0} puntos` : 
-                        'Comenzar'
+                        isTaskCompleted(selectedExercise.id) ? 'Ver de nuevo' : 'Comenzar'
                       }
                     </button>
                   </div>

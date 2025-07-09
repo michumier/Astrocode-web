@@ -192,18 +192,10 @@ const Profile: React.FC<ProfileProps> = ({ onBackToDashboard }) => {
     );
   }
 
-  if (!userData && !loading) {
+  if (!userData) {
     return (
       <div className="profile-error">
         <p>Error al cargar los datos del usuario</p>
-        {queryError && (
-          <p className="error-details">
-            {queryError.message || 'Error de conexión con el servidor'}
-          </p>
-        )}
-        <button onClick={refreshStats} className="retry-btn">
-          Reintentar
-        </button>
         <button onClick={onBackToDashboard} className="back-btn">
           Volver al Dashboard
         </button>

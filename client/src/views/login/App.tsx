@@ -32,6 +32,7 @@ function App({ onLoginSuccess }: LoginAppProps) {
             nombre_usuario
             correo_electronico
             nombre_completo
+            puntos
           }
         }
       }
@@ -60,19 +61,38 @@ function App({ onLoginSuccess }: LoginAppProps) {
         setMessage('Error: ' + result.errors[0].message);
       } else if (result.data?.login) {
         // Guardar token en localStorage
-        localStorage.setItem('token', result.data.login.token);
+        const token = result.data.login.token;
+        localStorage.setItem('token', token);
         localStorage.setItem('usuario', JSON.stringify(result.data.login.usuario));
+        
+        console.log('Login: Token guardado correctamente');
+        console.log('Login: Usuario guardado correctamente');
+        
+        // Verificar que el token se guardó correctamente
+        const savedToken = localStorage.getItem('token');
+        if (savedToken) {
+          try {
+            const tokenParts = savedToken.split('.');
+            if (tokenParts.length !== 3) {
+              throw new Error('Formato de token inválido');
+            }
+            const tokenData = JSON.parse(atob(tokenParts[1]));
+            console.log('Login: Token decodificado correctamente, expira en:', new Date(tokenData.exp * 1000).toLocaleString());
+            console.log('Login: Payload del token:', JSON.stringify(tokenData, null, 2));
+          } catch (error) {
+            console.error('Login: Error al decodificar el token:', error);
+          }
+        }
         
         setMessage('¡Login exitoso! Bienvenido ' + result.data.login.usuario.nombre_usuario);
         
-        // Llamar a la función de login exitoso después de 1.5 segundos
-        setTimeout(() => {
-          if (onLoginSuccess) {
-            onLoginSuccess();
-          }
-          // Forzar recarga para que Apollo Client use el nuevo token
-          window.location.reload();
-        }, 1500);
+        // Llamar a la función de login exitoso inmediatamente
+        if (onLoginSuccess) {
+          console.log('Login: Llamando a onLoginSuccess');
+          onLoginSuccess();
+        }
+        // Ya no forzamos la recarga, dejamos que Apollo Client maneje el token
+        // window.location.reload();
       }
     } catch (error: any) {
       setMessage('Error de conexión: ' + error.message);

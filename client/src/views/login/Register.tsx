@@ -170,11 +170,26 @@ function Register({ onBackToLogin, onLoginSuccess }: RegisterProps) {
           localStorage.setItem('token', result.data.login.token);
           localStorage.setItem('usuario', JSON.stringify(result.data.login.usuario));
           
-          // Llamar a la función de login exitoso
+          console.log('Registro: Token guardado correctamente');
+          console.log('Registro: Usuario guardado correctamente');
+          
+          // Verificar que el token se guardó correctamente
+          const savedToken = localStorage.getItem('token');
+          if (savedToken) {
+            try {
+              const tokenData = JSON.parse(atob(savedToken.split('.')[1]));
+              console.log('Registro: Token decodificado correctamente, expira en:', new Date(tokenData.exp * 1000).toLocaleString());
+            } catch (error) {
+              console.error('Registro: Error al decodificar el token:', error);
+            }
+          }
+          
+          // Llamar a la función de login exitoso inmediatamente
+          console.log('Registro: Llamando a onLoginSuccess');
           onLoginSuccess();
           
-          // Forzar recarga para que Apollo Client use el nuevo token
-          window.location.reload();
+          // Ya no forzamos la recarga, dejamos que Apollo Client maneje el token
+          // window.location.reload();
         } else {
           // Si hay algún error en el login automático, volver al login normal
           onBackToLogin();
