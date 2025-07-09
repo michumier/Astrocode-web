@@ -18,13 +18,24 @@ interface UserData {
 // GraphQL query para estadísticas del usuario
 const GET_USER_STATS = gql`
   query GetUserStats {
-    getUserStats {
+    me {
+      id
+      nombre_usuario
+      correo_electronico
+      nombre_completo
       puntos
-      tareasCompletadas {
-        id
-        nivel {
-          nombre
-        }
+      creado_el
+    }
+    tareasCompletadas {
+      id
+      nivel {
+        nombre
+      }
+    }
+    tareas {
+      id
+      nivel {
+        nombre
       }
     }
   }
@@ -62,10 +73,10 @@ const Profile: React.FC<ProfileProps> = ({ onBackToDashboard }) => {
     errorPolicy: 'all' // Permitir datos parciales en caso de error
   });
 
-  // Cargar datos del usuario desde localStorage al inicio
-  useEffect(() => {
-    loadUserData();
-  }, []);
+  // Los datos del usuario ahora se obtienen desde el query GraphQL
+  // useEffect(() => {
+  //   loadUserData();
+  // }, []);
 
   // Actualizar estadísticas cuando lleguen los datos de Apollo
   useEffect(() => {
@@ -107,40 +118,35 @@ const Profile: React.FC<ProfileProps> = ({ onBackToDashboard }) => {
 
   const updateUserStats = (data: any) => {
     try {
-      // Cargar datos del usuario desde localStorage para mantener nombre y correo
-      const usuario = localStorage.getItem('usuario');
-      let userFromStorage: UserData | null = null;
-      if (usuario) {
-        userFromStorage = JSON.parse(usuario) as UserData;
+      // Actualizar datos del usuario
+      if (data.me) {
+        setUserData(data.me);
       }
-
-      // Actualizar datos del usuario combinando localStorage con datos de GraphQL
-      setUserData((prev) => ({
-        ...(prev || { id: '', nombre_usuario: '', correo_electronico: '', puntos: 0, creado_el: '' }),
-        ...(userFromStorage || {}), // Mantener nombre_usuario, correo_electronico, etc.
-        puntos: data.getUserStats.puntos
-      }));
-
-      const tareasCompletadas = data.getUserStats.tareasCompletadas || [];
       
-      // Establecer valores totales para las barras de progreso
-      // Estos valores deberían venir del backend, pero por ahora usamos valores fijos
-      const totalEjerciciosFaciles = 10; // Valor estimado
-      const totalEjerciciosIntermedios = 8; // Valor estimado
-      const totalEjerciciosDificiles = 5; // Valor estimado
-      const totalEjercicios = totalEjerciciosFaciles + totalEjerciciosIntermedios + totalEjerciciosDificiles;
+      const tareasCompletadas = data.tareasCompletadas || [];
+      const todasLasTareas = data.tareas || [];
       
-      // No hay info de todas las tareas, solo de completadas
+      // Contar ejercicios completados por dificultad
+      const ejerciciosFaciles = tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Fácil').length;
+      const ejerciciosIntermedios = tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Intermedio').length;
+      const ejerciciosDificiles = tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Difícil').length;
+      
+      // Contar total de ejercicios por dificultad
+      const totalEjerciciosFaciles = todasLasTareas.filter((t: any) => t.nivel.nombre === 'Fácil').length;
+      const totalEjerciciosIntermedios = todasLasTareas.filter((t: any) => t.nivel.nombre === 'Intermedio').length;
+      const totalEjerciciosDificiles = todasLasTareas.filter((t: any) => t.nivel.nombre === 'Difícil').length;
+      
       const stats: UserStats = {
         ejerciciosCompletados: tareasCompletadas.length,
-        ejerciciosFaciles: tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Fácil').length,
-        ejerciciosIntermedios: tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Intermedio').length,
-        ejerciciosDificiles: tareasCompletadas.filter((t: any) => t.nivel.nombre === 'Difícil').length,
-        totalEjercicios: totalEjercicios,
-        totalEjerciciosFaciles: totalEjerciciosFaciles,
-        totalEjerciciosIntermedios: totalEjerciciosIntermedios,
-        totalEjerciciosDificiles: totalEjerciciosDificiles
+        ejerciciosFaciles,
+        ejerciciosIntermedios,
+        ejerciciosDificiles,
+        totalEjercicios: todasLasTareas.length,
+        totalEjerciciosFaciles,
+        totalEjerciciosIntermedios,
+        totalEjerciciosDificiles
       };
+      
       setUserStats(stats);
     } catch (error) {
       console.error('Error updating user stats:', error);
@@ -186,10 +192,18 @@ const Profile: React.FC<ProfileProps> = ({ onBackToDashboard }) => {
     );
   }
 
-  if (!userData) {
+  if (!userData && !loading) {
     return (
       <div className="profile-error">
         <p>Error al cargar los datos del usuario</p>
+        {queryError && (
+          <p className="error-details">
+            {queryError.message || 'Error de conexión con el servidor'}
+          </p>
+        )}
+        <button onClick={refreshStats} className="retry-btn">
+          Reintentar
+        </button>
         <button onClick={onBackToDashboard} className="back-btn">
           Volver al Dashboard
         </button>

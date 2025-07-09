@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { gql, useQuery, useApolloClient } from '@apollo/client';
 import './Dashboard.css';
 import FullRanking from '../ranking/FullRanking';
 
@@ -16,28 +15,6 @@ interface LeaderboardEntry {
   score: number;
 }
 
-// GraphQL query para verificar tareas completadas
-const TAREAS_COMPLETADAS = gql`
-  query TareasCompletadas {
-    tareasCompletadas {
-      id
-      titulo
-    }
-  }
-`;
-
-// GraphQL query para obtener datos del usuario actual
-const ME_QUERY = gql`
-  query GetCurrentUser {
-    me {
-      id
-      nombre_usuario
-      puntos
-      nombre_completo
-    }
-  }
-`;
-
 interface DashboardProps {
   onLogout?: () => void;
   onNavigateToExercise?: (exercise?: any) => void;
@@ -46,8 +23,6 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, onNavigateToPythonGuide, onNavigateToProfile }) => {
-  // Obtener cliente Apollo para consultas manuales
-  const client = useApolloClient();
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFullRanking, setShowFullRanking] = useState(false);
@@ -61,56 +36,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   const [userPoints, setUserPoints] = useState<number>(0);
   const [showAccessDenied, setShowAccessDenied] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
-
-  // Query para obtener tareas completadas
-  const { data: tareasCompletadasData } = useQuery(TAREAS_COMPLETADAS, {
-    fetchPolicy: 'cache-and-network'
-  });
-  
-  // Query para obtener datos del usuario actual
-  const { data: userData } = useQuery(ME_QUERY, {
-    fetchPolicy: 'cache-and-network'
-  });
 
   useEffect(() => {
     fetchTopUsers();
     fetchUserPoints();
   }, []);
 
-  // Actualizar ejercicios completados cuando lleguen los datos
-  useEffect(() => {
-    if (tareasCompletadasData?.tareasCompletadas) {
-      const completedIds = new Set<string>(
-        tareasCompletadasData.tareasCompletadas.map((tc: any) => tc.id.toString())
-      );
-      console.log("✅ Tareas completadas: " + tareasCompletadasData.tareasCompletadas.length + " ejercicios");
-      setCompletedExercises(completedIds);
-    } else {
-      console.warn("⚠️ No se pudieron obtener las tareas completadas", tareasCompletadasData);
-    }
-  }, [tareasCompletadasData]);
-
-  // Actualizar puntos del usuario cuando lleguen los datos
-  useEffect(() => {
-    if (userData?.me?.puntos !== undefined) {
-      console.log("🔢 Puntos del usuario actualizados via useQuery: " + userData.me.puntos + " puntos");
-      setUserPoints(userData.me.puntos);
-    } else {
-      console.warn("⚠️ No se pudieron obtener los puntos del usuario via useQuery", userData);
-      // No establecer puntos a 0 aquí, ya que podría sobrescribir valores válidos
-    }
-  }, [userData]);
-
   const fetchUserPoints = async () => {
     try {
       const token = localStorage.getItem('token');
-      console.log("🔐 Token:", token);
-
-      if (!token) {
-        console.warn("⚠️ No hay token disponible para obtener puntos del usuario");
-        return;
-      }
+      if (!token) return;
 
       const response = await fetch('http://localhost:4000/graphql', {
         method: 'POST',
@@ -129,27 +64,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
         })
       });
 
-      if (!response.ok) {
-        console.error(`❌ Error en la respuesta HTTP: ${response.status} ${response.statusText}`);
-        return;
-      }
-
       const result = await response.json();
-      console.log("📊 Respuesta de puntos del usuario:", result);
-      
-      if (result.errors) {
-        console.error("❌ Errores GraphQL al obtener puntos:", result.errors);
-        return;
-      }
-      
       if (result.data?.me?.puntos !== undefined) {
-        console.log("🔢 Puntos obtenidos via fetch:", result.data.me.puntos);
         setUserPoints(result.data.me.puntos);
-      } else {
-        console.warn("⚠️ No se encontraron puntos en la respuesta:", result);
       }
     } catch (error) {
-      console.error('❌ Error al obtener puntos del usuario:', error);
+      console.error('Error fetching user points:', error);
     }
   };
 
@@ -229,45 +149,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
     }
   };
 
-  const DAILY_CHALLENGE = gql`
-    query DailyChallenge {
-      dailyChallenge {
-        id
-        titulo
-        descripcion
-        categoria {
-          id
-          nombre
-        }
-        nivel {
-          id
-          nombre
-        }
-        fechaVencimiento
-        puntosBase
-        puntosBonus
-        codigoBase
-        resultadoEsperado
-      }
-    }
-  `;
-  const { data: dailyChallengeData, loading: loadingDailyChallenge, error: errorDailyChallenge, refetch: refetchDailyChallenge } = useQuery(DAILY_CHALLENGE, { fetchPolicy: 'network-only' });
-  const handleStartChallenge = async () => {
+  const handleStartChallenge = () => {
     console.log('Starting daily challenge...');
-    try {
-      const { data } = await refetchDailyChallenge();
-      if (data && data.dailyChallenge) {
-        if (onNavigateToExercise) {
-          onNavigateToExercise(data.dailyChallenge);
-        }
-      } else {
-        alert('No hay reto diario disponible para hoy.');
-      }
-    } catch (err) {
-      alert('Error al obtener el reto diario.');
-      console.error(err);
-    }
+    // TODO: Implementar lógica para obtener el desafío diario
+    // Por ahora, comentamos esta funcionalidad hasta que se implemente correctamente
+    console.warn('Desafío diario no implementado aún');
+    // if (onNavigateToExercise) {
+    //   onNavigateToExercise();
+    // }
   };
+
   const handleViewFullRanking = () => {
     setShowFullRanking(true);
   };
@@ -275,19 +166,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   const planetRequirements = {
     'tierra': 0,     // Siempre disponible
     'marte': 500,    // Requiere 500 puntos (aproximadamente 3-5 ejercicios fáciles)
-    'saturno': 1000  // Requiere 1500 puntos (aproximadamente 2-3 ejercicios difíciles + varios intermedios)
+    'saturno': 1500  // Requiere 1500 puntos (aproximadamente 2-3 ejercicios difíciles + varios intermedios)
   };
 
   const isPlanetUnlocked = (planetName: string): boolean => {
     const requiredPoints = planetRequirements[planetName as keyof typeof planetRequirements];
-    const isUnlocked = userPoints >= requiredPoints;
-    console.log(`🪐 Planeta ${planetName}: ${isUnlocked ? 'DESBLOQUEADO' : 'BLOQUEADO'} (${userPoints}/${requiredPoints} puntos)`);
-    return isUnlocked;
+    return userPoints >= requiredPoints;
   };
 
   const handlePlanetClick = async (planetName: string) => {
     if (!isPlanetUnlocked(planetName)) {
-      console.warn(`🔒 Acceso denegado al planeta ${planetName}: Se requieren ${planetRequirements[planetName as keyof typeof planetRequirements]} puntos, usuario tiene ${userPoints}`);
       setShowAccessDenied(true);
       setTimeout(() => setShowAccessDenied(false), 3000);
       return;
@@ -296,14 +184,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
     setSelectedPlanet(planetName);
     setShowExercisePanel(true);
     setLoadingExercises(true);
-    console.log(`🚀 Planeta seleccionado: ${planetName}`);
+    console.log(`Planeta seleccionado: ${planetName}`);
     
     try {
       const exerciseData = await getExercisesByPlanet(planetName);
-      console.log(`📋 Cargados ${exerciseData.length} ejercicios para el planeta ${planetName}`);
       setExercises(exerciseData);
     } catch (error) {
-      console.error('❌ Error loading exercises:', error);
+      console.error('Error loading exercises:', error);
       setExercises([]);
     } finally {
       setLoadingExercises(false);
@@ -318,26 +205,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
     setSelectedExercise(null);
   };
 
-  // Definir la consulta GraphQL para obtener tareas por nivel
-  const TAREAS_POR_NIVEL = gql`
-    query TareasPorNivel($nivelId: ID!) {
-      tareasPorNivel(nivelId: $nivelId) {
-        id
-        titulo
-        descripcion
-        puntosBase
-        codigoBase
-        resultadoEsperado
-        categoria {
-          nombre
-        }
-        nivel {
-          nombre
-        }
-      }
-    }
-  `;
-
   const getExercisesByPlanet = async (planet: string) => {
     try {
       // Mapear planetas a niveles de dificultad
@@ -348,27 +215,57 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
       };
 
       const nivelId = planetLevelMap[planet];
-      if (!nivelId) {
-        console.warn(`⚠️ Planeta ${planet} no tiene un nivel asignado`);
-        return [];
-      }
+      if (!nivelId) return [];
 
-      console.log(`🔍 Buscando ejercicios para nivel ${nivelId} (planeta ${planet})`);
-      
-      // Usar Apollo Client para la consulta
-      const { data } = await client.query({
-        query: TAREAS_POR_NIVEL,
-        variables: { nivelId: nivelId.toString() },
-        fetchPolicy: 'network-only' // Asegurar datos actualizados
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:4000/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({
+          query: `
+            query TareasPorNivel($nivelId: ID!) {
+              tareasPorNivel(nivelId: $nivelId) {
+                id
+                titulo
+                descripcion
+                puntosBase
+                codigoBase
+                resultadoEsperado
+                categoria {
+                  nombre
+                }
+                nivel {
+                  nombre
+                }
+              }
+            }
+          `,
+          variables: { nivelId: nivelId.toString() }
+        })
       });
+
+      const data = await response.json();
       
-      if (!data || !data.tareasPorNivel || data.tareasPorNivel.length === 0) {
-        console.warn(`⚠️ No se encontraron tareas para el nivel ${nivelId}`);
+      if (data.errors) {
+        console.error('GraphQL errors:', data.errors);
         return [];
       }
 
       // Transformar los datos para que coincidan con el formato esperado
-      const mappedExercises = data.tareasPorNivel.map((tarea: any) => {
+      console.log('=== DEBUG API RESPONSE ===');
+      console.log('Raw data from API:', data.data.tareasPorNivel);
+      const mappedExercises = data.data.tareasPorNivel.map((tarea: any) => {
+        console.log('=== MAPPING TAREA ===');
+        console.log('tarea completa:', tarea);
+        console.log('tarea.titulo:', tarea.titulo);
+        console.log('tarea.codigoBase:', tarea.codigoBase);
+        console.log('tarea.resultadoEsperado:', tarea.resultadoEsperado);
+        console.log('tarea.descripcion:', tarea.descripcion);
+        console.log('tarea.puntosBase:', tarea.puntosBase, 'type:', typeof tarea.puntosBase);
+        
         const mappedExercise = {
           id: tarea.id,
           title: tarea.titulo,
@@ -379,12 +276,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
           resultadoEsperado: tarea.resultadoEsperado,
           categoria: tarea.categoria.nombre
         };
+        // Debug logs removed to reduce console noise
         return mappedExercise;
       });
-      
+      // Debug logs removed to reduce console noise
       return mappedExercises;
     } catch (error) {
-      console.error('❌ Error al obtener ejercicios:', error);
+      console.error('Error fetching exercises:', error);
       return [];
     }
   };
@@ -393,44 +291,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
     setShowFullRanking(false);
   };
 
- 
+  const handleLogout = () => {
+    setShowUserMenu(false);
+    if (onLogout) {
+      onLogout();
+    }
+  };
 
-  // Función para ir al perfil
   const handleGoToProfile = () => {
     setShowUserMenu(false);
     if (onNavigateToProfile) {
       onNavigateToProfile();
     }
   };
-
-  // Función para cerrar sesión
-  const handleLogout = () => {
-    console.log("🚪 Cerrando sesión y limpiando datos...");
-    setShowUserMenu(false);
-    
-    // Limpiar localStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    
-    // Limpiar estados locales
-    setSelectedPlanet(null);
-    setShowExercisePanel(false);
-    setExercises([]);
-    setSelectedExercise(null);
-    setShowExerciseDetail(false);
-    setUserPoints(0);
-    setCompletedExercises(new Set());
-    setLeaderboardData([]);
-    
-    // Llamar al callback si existe
-    if (onLogout) {
-      onLogout();
-    }
-    
-    console.log("✅ Sesión cerrada correctamente");
-  };
-
-
 
   const getUserInitials = () => {
     const usuario = localStorage.getItem('usuario');
@@ -447,13 +320,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   };
 
   // Cerrar menú al hacer click fuera
-  /**
-    
-   
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.user-avatar-container') && !target.closest('.user-menu')) {
+      if (!target.closest('.user-avatar-container')) {
         setShowUserMenu(false);
       }
     };
@@ -465,7 +335,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showUserMenu]); */
+  }, [showUserMenu]);
 
   // Mostrar FullRanking si showFullRanking es true
   if (showFullRanking) {
@@ -488,13 +358,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
               </div>
             </div>
             {showUserMenu && (
-              <div className="user-menu-horizontal">
-                <button className="user-menu-btn-horizontal" onClick={handleGoToProfile}>
-                  <span role="img" aria-label="Perfil">👤</span>
-                </button>
-                <button className="user-menu-btn-horizontal" onClick={handleLogout}>
-                  <span role="img" aria-label="Cerrar sesión">🚪</span>
-                </button>
+              <div className="user-menu">
+                <div className="user-menu-item" onClick={handleGoToProfile}>
+                  <span>👤</span>
+                  Perfil
+                </div>
+                <div className="user-menu-item" onClick={handleLogout}>
+                  <span>🚪</span>
+                  Cerrar Sesión
+                </div>
               </div>
             )}
           </div>
@@ -637,38 +509,28 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
               loadingExercises ? (
                 <div className="loading-exercises">Cargando ejercicios...</div>
               ) : exercises.length > 0 ? (
-                exercises.map((exercise) => {
-                  console.log("🧪 Checking exercise ID:", exercise.id, "Completed:", completedExercises.has(exercise.id));
-                  const isCompleted = completedExercises.has(exercise.id.toString());
-                  return (
-                    <div key={exercise.id} className={`exercise-item ${isCompleted ? 'completed' : ''}`}>
-                      <div className="exercise-info">
-                        <h3 className="exercise-title">
-                          {exercise.title}
-                          {isCompleted && <span className="completed-badge"></span>}
-                        </h3>
-                        <div className="exercise-meta">
-                          <span className={`exercise-difficulty ${exercise.difficulty.toLowerCase()}`}>
-                            {exercise.difficulty}
-                          </span>
-                          <span className="exercise-points">{exercise.points} pts</span>
-                        </div>
+                exercises.map((exercise) => (
+                  <div key={exercise.id} className="exercise-item">
+                    <div className="exercise-info">
+                      <h3 className="exercise-title">{exercise.title}</h3>
+                      <div className="exercise-meta">
+                        <span className={`exercise-difficulty ${exercise.difficulty.toLowerCase()}`}>
+                          {exercise.difficulty}
+                        </span>
+                        <span className="exercise-points">{exercise.points} pts</span>
                       </div>
-                      <button 
-                        className={`view-exercise-btn ${isCompleted ? 'completed' : ''}`}
-                        onClick={() => {
-                          if (!isCompleted) {
-                            setSelectedExercise(exercise);
-                            setShowExerciseDetail(true);
-                          }
-                        }}
-                        disabled={isCompleted}
-                      >
-                        {isCompleted ? 'COMPLETADO' : 'VER'}
-                      </button>
                     </div>
-                  );
-                })
+                    <button 
+                      className="view-exercise-btn"
+                      onClick={() => {
+                        setSelectedExercise(exercise);
+                        setShowExerciseDetail(true);
+                      }}
+                    >
+                      VER
+                    </button>
+                  </div>
+                ))
               ) : (
                 <div className="no-exercises">No hay ejercicios disponibles para este nivel.</div>
               )
@@ -706,7 +568,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
                           setTimeout(() => setShowAccessDenied(false), 3000);
                           return;
                         }
-                       
+                        console.log('=== DEBUG DASHBOARD ===');
+                        // Debug logs removed to reduce console noise
+                        console.log('=== FIN DEBUG ===');
                         if (onNavigateToExercise) {
                           onNavigateToExercise(selectedExercise);
                         }
@@ -742,6 +606,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
       </div>
     </div>
   );
-}
+};
 
 export default Dashboard;

@@ -86,7 +86,10 @@ function App({ onLoginSuccess }: LoginAppProps) {
 
   // Mostrar componente de registro si showRegister es true
   if (showRegister) {
-    return <Register onBackToLogin={() => setShowRegister(false)} />;
+    return <Register 
+      onBackToLogin={() => setShowRegister(false)} 
+      onLoginSuccess={onLoginSuccess} 
+    />;
   }
 
   return (

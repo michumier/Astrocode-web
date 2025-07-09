@@ -44,7 +44,6 @@ const Router: React.FC = () => {
     setIsAuthenticated(false);
     setCurrentView('login');
     window.history.pushState(null, '', '/Login');
-    window.location.reload();
   };
 
   // Función para navegar al ejercicio

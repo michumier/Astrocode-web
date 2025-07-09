@@ -1,0 +1,202 @@
+.welcome-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.welcome-modal {
+  background: linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: slideUp 0.5s ease-out;
+}
+
+.welcome-header {
+  padding: 24px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.welcome-logo {
+  height: 60px;
+  margin-bottom: 16px;
+}
+
+.welcome-title {
+  color: white;
+  font-size: 28px;
+  margin: 0;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-content {
+  padding: 32px;
+  flex: 1;
+}
+
+.welcome-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.welcome-image {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.welcome-image img {
+  max-width: 100%;
+  height: auto;
+  max-height: 200px;
+}
+
+.welcome-text {
+  color: white;
+  text-align: center;
+}
+
+.welcome-text h2 {
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #FFC107;
+}
+
+.welcome-text p {
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.welcome-footer {
+  padding: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-indicators {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.step-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  margin: 0 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.step-indicator.active {
+  background-color: #FFC107;
+  transform: scale(1.2);
+}
+
+.welcome-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.welcome-button {
+  background: linear-gradient(135deg, #FF9800 0%, #FFC107 100%);
+  color: #14213d;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.welcome-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 193, 7, 0.4);
+}
+
+.welcome-button:active {
+  transform: translateY(1px);
+}
+
+.welcome-skip-button {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 30px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.welcome-skip-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.welcome-skip-button:active {
+  transform: translateY(1px);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .welcome-step {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+  }
+  
+  .welcome-image {
+    flex: 1;
+    margin-bottom: 0;
+  }
+  
+  .welcome-text {
+    flex: 1;
+    text-align: left;
+  }
+}
+
+/* Estilos para las imágenes específicas */
+.planets-image, .challenges-image, .journey-image {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}

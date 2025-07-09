@@ -1,0 +1,104 @@
+<svg width="300" height="200" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo con estrellas -->
+  <rect width="300" height="200" fill="#0c1445" />
+  
+  <!-- Estrellas pequeñas -->
+  <g fill="white">
+    <circle cx="30" cy="40" r="1" />
+    <circle cx="50" cy="70" r="1.2" />
+    <circle cx="80" cy="30" r="0.8" />
+    <circle cx="120" cy="50" r="1" />
+    <circle cx="150" cy="20" r="1.2" />
+    <circle cx="180" cy="60" r="0.8" />
+    <circle cx="220" cy="40" r="1" />
+    <circle cx="250" cy="80" r="1.2" />
+    <circle cx="270" cy="30" r="0.8" />
+    <circle cx="40" cy="120" r="1" />
+    <circle cx="70" cy="150" r="1.2" />
+    <circle cx="100" cy="130" r="0.8" />
+    <circle cx="140" cy="170" r="1" />
+    <circle cx="170" cy="140" r="1.2" />
+    <circle cx="200" cy="160" r="0.8" />
+    <circle cx="230" cy="130" r="1" />
+    <circle cx="260" cy="150" r="1.2" />
+  </g>
+  
+  <!-- Estrellas brillantes -->
+  <g>
+    <circle cx="60" cy="50" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.3;1" dur="3s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="200" cy="40" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.5;1" dur="2.5s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="100" cy="170" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.4;1" dur="4s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="250" cy="130" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.6;1" dur="3.5s" repeatCount="indefinite" />
+    </circle>
+  </g>
+  
+  <!-- Planeta central -->
+  <circle cx="150" cy="100" r="30" fill="#3F51B5">
+    <animate attributeName="r" values="30;31;30" dur="4s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="150" cy="100" r="30" fill="url(#planeta-pattern)" />
+  <circle cx="150" cy="100" r="35" fill="none" stroke="#3F51B5" stroke-width="1" opacity="0.3" />
+  
+  <!-- Desafíos/Banderas en el planeta -->
+  <g>
+    <!-- Bandera 1 -->
+    <line x1="130" y1="100" x2="130" y2="80" stroke="#FFC107" stroke-width="2" />
+    <polygon points="130,80 140,85 130,90" fill="#FFC107" />
+    
+    <!-- Bandera 2 -->
+    <line x1="150" y1="90" x2="150" y2="70" stroke="#FF5722" stroke-width="2" />
+    <polygon points="150,70 160,75 150,80" fill="#FF5722" />
+    
+    <!-- Bandera 3 -->
+    <line x1="170" y1="100" x2="170" y2="80" stroke="#4CAF50" stroke-width="2" />
+    <polygon points="170,80 180,85 170,90" fill="#4CAF50" />
+  </g>
+  
+  <!-- Código flotante alrededor del planeta -->
+  <g font-family="monospace" font-size="8" fill="#E0E0E0">
+    <!-- Fragmentos de código -->
+    <text x="90" y="60" opacity="0.8">def solve():</text>
+    <text x="100" y="70" opacity="0.8">  return x + y</text>
+    
+    <text x="190" y="60" opacity="0.8">for i in range(n):</text>
+    <text x="200" y="70" opacity="0.8">  print(i)</text>
+    
+    <text x="90" y="140" opacity="0.8">class Solution:</text>
+    <text x="100" y="150" opacity="0.8">  def method(self):</text>
+    
+    <text x="190" y="140" opacity="0.8">if x > 0:</text>
+    <text x="200" y="150" opacity="0.8">  return True</text>
+  </g>
+  
+  <!-- Camino de progreso con puntos brillantes -->
+  <path d="M 50,100 C 80,70 120,130 150,100 C 180,70 220,130 250,100" fill="none" stroke="#FFC107" stroke-width="2" stroke-dasharray="5,5" opacity="0.7" />
+  
+  <circle cx="50" cy="100" r="5" fill="#4CAF50">
+    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
+  </circle>
+  
+  <circle cx="150" cy="100" r="5" fill="#FF9800">
+    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
+  </circle>
+  
+  <circle cx="250" cy="100" r="5" fill="#F44336">
+    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
+  </circle>
+  
+  <!-- Definiciones de patrones -->
+  <defs>
+    <pattern id="planeta-pattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+      <rect width="60" height="60" fill="#3F51B5" />
+      <circle cx="15" cy="15" r="8" fill="#5C6BC0" opacity="0.7" />
+      <circle cx="45" cy="45" r="10" fill="#5C6BC0" opacity="0.7" />
+      <circle cx="30" cy="30" r="6" fill="#5C6BC0" opacity="0.7" />
+    </pattern>
+  </defs>
+</svg>

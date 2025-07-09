@@ -1,0 +1,80 @@
+<svg width="300" height="200" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo con estrellas -->
+  <rect width="300" height="200" fill="#0c1445" />
+  
+  <!-- Estrellas pequeñas -->
+  <g fill="white">
+    <circle cx="30" cy="40" r="1" />
+    <circle cx="50" cy="70" r="1.2" />
+    <circle cx="80" cy="30" r="0.8" />
+    <circle cx="120" cy="50" r="1" />
+    <circle cx="150" cy="20" r="1.2" />
+    <circle cx="180" cy="60" r="0.8" />
+    <circle cx="220" cy="40" r="1" />
+    <circle cx="250" cy="80" r="1.2" />
+    <circle cx="270" cy="30" r="0.8" />
+    <circle cx="40" cy="120" r="1" />
+    <circle cx="70" cy="150" r="1.2" />
+    <circle cx="100" cy="130" r="0.8" />
+    <circle cx="140" cy="170" r="1" />
+    <circle cx="170" cy="140" r="1.2" />
+    <circle cx="200" cy="160" r="0.8" />
+    <circle cx="230" cy="130" r="1" />
+    <circle cx="260" cy="150" r="1.2" />
+  </g>
+  
+  <!-- Estrellas brillantes -->
+  <g>
+    <circle cx="60" cy="50" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.3;1" dur="3s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="200" cy="40" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.5;1" dur="2.5s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="100" cy="170" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.4;1" dur="4s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="250" cy="130" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.6;1" dur="3.5s" repeatCount="indefinite" />
+    </circle>
+  </g>
+  
+  <!-- Sol -->
+  <circle cx="50" cy="100" r="20" fill="#FFC107">
+    <animate attributeName="r" values="20;21;20" dur="4s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="50" cy="100" r="25" fill="none" stroke="#FFC107" stroke-width="1" opacity="0.5" />
+  
+  <!-- Tierra -->
+  <g>
+    <circle cx="120" cy="100" r="12" fill="#4CAF50" />
+    <circle cx="120" cy="100" r="12" fill="url(#tierra-pattern)" />
+    <circle cx="120" cy="100" r="16" fill="none" stroke="#4CAF50" stroke-width="1" opacity="0.3" />
+    <circle cx="126" cy="94" r="3" fill="#81C784" opacity="0.7" />
+    <circle cx="114" cy="106" r="4" fill="#81C784" opacity="0.7" />
+  </g>
+  
+  <!-- Marte -->
+  <g>
+    <circle cx="170" cy="100" r="8" fill="#F44336" />
+    <circle cx="170" cy="100" r="12" fill="none" stroke="#F44336" stroke-width="1" opacity="0.3" />
+    <circle cx="173" cy="97" r="2" fill="#E57373" opacity="0.7" />
+    <circle cx="167" cy="103" r="3" fill="#E57373" opacity="0.7" />
+  </g>
+  
+  <!-- Saturno -->
+  <g>
+    <ellipse cx="230" cy="100" rx="15" ry="15" fill="#FFB74D" />
+    <ellipse cx="230" cy="100" rx="25" ry="5" fill="none" stroke="#FFB74D" stroke-width="2" opacity="0.7" transform="rotate(20, 230, 100)" />
+    <circle cx="230" cy="100" r="20" fill="none" stroke="#FFB74D" stroke-width="1" opacity="0.3" />
+  </g>
+  
+  <!-- Definiciones de patrones -->
+  <defs>
+    <pattern id="tierra-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#4CAF50" />
+      <circle cx="5" cy="5" r="3" fill="#81C784" opacity="0.7" />
+      <circle cx="15" cy="15" r="4" fill="#81C784" opacity="0.7" />
+    </pattern>
+  </defs>
+</svg>
