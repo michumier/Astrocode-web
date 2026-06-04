@@ -3,6 +3,8 @@ import { gql, useQuery, ApolloClient, InMemoryCache } from '@apollo/client';
 import client from '../../apollo/client';
 import './Dashboard.css';
 import FullRanking from '../ranking/FullRanking';
+import SolarSystem from '../../components/solar-system/SolarSystem';
+import Starfield from '../../components/solar-system/Starfield';
 
 // GraphQL queries
 const GET_COMPLETED_TASKS = gql`
@@ -459,10 +461,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
     setShowFullRanking(true);
   };
 
-  const planetRequirements = {
-    'tierra': 0,     // Siempre disponible
-    'marte': 500,    // Requiere 500 puntos (aproximadamente 3-5 ejercicios fáciles)
-    'saturno': 1500  // Requiere 1500 puntos (aproximadamente 2-3 ejercicios difíciles + varios intermedios)
+  const planetRequirements: Record<string, number> = {
+    'mercurio': 0,
+    'venus': 0,
+    'tierra': 0,
+    'marte': 500,
+    'jupiter': 1000,
+    'saturno': 1500
   };
 
   const isPlanetUnlocked = (planetName: string): boolean => {
@@ -510,9 +515,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
     try {
       // Mapear planetas a niveles de dificultad
       const planetLevelMap: { [key: string]: number } = {
-        'tierra': 1,   // Fácil
-        'marte': 2,    // Intermedio
-        'saturno': 3   // Difícil
+        'mercurio': 1,
+        'venus': 1,
+        'tierra': 1,
+        'marte': 2,
+        'jupiter': 2,
+        'saturno': 3
       };
 
       const nivelId = planetLevelMap[planet];
@@ -797,47 +805,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
           )}
 
           {/* Solar System Animation */}
-          <div className="solar-system">
-          {/* Sol en el centro */}
-          <div className="sun"></div>
-          
-          {/* Tierra - Nivel Fácil */}
-          <div className="orbit orbit-earth">
-            <div 
-              className={`planet earth ${selectedPlanet === 'tierra' ? 'selected' : ''} ${isPlanetUnlocked('tierra') ? 'unlocked' : 'locked'}`}
-              onClick={() => handlePlanetClick('tierra')}
-            >
-              <span className="planet-label">Tierra</span>
-              {!isPlanetUnlocked('tierra') && <span className="lock-icon">🔒</span>}
-            </div>
-          </div>
-          
-          {/* Marte - Nivel Intermedio */}
-          <div className="orbit orbit-mars">
-            <div 
-              className={`planet mars ${selectedPlanet === 'marte' ? 'selected' : ''} ${isPlanetUnlocked('marte') ? 'unlocked' : 'locked'}`}
-              onClick={() => handlePlanetClick('marte')}
-              title={!isPlanetUnlocked('marte') ? `Requiere ${planetRequirements.marte} puntos` : ''}
-            >
-              <span className="planet-label">Marte</span>
-              {!isPlanetUnlocked('marte') && <span className="lock-icon">🔒</span>}
-              {!isPlanetUnlocked('marte') && <span className="points-required">{planetRequirements.marte}pts</span>}
-            </div>
-          </div>
-          
-          {/* Saturno - Nivel Difícil */}
-          <div className="orbit orbit-saturn">
-            <div 
-              className={`planet saturn ${selectedPlanet === 'saturno' ? 'selected' : ''} ${isPlanetUnlocked('saturno') ? 'unlocked' : 'locked'}`}
-              onClick={() => handlePlanetClick('saturno')}
-              title={!isPlanetUnlocked('saturno') ? `Requiere ${planetRequirements.saturno} puntos` : ''}
-            >
-              <div className="saturn-rings"></div>
-              <span className="planet-label">Saturno</span>
-              {!isPlanetUnlocked('saturno') && <span className="lock-icon">🔒</span>}
-              {!isPlanetUnlocked('saturno') && <span className="points-required">{planetRequirements.saturno}pts</span>}
-            </div>
-          </div>
+          <div className={`solar-system ${selectedPlanet ? 'planet-selected' : ''}`}>
+            <SolarSystem
+              selectedPlanet={selectedPlanet}
+              onPlanetSelect={handlePlanetClick}
+              isPlanetUnlocked={isPlanetUnlocked}
+              planetRequirements={planetRequirements}
+            />
           </div>
 
           {/* Planet Selection Message */}
@@ -976,19 +950,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
       </main>
 
       {/* Stars Background */}
-      <div className="stars">
-        {Array.from({ length: 100 }, (_, i) => (
-          <div 
-            key={i} 
-            className="star" 
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`
-            }}
-          ></div>
-        ))}
-      </div>
+      <Starfield />
     </div>
   );
 };
