@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { gql, useQuery, ApolloClient, InMemoryCache } from '@apollo/client';
 import client from '../../apollo/client';
 import './Dashboard.css';
-import FullRanking from '../ranking/FullRanking';
+import { useNavigate } from 'react-router-dom';
+import { mapTareaToExercise } from '../../utils/tareas';
 import SolarSystem from '../../components/solar-system/SolarSystem';
 import Starfield from '../../components/solar-system/Starfield';
 
@@ -34,22 +35,11 @@ const GET_TOP_USERS = gql`
   }
 `;
 
-// Convierte una tarea de la API al formato que usa la vista de ejercicio
-const mapTareaToExercise = (tarea: any) => ({
-  id: tarea.id,
-  title: tarea.titulo,
-  difficulty: tarea.nivel?.nombre || 'Desconocido',
-  points: tarea.puntosBase || tarea.puntos || 0,
-  description: tarea.descripcion,
-  codigoBase: tarea.codigoBase,
-  resultadoEsperado: tarea.resultadoEsperado,
-  categoria: tarea.categoria?.nombre || 'General'
-});
-
 const GET_DAILY_CHALLENGE = gql`
   query DailyChallenge {
     dailyChallenge {
       id
+      tipo
       titulo
       descripcion
       puntosBase
@@ -69,6 +59,7 @@ const GET_TASKS_BY_LEVEL = gql`
   query TareasPorNivel($nivelId: ID!) {
     tareasPorNivel(nivelId: $nivelId) {
       id
+      tipo
       titulo
       descripcion
       puntosBase
@@ -107,7 +98,7 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, onNavigateToPythonGuide, onNavigateToProfile }) => {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showFullRanking, setShowFullRanking] = useState(false);
+  const navigate = useNavigate();
   const [error, setError] = useState('');
   const [selectedPlanet, setSelectedPlanet] = useState<string | null>(null);
   const [showExercisePanel, setShowExercisePanel] = useState(false);
@@ -417,7 +408,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   };
 
   const handleViewFullRanking = () => {
-    setShowFullRanking(true);
+    navigate('/ranking');
   };
 
   const planetRequirements: Record<string, number> = {
@@ -597,10 +588,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
     }
   };
 
-  const handleBackFromRanking = () => {
-    setShowFullRanking(false);
-  };
-
   const handleLogout = () => {
     setMenuClosing(true);
     setTimeout(() => {
@@ -658,11 +645,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showUserMenu]);
-
-  // Mostrar FullRanking si showFullRanking es true
-  if (showFullRanking) {
-    return <FullRanking onBack={handleBackFromRanking} />;
-  }
 
   return (
     <div className={`dashboard ${showExercisePanel ? 'panel-open' : ''}`}>

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
+import CodeEditor, { lineaDeError } from '../../components/code-editor/CodeEditor';
+import TextoIA from '../../components/texto-ia/TextoIA';
 import './Exercise.css';
 
 // GraphQL mutation for code execution
@@ -87,6 +89,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   const [code, setCode] = useState(exerciseData?.codigoBase || 'def sum_numbers(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\n# Test the function\nnumbers = [1, 2, 3, 4, 5]\nresult = sum_numbers(numbers)\nprint(f"Sum: {result}")');
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
+  const [lineaError, setLineaError] = useState<number | null>(null);
   const [timer, setTimer] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(true);
   const [showCongratulations, setShowCongratulations] = useState(false);
@@ -200,6 +203,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   const handleReset = () => {
     setCode(exerciseData?.codigoBase || 'def sum_numbers(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\n# Test the function\nnumbers = [1, 2, 3, 4, 5]\nresult = sum_numbers(numbers)\nprint(f"Sum: {result}")');
     setOutput('');
+    setLineaError(null);
   };
 
   const handlePista = async () => {
@@ -296,6 +300,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
         }
       }
 
+      setLineaError(lineaDeError(ejecucion?.stderr));
       setOutput(outputText);
       
     } catch (error: any) {
@@ -381,12 +386,17 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
               </div>
             </div>
             <div className="code-editor">
-              <textarea
+              <CodeEditor
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className="code-textarea"
+                onChange={(nuevo) => {
+                  setCode(nuevo);
+                  setLineaError(null);
+                }}
+                onRun={() => {
+                  if (!isRunning) handleRun();
+                }}
+                lineaError={lineaError}
                 placeholder="Escribe tu código aquí..."
-                spellCheck={false}
               />
             </div>
           </div>
@@ -454,7 +464,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
                     <span>🤖 AstroTutor{pista.nivel > 0 ? ` · pista ${pista.nivel}/3` : ''}</span>
                     <button className="hint-close" onClick={() => setPista(null)} aria-label="Cerrar pista">✕</button>
                   </div>
-                  <p className="hint-text">{pista.texto}</p>
+                  <TextoIA className="hint-text" texto={pista.texto} />
                   {pista.nivel > 0 && <span className="hint-remaining">Te quedan {pista.restantes} pistas hoy</span>}
                 </div>
               )}
