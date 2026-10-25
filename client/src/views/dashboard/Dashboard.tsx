@@ -4,6 +4,7 @@ import client from '../../apollo/client';
 import './Dashboard.css';
 import { useNavigate } from 'react-router-dom';
 import { mapTareaToExercise } from '../../utils/tareas';
+import SalaDeMaquinas from './SalaDeMaquinas';
 import SolarSystem from '../../components/solar-system/SolarSystem';
 import Starfield from '../../components/solar-system/Starfield';
 
@@ -756,6 +757,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
               </button>
             </div>
           </div>
+
+          {/* Sabotajes desbloqueados */}
+          <SalaDeMaquinas />
 
           {/* Python Guide */}
           <div className="python-guide-container">

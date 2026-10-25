@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import CodeEditor, { lineaDeError } from '../../components/code-editor/CodeEditor';
 import TextoIA from '../../components/texto-ia/TextoIA';
+import DiffSabotaje from '../../components/diff-sabotaje/DiffSabotaje';
 import './Exercise.css';
 
 // GraphQL mutation for code execution
@@ -27,6 +28,12 @@ const ENVIAR_SOLUCION = gql`
     enviarSolucion(tareaId: $tareaId, codigo: $codigo, tiempoCompletado: $tiempoCompletado) {
       correcto
       yaCompletada
+      insigniasNuevas
+      revelacion {
+        descripcion
+        linea
+        diff
+      }
       tests {
         superados
         total
@@ -94,6 +101,10 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   const [isTimerRunning, setIsTimerRunning] = useState(true);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [completionData, setCompletionData] = useState<any>(null);
+  // Sabotajes: qué había cambiado el saboteador (se revela al resolverlo) e insignias ganadas
+  const esSabotaje = exerciseData?.tipo === 'sabotaje';
+  const [revelacion, setRevelacion] = useState<{ descripcion: string; linea: number | null; diff: string } | null>(null);
+  const [insigniasNuevas, setInsigniasNuevas] = useState<string[]>([]);
   // Pistas del tutor de IA: cada vez que se pide una, sube el nivel (1 → 3)
   const [pista, setPista] = useState<{ texto: string; nivel: number; restantes: number } | null>(null);
   const [pidiendoPista, setPidiendoPista] = useState(false);
@@ -107,7 +118,8 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
     // Actualizar cache después de completar tarea
     refetchQueries: [
       'GetUserStats', // Refrescar estadísticas del perfil
-      'TareasCompletadas' // Refrescar tareas completadas del dashboard
+      'TareasCompletadas', // Refrescar tareas completadas del dashboard
+      'SalaDeMaquinas' // Puede haberse desbloqueado un sabotaje
     ],
     awaitRefetchQueries: true
   });
@@ -282,7 +294,11 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
 
       if (resultado) {
         if (resultado.correcto) {
-          outputText += '\n✅ ¡Resultado correcto! Tu código produce la salida esperada.';
+          if (resultado.revelacion) setRevelacion(resultado.revelacion);
+          if (resultado.insigniasNuevas?.length) setInsigniasNuevas(resultado.insigniasNuevas);
+          outputText += esSabotaje
+            ? '\n✅ ¡Sistema reparado! Has encontrado y arreglado el sabotaje.'
+            : '\n✅ ¡Resultado correcto! Tu código produce la salida esperada.';
           if (resultado.yaCompletada) {
             outputText += `\n${resultado.mensaje}`;
           } else {
@@ -363,8 +379,12 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
                   <span className="timer-icon">⏱️</span>
                   <span className="timer-text">{formatTime(timer)}</span>
                 </div>
-                <button onClick={handleReset} className="action-btn reset-btn">
-                  Reset
+                <button
+                  onClick={handleReset}
+                  className="action-btn reset-btn"
+                  title={esSabotaje ? 'Vuelve al código saboteado original' : 'Vuelve al código inicial'}
+                >
+                  {esSabotaje ? 'Restaurar' : 'Reset'}
                 </button>
                 <button 
                   onClick={handleRun} 
@@ -415,6 +435,16 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
                 </div>
               </div>
               <div className="statement-content">
+                {esSabotaje && (
+                  <div className="alerta-sabotaje" role="alert">
+                    <strong>⚠️ Alerta de sabotaje</strong>
+                    <p>{exerciseData?.contexto || 'Un saboteador ha alterado el código de la nave.'}</p>
+                    <p className="alerta-sabotaje-nota">
+                      El código del editor <em>casi</em> funciona: alguien ha introducido un único fallo. Encuéntralo y arréglalo
+                      cambiando lo mínimo posible.
+                    </p>
+                  </div>
+                )}
                 <h4>{exerciseData?.title || 'Suma de Números'}</h4>
                 <p>{exerciseData?.description || 'Crea una función que reciba una lista de números y devuelva la suma de todos ellos.'}</p>
                 {exerciseData?.resultadoEsperado && (
@@ -458,6 +488,18 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
               <div className="terminal-output">
                 <pre className="output-text">{output || 'Presiona "Ejecutar" para ver la salida del código...'}</pre>
               </div>
+              {revelacion && (
+                <div className="revelacion-panel" data-testid="revelacion">
+                  <div className="hint-header">
+                    <span>🔍 Así era el sabotaje{revelacion.linea ? ` (línea ${revelacion.linea})` : ''}</span>
+                  </div>
+                  <p className="hint-text">{revelacion.descripcion}</p>
+                  <DiffSabotaje diff={revelacion.diff} />
+                  {insigniasNuevas.includes('Cirujano') && (
+                    <p className="insignia-nueva">🩺 ¡Insignia nueva: <strong>Cirujano</strong>! Lo arreglaste tocando lo mínimo.</p>
+                  )}
+                </div>
+              )}
               {pista && (
                 <div className="hint-panel">
                   <div className="hint-header">
@@ -496,6 +538,15 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
               </div>
               
               <p className="completion-message">{completionData.mensaje}</p>
+              {revelacion && (
+                <div className="modal-revelacion">
+                  <p>🔍 Así era el sabotaje{revelacion.linea ? ` (línea ${revelacion.linea})` : ''}:</p>
+                  <DiffSabotaje diff={revelacion.diff} />
+                  {insigniasNuevas.includes('Cirujano') && (
+                    <p className="insignia-nueva">🩺 ¡Insignia nueva: <strong>Cirujano</strong>! Lo arreglaste tocando lo mínimo.</p>
+                  )}
+                </div>
+              )}
               
               <button 
                 className="back-to-menu-btn"

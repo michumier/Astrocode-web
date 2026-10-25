@@ -156,3 +156,40 @@
 .badge.oculto {
   background: rgba(179, 136, 255, 0.3);
 }
+
+/* ---- Sabotajes ---- */
+.admin-row-centrada {
+  align-items: center;
+}
+
+.admin-check {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+  flex: 0 1 auto !important;
+  margin: 0 !important;
+}
+
+.admin-check input {
+  width: auto;
+}
+
+.sabotaje-card {
+  flex-direction: column;
+  align-items: stretch !important;
+}
+
+.sabotaje-card.publicado {
+  opacity: 0.75;
+}
+
+.sabotaje-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.badge.dificultad-facil { background: rgba(0, 255, 136, 0.25); }
+.badge.dificultad-media { background: rgba(255, 204, 102, 0.3); }
+.badge.dificultad-dificil { background: rgba(255, 82, 82, 0.35); }
