@@ -1,161 +1,171 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from 'react-router-dom';
+import { gql, useQuery, useApolloClient } from '@apollo/client';
 import LoginApp from './views/login/App';
 import Dashboard from './views/dashboard/Dashboard';
-import Exercise from './views/exercises/Exercise';
 import PythonGuide from './views/python-guide/PythonGuide';
 import Profile from './views/profile/Profile';
-import AdminPanel from './views/admin/AdminPanel';
+import FullRanking from './views/ranking/FullRanking';
+import { GET_TAREA, mapTareaToExercise } from './utils/tareas';
 
-const Router: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState<'login' | 'home' | 'exercise' | 'python-guide' | 'profile' | 'admin'>('login');
-  const [selectedExercise, setSelectedExercise] = useState<any>(null);
+// Carga diferida: el editor (CodeMirror) y el panel de admin solo se descargan cuando se usan
+const Exercise = lazy(() => import('./views/exercises/Exercise'));
+const AdminPanel = lazy(() => import('./views/admin/AdminPanel'));
 
-  useEffect(() => {
-    // Verificar si el usuario está autenticado al cargar la aplicación
-    const token = localStorage.getItem('token');
-    const usuario = localStorage.getItem('usuario');
-    
-    
-    if (token && usuario) {
-      // Verificar que el token sea válido
-      try {
-        // Decodificar el token para verificar si ha expirado
-        // Esto es una verificación básica, el servidor hará la validación completa
-        const tokenParts = token.split('.');
-        if (tokenParts.length !== 3) {
-          throw new Error('Formato de token inválido');
-        }
-        
-        const tokenData = JSON.parse(atob(tokenParts[1]));
-        const currentTime = Math.floor(Date.now() / 1000);
-        const timeToExpiration = tokenData.exp - currentTime;
-        
-        
-        if (tokenData.exp && tokenData.exp > currentTime) {
-          // Token válido
-          setIsAuthenticated(true);
-          // Si está autenticado, ir a Home
-          setCurrentView('home');
-          window.history.pushState(null, '', '/Home');
-        } else {
-          // Token expirado
-          localStorage.removeItem('token');
-          localStorage.removeItem('usuario');
-          setIsAuthenticated(false);
-          setCurrentView('login');
-          window.history.pushState(null, '', '/Login');
-        }
-      } catch (error) {
-        // Si hay un error al verificar el token, ir a Login
-        localStorage.removeItem('token');
-        localStorage.removeItem('usuario');
-        setIsAuthenticated(false);
-        setCurrentView('login');
-        window.history.pushState(null, '', '/Login');
-      }
-    } else {
-      // Si no está autenticado, ir a Login
-      if (!token) console.warn('Router: No hay token en localStorage');
-      if (!usuario) console.warn('Router: No hay usuario en localStorage');
-      setIsAuthenticated(false);
-      setCurrentView('login');
-      window.history.pushState(null, '', '/Login');
+const GET_ROL = gql`
+  query RolActual {
+    me {
+      id
+      rol
     }
-    
-    setLoading(false);
-  }, []);
+  }
+`;
 
-  // Función para manejar el login exitoso
-  const handleLoginSuccess = () => {
-    setIsAuthenticated(true);
-    setCurrentView('home');
-    window.history.pushState(null, '', '/Home');
-  };
+// Comprobación local del token (la validación real la hace el servidor)
+const tokenValido = (): boolean => {
+  const token = localStorage.getItem('token');
+  if (!token || !localStorage.getItem('usuario')) return false;
+  try {
+    const partes = token.split('.');
+    if (partes.length !== 3) return false;
+    const datos = JSON.parse(atob(partes[1]));
+    return !!datos.exp && datos.exp > Math.floor(Date.now() / 1000);
+  } catch {
+    return false;
+  }
+};
 
-  // Función para manejar el logout
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    setIsAuthenticated(false);
-    setCurrentView('login');
-    window.history.pushState(null, '', '/Login');
-  };
+const borrarSesion = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('usuario');
+};
 
-  // Función para navegar al ejercicio
-  const handleNavigateToExercise = (exercise?: any) => {
-    if (exercise) {
-      setSelectedExercise(exercise);
-    }
-    setCurrentView('exercise');
-  };
+const Pantalla: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '16px',
+    height: '100vh',
+    background: 'linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%)',
+    color: 'white',
+    fontSize: '1.3rem',
+    textAlign: 'center',
+    padding: '0 16px'
+  }}>
+    {children}
+  </div>
+);
 
-  // Función para volver al dashboard
-  const handleBackToDashboard = () => {
-    setCurrentView('home');
-    window.history.pushState(null, '', '/Home');
-  };
+// Rutas que exigen sesión (y opcionalmente un rol)
+const RutaProtegida: React.FC<{ autenticado: boolean; roles?: string[]; children: React.ReactElement }> = ({ autenticado, roles, children }) => {
+  const location = useLocation();
+  const { data, loading } = useQuery(GET_ROL, { skip: !autenticado || !roles, fetchPolicy: 'cache-first' });
 
-  // Función para navegar a la guía de Python
-  const handleNavigateToPythonGuide = () => {
-    setCurrentView('python-guide');
-    window.history.pushState(null, '', '/python-guide');
-  };
+  if (!autenticado) {
+    return <Navigate to="/login" replace state={{ desde: location.pathname }} />;
+  }
+  if (roles) {
+    if (loading) return <Pantalla>Cargando...</Pantalla>;
+    if (!roles.includes(data?.me?.rol)) return <Navigate to="/" replace />;
+  }
+  return children;
+};
 
-  // Función para navegar al perfil
-  const handleNavigateToProfile = () => {
-    setCurrentView('profile');
-    window.history.pushState(null, '', '/profile');
-  };
+// /ejercicio/:id → usa el ejercicio que viene del dashboard o lo pide a la API (recarga / enlace directo)
+const RutaEjercicio: React.FC = () => {
+  const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const desdeDashboard = (location.state as any)?.exercise;
+  const usarEstado = desdeDashboard && String(desdeDashboard.id) === String(id);
+  const { data, loading, error } = useQuery(GET_TAREA, { variables: { id }, skip: usarEstado });
 
-  // Función para navegar al panel de admin
-  const handleNavigateToAdmin = () => {
-    setCurrentView('admin');
-    window.history.pushState(null, '', '/admin');
-  };
+  const volver = () => navigate('/');
 
-  if (loading) {
+  if (usarEstado) {
+    return <Exercise key={id} onBackToDashboard={volver} exerciseData={desdeDashboard} />;
+  }
+  if (loading) return <Pantalla>Cargando ejercicio...</Pantalla>;
+  if (error || !data?.tarea) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        background: 'linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%)',
-        color: 'white',
-        fontSize: '1.5rem'
-      }}>
-        Cargando...
-      </div>
+      <Pantalla>
+        <p>No se ha encontrado este ejercicio.</p>
+        <button onClick={volver} style={{ padding: '10px 20px', borderRadius: 8, border: 'none', cursor: 'pointer' }}>
+          Volver al inicio
+        </button>
+      </Pantalla>
     );
   }
+  return <Exercise key={id} onBackToDashboard={volver} exerciseData={mapTareaToExercise(data.tarea)} />;
+};
+
+const Rutas: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [autenticado, setAutenticado] = useState(() => {
+    const ok = tokenValido();
+    if (!ok) borrarSesion();
+    return ok;
+  });
+
+  // Al marcar la sesión, la ruta /login redirige sola a la página que se pidió (o a /)
+  const handleLoginSuccess = () => setAutenticado(true);
+  const destinoTrasLogin = (location.state as any)?.desde || '/';
+
+  const apollo = useApolloClient();
+
+  const handleLogout = () => {
+    borrarSesion();
+    // Que el siguiente usuario no vea datos (rol, puntos...) en caché del anterior
+    apollo.clearStore();
+    setAutenticado(false);
+    navigate('/login', { replace: true });
+  };
+
+  const protegida = (elemento: React.ReactElement, roles?: string[]) => (
+    <RutaProtegida autenticado={autenticado} roles={roles}>{elemento}</RutaProtegida>
+  );
 
   return (
-    <>
-      {currentView === 'login' ? (
-        <LoginApp onLoginSuccess={handleLoginSuccess} />
-      ) : currentView === 'home' ? (
-        <Dashboard 
-          onLogout={handleLogout} 
-          onNavigateToExercise={handleNavigateToExercise}
-          onNavigateToPythonGuide={handleNavigateToPythonGuide}
-          onNavigateToProfile={handleNavigateToProfile}
-        />
-      ) : currentView === 'exercise' ? (
-        <Exercise 
-          onBackToDashboard={handleBackToDashboard} 
-          exerciseData={selectedExercise}
-        />
-      ) : currentView === 'profile' ? (
-        <Profile onBackToDashboard={handleBackToDashboard} onNavigateToAdmin={handleNavigateToAdmin} />
-      ) : currentView === 'admin' ? (
-        <AdminPanel onBack={handleNavigateToProfile} />
-      ) : (
-        <PythonGuide onBackToDashboard={handleBackToDashboard} />
-      )}
-    </>
+    <Suspense fallback={<Pantalla>Cargando...</Pantalla>}>
+    <Routes>
+      <Route
+        path="/login"
+        element={autenticado ? <Navigate to={destinoTrasLogin} replace /> : <LoginApp onLoginSuccess={handleLoginSuccess} />}
+      />
+      <Route
+        path="/"
+        element={protegida(
+          <Dashboard
+            onLogout={handleLogout}
+            onNavigateToExercise={(ejercicio?: any) => {
+              if (ejercicio?.id) navigate(`/ejercicio/${ejercicio.id}`, { state: { exercise: ejercicio } });
+            }}
+            onNavigateToPythonGuide={() => navigate('/guia')}
+            onNavigateToProfile={() => navigate('/perfil')}
+          />
+        )}
+      />
+      <Route path="/ejercicio/:id" element={protegida(<RutaEjercicio />)} />
+      <Route path="/guia" element={protegida(<PythonGuide onBackToDashboard={() => navigate('/')} />)} />
+      <Route path="/ranking" element={protegida(<FullRanking onBack={() => navigate('/')} />)} />
+      <Route
+        path="/perfil"
+        element={protegida(<Profile onBackToDashboard={() => navigate('/')} onNavigateToAdmin={() => navigate('/admin')} />)}
+      />
+      <Route path="/admin" element={protegida(<AdminPanel onBack={() => navigate('/perfil')} />, ['admin'])} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+    </Suspense>
   );
 };
+
+const Router: React.FC = () => (
+  <BrowserRouter>
+    <Rutas />
+  </BrowserRouter>
+);
 
 export default Router;

@@ -1,0 +1,32 @@
+.code-editor-cm {
+  height: 100%;
+  min-height: 300px;
+  font-size: 15px;
+}
+
+.code-editor-cm .cm-editor {
+  height: 100%;
+  background: #111118;
+  border-radius: 0 0 12px 12px;
+}
+
+.code-editor-cm .cm-scroller {
+  font-family: 'Fira Code', 'Consolas', 'Courier New', monospace;
+  line-height: 1.6;
+}
+
+.code-editor-cm .cm-editor.cm-focused {
+  outline: none;
+}
+
+/* Línea donde Python dio error */
+.code-editor-cm .cm-linea-error {
+  background: rgba(255, 82, 82, 0.22);
+  box-shadow: inset 3px 0 0 #ff5252;
+}
+
+/* Línea que se está ejecutando (caja negra) */
+.code-editor-cm .cm-linea-activa {
+  background: rgba(0, 255, 136, 0.16);
+  box-shadow: inset 3px 0 0 #00ff88;
+}
