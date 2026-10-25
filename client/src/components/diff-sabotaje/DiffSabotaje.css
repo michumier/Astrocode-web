@@ -1,0 +1,20 @@
+.diff-sabotaje {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.diff-quitada {
+  color: #ff8a8a;
+  background: rgba(255, 82, 82, 0.12);
+}
+
+.diff-anadida {
+  color: #7dffb8;
+  background: rgba(0, 255, 136, 0.1);
+}

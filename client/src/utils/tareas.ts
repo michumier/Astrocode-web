@@ -4,6 +4,7 @@ import { gql } from '@apollo/client';
 export const mapTareaToExercise = (tarea: any) => ({
   id: tarea.id,
   tipo: tarea.tipo || 'codigo',
+  contexto: tarea.contexto || null,
   title: tarea.titulo,
   difficulty: tarea.nivel?.nombre || 'Desconocido',
   points: tarea.puntosBase || tarea.puntos || 0,
@@ -19,6 +20,7 @@ export const GET_TAREA = gql`
     tarea(id: $id) {
       id
       tipo
+      contexto
       titulo
       descripcion
       puntosBase

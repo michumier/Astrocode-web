@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
+import AdminSabotajes from './AdminSabotajes';
 import './AdminPanel.css';
 
 const GET_OPCIONES = gql`
@@ -190,6 +191,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
             </div>
           </section>
         )}
+        <AdminSabotajes />
       </main>
     </div>
   );

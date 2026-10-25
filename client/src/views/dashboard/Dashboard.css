@@ -746,7 +746,8 @@
 .exercise-panel {
   position: fixed;
   top: 80px;
-  right: -50%;
+  /* Oculto del todo: con -50% asomaba ~35px (el ancho no cuenta el padding ni el margen) */
+  right: calc(-45% - 140px);
   width: 45%;
   height: calc(100vh - 200px);
   background: rgba(255, 255, 255, 0.1);
@@ -1370,4 +1371,16 @@
 .start-exercise-btn.disabled:hover {
   background: #666;
   transform: none;
+}
+/* La columna central (sistema solar) puede encogerse: si no, a ~1280px la fila se salía
+   de la pantalla y se cortaban el leaderboard y las tarjetas de la derecha */
+.central-content {
+  min-width: 0;
+}
+
+@media (max-width: 1440px) and (min-width: 1025px) {
+  .dashboard-main {
+    padding: 0 24px;
+    gap: 24px;
+  }
 }

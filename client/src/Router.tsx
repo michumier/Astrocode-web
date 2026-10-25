@@ -89,9 +89,14 @@ const RutaEjercicio: React.FC = () => {
   }
   if (loading) return <Pantalla>Cargando ejercicio...</Pantalla>;
   if (error || !data?.tarea) {
+    const bloqueado = error?.graphQLErrors?.some((e) => e.extensions?.code === 'FORBIDDEN');
     return (
       <Pantalla>
-        <p>No se ha encontrado este ejercicio.</p>
+        <p>
+          {bloqueado
+            ? '🔒 Este sabotaje se desbloquea al completar el ejercicio original.'
+            : 'No se ha encontrado este ejercicio.'}
+        </p>
         <button onClick={volver} style={{ padding: '10px 20px', borderRadius: 8, border: 'none', cursor: 'pointer' }}>
           Volver al inicio
         </button>
