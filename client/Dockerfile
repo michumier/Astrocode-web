@@ -1,15 +1,15 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . .
 
 # Exponer el puerto 3000 que usa React por defecto
 EXPOSE 3000
 
-# Usar npm start en lugar de npm run build
+# Servidor de desarrollo con recarga automática (docker-compose monta src/ y public/)
 CMD ["npm", "start"]

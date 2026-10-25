@@ -16,9 +16,6 @@ const Router: React.FC = () => {
     const token = localStorage.getItem('token');
     const usuario = localStorage.getItem('usuario');
     
-    console.log('Router: Verificando autenticación...');
-    console.log('Router: Token presente:', token ? 'Sí' : 'No');
-    console.log('Router: Usuario presente:', usuario ? 'Sí' : 'No');
     
     if (token && usuario) {
       // Verificar que el token sea válido
@@ -34,25 +31,15 @@ const Router: React.FC = () => {
         const currentTime = Math.floor(Date.now() / 1000);
         const timeToExpiration = tokenData.exp - currentTime;
         
-        console.log('Router: Verificando token:');
-        console.log(`Router: Tiempo actual: ${new Date(currentTime * 1000).toLocaleString()}`);
-        console.log(`Router: Token expira: ${new Date(tokenData.exp * 1000).toLocaleString()}`);
-        console.log(`Router: Diferencia: ${timeToExpiration} segundos (${(timeToExpiration / 60).toFixed(2)} minutos)`);
-        console.log(`Router: Token payload:`, JSON.stringify(tokenData, null, 2));
-        console.log(`Router: Valor del token: ${token ? token.substring(0, 20) + '...' : 'No presente'}`);
         
         if (tokenData.exp && tokenData.exp > currentTime) {
           // Token válido
-          console.log('Router: Token VÁLIDO, autenticando usuario');
-          console.log(`Router: Token expira en: ${new Date(tokenData.exp * 1000).toLocaleString()} (en ${(timeToExpiration / 60).toFixed(2)} minutos)`);
           setIsAuthenticated(true);
           // Si está autenticado, ir a Home
           setCurrentView('home');
           window.history.pushState(null, '', '/Home');
         } else {
           // Token expirado
-          console.warn('Router: Token EXPIRADO, redirigiendo a login');
-          console.warn(`Router: Tiempo expiración: ${tokenData.exp}, Tiempo actual: ${currentTime}, Diferencia: ${tokenData.exp - currentTime}`);
           localStorage.removeItem('token');
           localStorage.removeItem('usuario');
           setIsAuthenticated(false);
@@ -60,8 +47,6 @@ const Router: React.FC = () => {
           window.history.pushState(null, '', '/Login');
         }
       } catch (error) {
-        console.error('Router: Error al verificar el token:', error);
-        console.error('Router: Token inválido o malformado:', token);
         // Si hay un error al verificar el token, ir a Login
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
@@ -73,7 +58,6 @@ const Router: React.FC = () => {
       // Si no está autenticado, ir a Login
       if (!token) console.warn('Router: No hay token en localStorage');
       if (!usuario) console.warn('Router: No hay usuario en localStorage');
-      console.log('Router: No hay autenticación válida, redirigiendo a login');
       setIsAuthenticated(false);
       setCurrentView('login');
       window.history.pushState(null, '', '/Login');

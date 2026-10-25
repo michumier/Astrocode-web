@@ -19,14 +19,25 @@ const EXECUTE_CODE = gql`
   }
 `;
 
-// GraphQL mutation for completing task
-const COMPLETAR_TAREA = gql`
-  mutation CompletarTarea($tareaId: ID!, $tiempoCompletado: Int!) {
-    completarTarea(tareaId: $tareaId, tiempoCompletado: $tiempoCompletado) {
-      success
+// GraphQL mutation: el servidor ejecuta, corrige y suma los puntos
+const ENVIAR_SOLUCION = gql`
+  mutation EnviarSolucion($tareaId: ID!, $codigo: String!, $tiempoCompletado: Int!) {
+    enviarSolucion(tareaId: $tareaId, codigo: $codigo, tiempoCompletado: $tiempoCompletado) {
+      correcto
+      yaCompletada
       puntos
       tiempo
       mensaje
+      ejecucion {
+        stdout
+        stderr
+        compile_output
+        status {
+          id
+          description
+        }
+        time
+      }
     }
   }
 `;
@@ -55,7 +66,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   
   // GraphQL mutation hooks
   const [executeCode] = useMutation(EXECUTE_CODE);
-  const [completarTarea] = useMutation(COMPLETAR_TAREA, {
+  const [enviarSolucion] = useMutation(ENVIAR_SOLUCION, {
     // Actualizar cache después de completar tarea
     refetchQueries: [
       'GetUserStats', // Refrescar estadísticas del perfil
@@ -164,70 +175,61 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
     try {
       const startTime = Date.now();
       
-      const { data } = await executeCode({
-        variables: {
-          input: {
-            sourceCode: code,
-            languageId: 71, // Python 3
-            stdin: ""
-          }
-        }
-      });
-      
+      // Con ejercicio: el servidor corrige. Sin ejercicio: solo se ejecuta
+      let ejecucion: any;
+      let resultado: any = null;
+      if (exerciseData?.id) {
+        const { data } = await enviarSolucion({
+          variables: { tareaId: exerciseData.id, codigo: code, tiempoCompletado: timer }
+        });
+        resultado = data?.enviarSolucion;
+        ejecucion = resultado?.ejecucion;
+      } else {
+        const { data } = await executeCode({
+          variables: { input: { sourceCode: code, languageId: 71, stdin: '' } }
+        });
+        ejecucion = data?.executeCode;
+      }
+
       const endTime = Date.now();
       const executionTime = ((endTime - startTime) / 1000).toFixed(3);
-      
+
       let outputText = '>>> Ejecutando código...\n\n';
-       
-       if (data?.executeCode?.stdout) {
-         outputText += `Salida:\n${data.executeCode.stdout}\n\n`;
-       }
-       
-       if (data?.executeCode?.stderr) {
-         outputText += `Errores:\n${data.executeCode.stderr}\n\n`;
-       }
-       
-       if (data?.executeCode?.compile_output) {
-         outputText += `Errores de compilación:\n${data.executeCode.compile_output}\n\n`;
-       }
-       
-       outputText += `Tiempo de ejecución: ${data?.executeCode?.time || executionTime}s\n`;
-      
-      // Comparar con resultado esperado si existe
-       if (exerciseData?.resultadoEsperado && data?.executeCode?.stdout) {
-         const expectedOutput = exerciseData.resultadoEsperado.trim();
-         const actualOutput = data.executeCode.stdout.trim();
-        
-        if (expectedOutput === actualOutput) {
+
+      if (ejecucion?.stdout) {
+        outputText += `Salida:\n${ejecucion.stdout}\n\n`;
+      }
+
+      if (ejecucion?.stderr) {
+        outputText += `Errores:\n${ejecucion.stderr}\n\n`;
+      }
+
+      if (ejecucion?.compile_output) {
+        outputText += `Errores de compilación:\n${ejecucion.compile_output}\n\n`;
+      }
+
+      outputText += `Tiempo de ejecución: ${ejecucion?.time || executionTime}s\n`;
+
+      if (resultado) {
+        if (resultado.correcto) {
           outputText += '\n✅ ¡Resultado correcto! Tu código produce la salida esperada.';
-          
-          // Completar la tarea si es correcta
-          try {
-            const { data: completionResult } = await completarTarea({
-              variables: {
-                tareaId: exerciseData.id,
-                tiempoCompletado: timer
-              }
+          if (resultado.yaCompletada) {
+            outputText += `\n${resultado.mensaje}`;
+          } else {
+            setCompletionData({
+              titulo: exerciseData.title,
+              puntos: resultado.puntos,
+              tiempo: resultado.tiempo,
+              mensaje: resultado.mensaje
             });
-            
-            if (completionResult?.completarTarea?.success) {
-              setCompletionData({
-                titulo: exerciseData.titulo,
-                puntos: completionResult.completarTarea.puntos,
-                tiempo: completionResult.completarTarea.tiempo,
-                mensaje: completionResult.completarTarea.mensaje
-              });
-              setShowCongratulations(true);
-              setIsTimerRunning(false);
-            }
-          } catch (completionError: any) {
-            console.log('Error al completar tarea:', completionError.message);
+            setShowCongratulations(true);
+            setIsTimerRunning(false);
           }
         } else {
-          outputText += '\n❌ El resultado no coincide con el esperado.';
+          outputText += `\n❌ ${resultado.mensaje}`;
         }
       }
-      
+
       setOutput(outputText);
       
     } catch (error: any) {

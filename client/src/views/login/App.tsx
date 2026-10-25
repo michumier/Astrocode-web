@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../../config';
 import './App.css';
 import Register from './Register';
 
@@ -39,7 +40,7 @@ function App({ onLoginSuccess }: LoginAppProps) {
     `;
 
     try {
-      const response = await fetch('http://localhost:4000/graphql', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +66,6 @@ function App({ onLoginSuccess }: LoginAppProps) {
         localStorage.setItem('token', token);
         localStorage.setItem('usuario', JSON.stringify(result.data.login.usuario));
         
-        console.log('Login: Token guardado correctamente');
         console.log('Login: Usuario guardado correctamente');
         
         // Verificar que el token se guardó correctamente
@@ -77,8 +77,6 @@ function App({ onLoginSuccess }: LoginAppProps) {
               throw new Error('Formato de token inválido');
             }
             const tokenData = JSON.parse(atob(tokenParts[1]));
-            console.log('Login: Token decodificado correctamente, expira en:', new Date(tokenData.exp * 1000).toLocaleString());
-            console.log('Login: Payload del token:', JSON.stringify(tokenData, null, 2));
           } catch (error) {
             console.error('Login: Error al decodificar el token:', error);
           }

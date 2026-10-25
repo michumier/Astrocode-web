@@ -25,11 +25,42 @@ const GET_CURRENT_USER = gql`
 
 const GET_TOP_USERS = gql`
   query GetTopUsers {
-    usuarios {
+    ranking(limite: 5) {
       id
       nombre_usuario
       puntos
-      nombre_completo
+      posicion
+    }
+  }
+`;
+
+// Convierte una tarea de la API al formato que usa la vista de ejercicio
+const mapTareaToExercise = (tarea: any) => ({
+  id: tarea.id,
+  title: tarea.titulo,
+  difficulty: tarea.nivel?.nombre || 'Desconocido',
+  points: tarea.puntosBase || tarea.puntos || 0,
+  description: tarea.descripcion,
+  codigoBase: tarea.codigoBase,
+  resultadoEsperado: tarea.resultadoEsperado,
+  categoria: tarea.categoria?.nombre || 'General'
+});
+
+const GET_DAILY_CHALLENGE = gql`
+  query DailyChallenge {
+    dailyChallenge {
+      id
+      titulo
+      descripcion
+      puntosBase
+      codigoBase
+      resultadoEsperado
+      categoria {
+        nombre
+      }
+      nivel {
+        nombre
+      }
     }
   }
 `;
@@ -100,10 +131,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
       
       // Verificar el token antes de la consulta
       if (!token) {
-        console.warn('GET_COMPLETED_TASKS: No hay token de autenticación');
         // Si no hay token, no tiene sentido hacer la consulta
         if (onLogout) {
-          console.warn('GET_COMPLETED_TASKS: No hay token, redirigiendo a login');
           setTimeout(() => {
             localStorage.removeItem('token');
             localStorage.removeItem('usuario');
@@ -124,17 +153,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
         const currentTime = Math.floor(Date.now() / 1000);
         const timeToExpiration = tokenData.exp - currentTime;
         
-        console.log('GET_COMPLETED_TASKS: Verificando token:');
         console.log(`- Tiempo actual: ${new Date(currentTime * 1000).toLocaleString()}`);
-        console.log(`- Token expira: ${new Date(tokenData.exp * 1000).toLocaleString()}`);
         console.log(`- Diferencia: ${timeToExpiration} segundos (${(timeToExpiration / 60).toFixed(2)} minutos)`);
         console.log(`- Tiempo a expiración en minutos: ${(timeToExpiration / 60).toFixed(2)}`);
-        console.log(`- Payload del token:`, JSON.stringify(tokenData, null, 2));
-        console.log(`- Valor del token: ${token ? token.substring(0, 20) + '...' : 'No presente'}`);
         
         if (tokenData.exp && tokenData.exp <= currentTime) {
-          console.warn('GET_COMPLETED_TASKS: Token EXPIRADO, será rechazado por el servidor');
-          console.warn(`- Tiempo expiración: ${tokenData.exp}, Tiempo actual: ${currentTime}, Diferencia: ${tokenData.exp - currentTime}`);
           console.warn(`- Tiempo expirado hace ${Math.abs(timeToExpiration)} segundos (${Math.abs(timeToExpiration / 60).toFixed(2)} minutos)`);
           
           // Token expirado, redirigir a login
@@ -147,8 +170,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
           }
           return { headers: {} };
         } else {
-          console.log('GET_COMPLETED_TASKS: Token VÁLIDO');
-          console.log(`- Expira en: ${new Date(tokenData.exp * 1000).toLocaleString()} (en ${(timeToExpiration / 60).toFixed(2)} minutos)`);
         }
       } catch (error) {
         console.error('GET_COMPLETED_TASKS: Error al verificar el token:', error);
@@ -166,13 +187,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
         return { headers: {} };
       }
       
-      console.log('GET_COMPLETED_TASKS: Token usado:', token ? 'Presente' : 'Ausente');
-      console.log(`GET_COMPLETED_TASKS: Valor del token: ${token ? token.substring(0, 20) + '...' : 'No presente'}`);
       
       // Asegurarse de que el token se envía correctamente en el encabezado
       // Verificar si el token ya tiene el prefijo 'Bearer '
       const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-      console.log(`GET_COMPLETED_TASKS: Authorization header: ${authHeader.substring(0, 20)}...`);
       
       return {
         headers: {
@@ -220,10 +238,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
       
       // Verificar el token antes de la consulta
       if (!token) {
-        console.warn('GET_CURRENT_USER: No hay token de autenticación');
         // Si no hay token, no tiene sentido hacer la consulta
         if (onLogout) {
-          console.warn('GET_CURRENT_USER: No hay token, redirigiendo a login');
           setTimeout(() => {
             localStorage.removeItem('token');
             localStorage.removeItem('usuario');
@@ -244,15 +260,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
         const currentTime = Math.floor(Date.now() / 1000);
         const timeToExpiration = tokenData.exp - currentTime;
         
-        console.log('GET_CURRENT_USER: Verificando token:');
         console.log(`- Tiempo actual: ${new Date(currentTime * 1000).toLocaleString()}`);
-        console.log(`- Token expira: ${new Date(tokenData.exp * 1000).toLocaleString()}`);
         console.log(`- Diferencia: ${timeToExpiration} segundos (${(timeToExpiration / 60).toFixed(2)} minutos)`);
-        console.log(`- Payload del token:`, JSON.stringify(tokenData, null, 2));
         
         if (tokenData.exp && tokenData.exp <= currentTime) {
-          console.warn('GET_CURRENT_USER: Token EXPIRADO, será rechazado por el servidor');
-          console.warn(`- Tiempo expiración: ${tokenData.exp}, Tiempo actual: ${currentTime}, Diferencia: ${tokenData.exp - currentTime}`);
           
           // Token expirado, redirigir a login
           if (onLogout) {
@@ -264,8 +275,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
           }
           return { headers: {} };
         } else {
-          console.log('GET_CURRENT_USER: Token VÁLIDO');
-          console.log(`- Expira en: ${new Date(tokenData.exp * 1000).toLocaleString()} (en ${(timeToExpiration / 60).toFixed(2)} minutos)`);
         }
       } catch (error) {
         console.error('GET_CURRENT_USER: Error al verificar el token:', error);
@@ -282,12 +291,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
         return { headers: {} };
       }
       
-      console.log('GET_CURRENT_USER: Token usado:', token ? 'Presente' : 'Ausente');
-      console.log(`GET_CURRENT_USER: Valor del token: ${token ? token.substring(0, 20) + '...' : 'No presente'}`);
       
       // Asegurarse de que el token se envía correctamente en el encabezado
       const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-      console.log(`GET_CURRENT_USER: Authorization header: ${authHeader.substring(0, 20)}...`);
       
       return {
         headers: {
@@ -328,65 +334,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   const { loading: loadingTopUsers, data: topUsersData, refetch: refetchTopUsers } = useQuery(GET_TOP_USERS, {
     fetchPolicy: 'network-only',
     errorPolicy: 'all', // Manejar errores sin fallar completamente
-    context: () => {
-      // Obtener el token actual en el momento de la consulta
-      const token = localStorage.getItem('token');
-      
-      // Verificar el token antes de la consulta
-      if (!token) {
-        console.warn('GET_TOP_USERS: No hay token de autenticación');
-      } else {
-        try {
-          // Verificar que el token sea válido
-          const tokenParts = token.split('.');
-          if (tokenParts.length !== 3) {
-            throw new Error('Formato de token inválido');
-          }
-          
-          const tokenData = JSON.parse(atob(tokenParts[1]));
-          const currentTime = Math.floor(Date.now() / 1000);
-          const timeToExpiration = tokenData.exp - currentTime;
-          
-          console.log('GET_TOP_USERS: Verificando token:');
-          console.log(`- Payload del token:`, JSON.stringify(tokenData, null, 2));
-          
-          if (tokenData.exp && tokenData.exp <= currentTime) {
-            console.warn('GET_TOP_USERS: Token expirado, será rechazado por el servidor');
-          } else {
-            console.log('GET_TOP_USERS: Token válido, expira en:', new Date(tokenData.exp * 1000).toLocaleString());
-            console.log(`- Tiempo a expiración: ${(timeToExpiration / 60).toFixed(2)} minutos`);
-          }
-        } catch (error) {
-          console.error('GET_TOP_USERS: Error al verificar el token:', error);
-        }
-      }
-      
-      console.log('GET_TOP_USERS: Token usado:', token ? 'Presente' : 'Ausente');
-      
-      // Asegurarse de que el token se envía correctamente en el encabezado
-      const authHeader = token ? (token.startsWith('Bearer ') ? token : `Bearer ${token}`) : '';
-      console.log(`GET_TOP_USERS: Authorization header: ${authHeader ? authHeader.substring(0, 20) + '...' : 'No presente'}`);
-      
-      return {
-        headers: {
-          authorization: authHeader
-        }
-      };
-    },
     onCompleted: (data) => {
-      if (data?.usuarios) {
-        // Ordenar usuarios por puntuación y tomar los top 5
-        const sortedUsers = [...data.usuarios]
-          .sort((a: User, b: User) => b.puntos - a.puntos)
-          .slice(0, 5);
-        
-        const formattedData = sortedUsers.map((user: User, index: number) => ({
-          rank: index + 1,
+      if (data?.ranking) {
+        // El servidor ya devuelve el top 5 ordenado (sin emails)
+        const formattedData = data.ranking.map((user: any) => ({
+          rank: user.posicion,
           name: user.nombre_usuario,
           score: user.puntos
         }));
-        
-        console.log(`GET_TOP_USERS: Recibidos ${data.usuarios.length} usuarios, mostrando top 5`);
+
         setLeaderboardData(formattedData);
         setLoading(false);
       } else {
@@ -447,14 +403,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
 
   // Las funciones fetchCompletedTasks, fetchUserPoints y fetchTopUsers han sido reemplazadas por hooks useQuery de Apollo Client
 
-  const handleStartChallenge = () => {
-    console.log('Starting daily challenge...');
-    // TODO: Implementar lógica para obtener el desafío diario
-    // Por ahora, comentamos esta funcionalidad hasta que se implemente correctamente
-    console.warn('Desafío diario no implementado aún');
-    // if (onNavigateToExercise) {
-    //   onNavigateToExercise();
-    // }
+  const handleStartChallenge = async () => {
+    try {
+      const { data } = await client.query({ query: GET_DAILY_CHALLENGE, fetchPolicy: 'network-only' });
+      if (data?.dailyChallenge && onNavigateToExercise) {
+        onNavigateToExercise(mapTareaToExercise(data.dailyChallenge));
+      } else {
+        alert('Hoy no hay reto diario disponible. ¡Vuelve mañana!');
+      }
+    } catch (error) {
+      console.error('Error al obtener el reto diario:', error);
+    }
   };
 
   const handleViewFullRanking = () => {
@@ -538,7 +497,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
       if (!token) {
         console.error('getExercisesByPlanet: No hay token de autenticación');
         if (onLogout) {
-          console.warn('getExercisesByPlanet: No hay token, redirigiendo a login');
           localStorage.removeItem('token');
           localStorage.removeItem('usuario');
           setTimeout(() => {
@@ -554,17 +512,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
         const currentTime = Math.floor(Date.now() / 1000);
         const timeToExpiration = tokenData.exp - currentTime;
         
-        console.log('getExercisesByPlanet: Verificando token:');
         console.log(`- Tiempo actual: ${new Date(currentTime * 1000).toLocaleString()}`);
-        console.log(`- Token expira: ${new Date(tokenData.exp * 1000).toLocaleString()}`);
         console.log(`- Diferencia: ${timeToExpiration} segundos (${(timeToExpiration / 60).toFixed(2)} minutos)`);
         console.log(`- Tiempo a expiración en minutos: ${(timeToExpiration / 60).toFixed(2)}`);
-        console.log(`- Payload del token:`, JSON.stringify(tokenData, null, 2));
-        console.log(`- Valor del token: ${token ? token.substring(0, 20) + '...' : 'No presente'}`);
         
         if (tokenData.exp && tokenData.exp <= currentTime) {
-          console.warn('getExercisesByPlanet: Token EXPIRADO, redirigiendo a login');
-          console.warn(`- Tiempo expiración: ${tokenData.exp}, Tiempo actual: ${currentTime}, Diferencia: ${tokenData.exp - currentTime}`);
           console.warn(`- Tiempo expirado hace ${Math.abs(timeToExpiration)} segundos (${Math.abs(timeToExpiration / 60).toFixed(2)} minutos)`);
           localStorage.removeItem('token');
           localStorage.removeItem('usuario');
@@ -575,8 +527,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
           }
           return [];
         } else {
-          console.log(`getExercisesByPlanet: Token VÁLIDO`);
-          console.log(`- Expira en: ${new Date(tokenData.exp * 1000).toLocaleString()} (en ${(timeToExpiration / 60).toFixed(2)} minutos)`);
         }
       } catch (error) {
         console.error('getExercisesByPlanet: Error al verificar el token:', error);
@@ -607,8 +557,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
         return [];
       }
       
-      console.log(`getExercisesByPlanet: Token usado para GET_TASKS_BY_LEVEL: ${currentToken ? 'Presente' : 'Ausente'}`);
-      console.log(`getExercisesByPlanet: Valor del token: ${currentToken ? currentToken.substring(0, 20) + '...' : 'No presente'}`);
       
       const { data } = await client.query({
         query: GET_TASKS_BY_LEVEL,
@@ -629,16 +577,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
       // Transformar los datos para que coincidan con el formato esperado
       console.log(`getExercisesByPlanet: Recibidos ${data.tareasPorNivel.length} ejercicios`);
       
-      const mappedExercises = data.tareasPorNivel.map((tarea: any) => ({
-        id: tarea.id,
-        title: tarea.titulo,
-        difficulty: tarea.nivel?.nombre || 'Desconocido',
-        points: tarea.puntosBase || tarea.puntos || 0,
-        description: tarea.descripcion,
-        codigoBase: tarea.codigoBase,
-        resultadoEsperado: tarea.resultadoEsperado,
-        categoria: tarea.categoria?.nombre || 'General'
-      }));
+      const mappedExercises = data.tareasPorNivel.map(mapTareaToExercise);
       
       return mappedExercises;
     } catch (error: any) {

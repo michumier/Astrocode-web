@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../../config';
 import './Register.css';
 import Welcome from './Welcome';
 
@@ -68,7 +69,7 @@ function Register({ onBackToLogin, onLoginSuccess }: RegisterProps) {
     `;
 
     try {
-      const response = await fetch('http://localhost:4000/graphql', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +145,7 @@ function Register({ onBackToLogin, onLoginSuccess }: RegisterProps) {
           }
         `;
 
-        const response = await fetch('http://localhost:4000/graphql', {
+        const response = await fetch(API_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -170,7 +171,6 @@ function Register({ onBackToLogin, onLoginSuccess }: RegisterProps) {
           localStorage.setItem('token', result.data.login.token);
           localStorage.setItem('usuario', JSON.stringify(result.data.login.usuario));
           
-          console.log('Registro: Token guardado correctamente');
           console.log('Registro: Usuario guardado correctamente');
           
           // Verificar que el token se guardó correctamente
@@ -178,7 +178,6 @@ function Register({ onBackToLogin, onLoginSuccess }: RegisterProps) {
           if (savedToken) {
             try {
               const tokenData = JSON.parse(atob(savedToken.split('.')[1]));
-              console.log('Registro: Token decodificado correctamente, expira en:', new Date(tokenData.exp * 1000).toLocaleString());
             } catch (error) {
               console.error('Registro: Error al decodificar el token:', error);
             }
