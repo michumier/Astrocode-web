@@ -42,8 +42,8 @@ function Register({ onBackToLogin, onLoginSuccess }: RegisterProps) {
       return;
     }
 
-    if (formData.contrasena.length < 6) {
-      setMessage('La contraseña debe tener al menos 6 caracteres');
+    if (formData.contrasena.length < 8) {
+      setMessage('La contraseña debe tener al menos 8 caracteres');
       return;
     }
 

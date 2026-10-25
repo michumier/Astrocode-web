@@ -4,6 +4,7 @@ import './Profile.css';
 
 interface ProfileProps {
   onBackToDashboard: () => void;
+  onNavigateToAdmin?: () => void;
 }
 
 interface UserData {
@@ -24,6 +25,7 @@ const GET_USER_STATS = gql`
       correo_electronico
       nombre_completo
       puntos
+      rol
       creado_el
     }
     tareasCompletadas {
@@ -52,7 +54,7 @@ interface UserStats {
   totalEjerciciosDificiles: number;
 }
 
-const Profile: React.FC<ProfileProps> = ({ onBackToDashboard }) => {
+const Profile: React.FC<ProfileProps> = ({ onBackToDashboard, onNavigateToAdmin }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [userStats, setUserStats] = useState<UserStats>({
     ejerciciosCompletados: 0,
@@ -213,6 +215,11 @@ const Profile: React.FC<ProfileProps> = ({ onBackToDashboard }) => {
           ← Volver al Dashboard
         </button>
         <h1 className="profile-title">Mi Perfil</h1>
+        {statsData?.me?.rol === 'admin' && onNavigateToAdmin && (
+          <button onClick={onNavigateToAdmin} className="back-btn admin-btn">
+            🛠️ Panel de admin
+          </button>
+        )}
       </header>
 
       {/* Main Content */}

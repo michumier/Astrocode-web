@@ -4,11 +4,12 @@ import Dashboard from './views/dashboard/Dashboard';
 import Exercise from './views/exercises/Exercise';
 import PythonGuide from './views/python-guide/PythonGuide';
 import Profile from './views/profile/Profile';
+import AdminPanel from './views/admin/AdminPanel';
 
 const Router: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState<'login' | 'home' | 'exercise' | 'python-guide' | 'profile'>('login');
+  const [currentView, setCurrentView] = useState<'login' | 'home' | 'exercise' | 'python-guide' | 'profile' | 'admin'>('login');
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
 
   useEffect(() => {
@@ -108,6 +109,12 @@ const Router: React.FC = () => {
     window.history.pushState(null, '', '/profile');
   };
 
+  // Función para navegar al panel de admin
+  const handleNavigateToAdmin = () => {
+    setCurrentView('admin');
+    window.history.pushState(null, '', '/admin');
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -141,7 +148,9 @@ const Router: React.FC = () => {
           exerciseData={selectedExercise}
         />
       ) : currentView === 'profile' ? (
-        <Profile onBackToDashboard={handleBackToDashboard} />
+        <Profile onBackToDashboard={handleBackToDashboard} onNavigateToAdmin={handleNavigateToAdmin} />
+      ) : currentView === 'admin' ? (
+        <AdminPanel onBack={handleNavigateToProfile} />
       ) : (
         <PythonGuide onBackToDashboard={handleBackToDashboard} />
       )}

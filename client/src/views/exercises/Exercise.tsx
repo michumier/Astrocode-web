@@ -25,6 +25,18 @@ const ENVIAR_SOLUCION = gql`
     enviarSolucion(tareaId: $tareaId, codigo: $codigo, tiempoCompletado: $tiempoCompletado) {
       correcto
       yaCompletada
+      tests {
+        superados
+        total
+        resultados {
+          descripcion
+          oculto
+          superado
+          esperado
+          obtenido
+          error
+        }
+      }
       puntos
       tiempo
       mensaje
@@ -38,6 +50,22 @@ const ENVIAR_SOLUCION = gql`
         }
         time
       }
+    }
+  }
+`;
+
+const IA_DISPONIBLE = gql`
+  query IaDisponible {
+    iaDisponible
+  }
+`;
+
+const PEDIR_PISTA = gql`
+  mutation PedirPista($tareaId: ID!, $codigo: String!, $salida: String, $nivel: Int) {
+    pedirPista(tareaId: $tareaId, codigo: $codigo, salida: $salida, nivel: $nivel) {
+      pista
+      nivel
+      restantesHoy
     }
   }
 `;
@@ -63,6 +91,12 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   const [isTimerRunning, setIsTimerRunning] = useState(true);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [completionData, setCompletionData] = useState<any>(null);
+  // Pistas del tutor de IA: cada vez que se pide una, sube el nivel (1 → 3)
+  const [pista, setPista] = useState<{ texto: string; nivel: number; restantes: number } | null>(null);
+  const [pidiendoPista, setPidiendoPista] = useState(false);
+  const [nivelPista, setNivelPista] = useState(1);
+  const { data: iaData } = useQuery(IA_DISPONIBLE);
+  const [pedirPista] = useMutation(PEDIR_PISTA);
   
   // GraphQL mutation hooks
   const [executeCode] = useMutation(EXECUTE_CODE);
@@ -168,6 +202,24 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
     setOutput('');
   };
 
+  const handlePista = async () => {
+    setPidiendoPista(true);
+    try {
+      const { data } = await pedirPista({
+        variables: { tareaId: exerciseData.id, codigo: code, salida: output || null, nivel: nivelPista }
+      });
+      const respuesta = data?.pedirPista;
+      if (respuesta) {
+        setPista({ texto: respuesta.pista, nivel: respuesta.nivel, restantes: respuesta.restantesHoy });
+        setNivelPista(Math.min(respuesta.nivel + 1, 3));
+      }
+    } catch (error: any) {
+      setPista({ texto: error.graphQLErrors?.[0]?.message || error.message, nivel: 0, restantes: 0 });
+    } finally {
+      setPidiendoPista(false);
+    }
+  };
+
   const handleRun = async () => {
     setIsRunning(true);
     setOutput('Ejecutando código...\n');
@@ -209,6 +261,20 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
       }
 
       outputText += `Tiempo de ejecución: ${ejecucion?.time || executionTime}s\n`;
+
+      if (resultado?.tests) {
+        outputText += `\nTests: ${resultado.tests.superados}/${resultado.tests.total} superados\n`;
+        for (const test of resultado.tests.resultados) {
+          outputText += `  ${test.superado ? '✅' : '❌'} ${test.descripcion}\n`;
+          if (!test.superado && !test.oculto) {
+            if (test.error) {
+              outputText += `      Error: ${test.error}\n`;
+            } else {
+              outputText += `      Esperado: ${test.esperado}\n      Obtenido: ${test.obtenido || '(nada)'}\n`;
+            }
+          }
+        }
+      }
 
       if (resultado) {
         if (resultado.correcto) {
@@ -302,6 +368,16 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
                 >
                   {isRunning ? 'Ejecutando...' : '▶ Ejecutar'}
                 </button>
+                {iaData?.iaDisponible && exerciseData?.id && (
+                  <button
+                    onClick={handlePista}
+                    className="action-btn hint-btn"
+                    disabled={pidiendoPista}
+                    title="El tutor de IA te da una pista sin decirte la solución"
+                  >
+                    {pidiendoPista ? 'Pensando...' : `💡 Pista ${nivelPista}/3`}
+                  </button>
+                )}
               </div>
             </div>
             <div className="code-editor">
@@ -372,6 +448,16 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
               <div className="terminal-output">
                 <pre className="output-text">{output || 'Presiona "Ejecutar" para ver la salida del código...'}</pre>
               </div>
+              {pista && (
+                <div className="hint-panel">
+                  <div className="hint-header">
+                    <span>🤖 AstroTutor{pista.nivel > 0 ? ` · pista ${pista.nivel}/3` : ''}</span>
+                    <button className="hint-close" onClick={() => setPista(null)} aria-label="Cerrar pista">✕</button>
+                  </div>
+                  <p className="hint-text">{pista.texto}</p>
+                  {pista.nivel > 0 && <span className="hint-remaining">Te quedan {pista.restantes} pistas hoy</span>}
+                </div>
+              )}
             </div>
           </div>
         </div>
