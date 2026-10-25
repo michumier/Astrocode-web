@@ -1,0 +1,121 @@
+<svg width="300" height="200" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo con estrellas -->
+  <rect width="300" height="200" fill="#0c1445" />
+  
+  <!-- Estrellas pequeñas -->
+  <g fill="white">
+    <circle cx="30" cy="40" r="1" />
+    <circle cx="50" cy="70" r="1.2" />
+    <circle cx="80" cy="30" r="0.8" />
+    <circle cx="120" cy="50" r="1" />
+    <circle cx="150" cy="20" r="1.2" />
+    <circle cx="180" cy="60" r="0.8" />
+    <circle cx="220" cy="40" r="1" />
+    <circle cx="250" cy="80" r="1.2" />
+    <circle cx="270" cy="30" r="0.8" />
+    <circle cx="40" cy="120" r="1" />
+    <circle cx="70" cy="150" r="1.2" />
+    <circle cx="100" cy="130" r="0.8" />
+    <circle cx="140" cy="170" r="1" />
+    <circle cx="170" cy="140" r="1.2" />
+    <circle cx="200" cy="160" r="0.8" />
+    <circle cx="230" cy="130" r="1" />
+    <circle cx="260" cy="150" r="1.2" />
+  </g>
+  
+  <!-- Estrellas brillantes -->
+  <g>
+    <circle cx="60" cy="50" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.3;1" dur="3s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="200" cy="40" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.5;1" dur="2.5s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="100" cy="170" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.4;1" dur="4s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="250" cy="130" r="1.5" fill="white">
+      <animate attributeName="opacity" values="1;0.6;1" dur="3.5s" repeatCount="indefinite" />
+    </circle>
+  </g>
+  
+  <!-- Nave espacial -->
+  <g transform="translate(150, 100)">
+    <!-- Cuerpo principal de la nave -->
+    <path d="M -15,10 L 0,-20 L 15,10 Z" fill="#E0E0E0" />
+    <path d="M -15,10 L 15,10 L 10,20 L -10,20 Z" fill="#BDBDBD" />
+    
+    <!-- Ventana de la nave -->
+    <circle cx="0" cy="0" r="5" fill="#64B5F6" />
+    
+    <!-- Propulsores -->
+    <rect x="-10" y="20" width="5" height="8" fill="#F44336" rx="1" ry="1" />
+    <rect x="5" y="20" width="5" height="8" fill="#F44336" rx="1" ry="1" />
+    
+    <!-- Llamas de propulsión -->
+    <g>
+      <path d="M -8,28 L -7.5,35 L -5,28 Z" fill="#FFC107">
+        <animate attributeName="d" values="M -8,28 L -7.5,35 L -5,28 Z; M -8,28 L -7.5,38 L -5,28 Z; M -8,28 L -7.5,35 L -5,28 Z" dur="0.5s" repeatCount="indefinite" />
+      </path>
+      <path d="M 7,28 L 7.5,35 L 10,28 Z" fill="#FFC107">
+        <animate attributeName="d" values="M 7,28 L 7.5,35 L 10,28 Z; M 7,28 L 7.5,38 L 10,28 Z; M 7,28 L 7.5,35 L 10,28 Z" dur="0.5s" repeatCount="indefinite" />
+      </path>
+    </g>
+    
+    <!-- Animación de la nave -->
+    <animateTransform attributeName="transform" type="translate" from="150,120" to="150,80" dur="4s" repeatCount="indefinite" additive="sum" />
+    <animateTransform attributeName="transform" type="rotate" from="-5" to="5" dur="2s" repeatCount="indefinite" additive="sum" />
+  </g>
+  
+  <!-- Trayectoria de la nave -->
+  <path d="M 50,150 C 100,130 200,130 250,150" stroke="#E0E0E0" stroke-width="1" stroke-dasharray="5,5" fill="none" opacity="0.5" />
+  
+  <!-- Planetas en la trayectoria -->
+  <g>
+    <!-- Planeta 1 (Tierra - Inicio) -->
+    <circle cx="50" cy="150" r="10" fill="#4CAF50" />
+    <circle cx="50" cy="150" r="10" fill="url(#tierra-pattern)" />
+    <text x="50" y="175" text-anchor="middle" fill="white" font-size="8">Nivel 1</text>
+    
+    <!-- Planeta 2 (Intermedio) -->
+    <circle cx="150" cy="130" r="8" fill="#FF9800" />
+    <circle cx="150" cy="130" r="8" fill="url(#marte-pattern)" />
+    <text x="150" y="150" text-anchor="middle" fill="white" font-size="8">Nivel 2</text>
+    
+    <!-- Planeta 3 (Destino) -->
+    <circle cx="250" cy="150" r="12" fill="#9C27B0" />
+    <circle cx="250" cy="150" r="12" fill="url(#destino-pattern)" />
+    <text x="250" y="175" text-anchor="middle" fill="white" font-size="8">Nivel 3</text>
+  </g>
+  
+  <!-- Iconos de programación flotantes -->
+  <g font-family="monospace" font-weight="bold" font-size="10">
+    <text x="70" y="100" fill="#64B5F6">{ }</text>
+    <text x="120" y="80" fill="#4CAF50">def()</text>
+    <text x="180" y="90" fill="#FFC107">for</text>
+    <text x="220" y="110" fill="#FF5722">if</text>
+    <text x="90" y="120" fill="#E91E63">class</text>
+  </g>
+  
+  <!-- Definiciones de patrones -->
+  <defs>
+    <pattern id="tierra-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#4CAF50" />
+      <circle cx="5" cy="5" r="3" fill="#81C784" opacity="0.7" />
+      <circle cx="15" cy="15" r="4" fill="#81C784" opacity="0.7" />
+    </pattern>
+    
+    <pattern id="marte-pattern" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="#FF9800" />
+      <circle cx="4" cy="4" r="2" fill="#FFCC80" opacity="0.7" />
+      <circle cx="12" cy="12" r="3" fill="#FFCC80" opacity="0.7" />
+    </pattern>
+    
+    <pattern id="destino-pattern" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <rect width="24" height="24" fill="#9C27B0" />
+      <circle cx="6" cy="6" r="4" fill="#CE93D8" opacity="0.7" />
+      <circle cx="18" cy="18" r="5" fill="#CE93D8" opacity="0.7" />
+      <circle cx="12" cy="12" r="3" fill="#CE93D8" opacity="0.7" />
+    </pattern>
+  </defs>
+</svg>

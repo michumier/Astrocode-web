@@ -1,81 +1,507 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import './Exercise.css';
 
-const Exercise: React.FC = () => {
-  const [code, setCode] = useState('');
+// GraphQL mutation for code execution
+const EXECUTE_CODE = gql`
+  mutation ExecuteCode($input: ExecuteCodeInput!) {
+    executeCode(input: $input) {
+      stdout
+      stderr
+      compile_output
+      status {
+        id
+        description
+      }
+      time
+      memory
+    }
+  }
+`;
 
-  const handleReset = () => {
-    setCode('');
+// GraphQL mutation: el servidor ejecuta, corrige y suma los puntos
+const ENVIAR_SOLUCION = gql`
+  mutation EnviarSolucion($tareaId: ID!, $codigo: String!, $tiempoCompletado: Int!) {
+    enviarSolucion(tareaId: $tareaId, codigo: $codigo, tiempoCompletado: $tiempoCompletado) {
+      correcto
+      yaCompletada
+      tests {
+        superados
+        total
+        resultados {
+          descripcion
+          oculto
+          superado
+          esperado
+          obtenido
+          error
+        }
+      }
+      puntos
+      tiempo
+      mensaje
+      ejecucion {
+        stdout
+        stderr
+        compile_output
+        status {
+          id
+          description
+        }
+        time
+      }
+    }
+  }
+`;
+
+const IA_DISPONIBLE = gql`
+  query IaDisponible {
+    iaDisponible
+  }
+`;
+
+const PEDIR_PISTA = gql`
+  mutation PedirPista($tareaId: ID!, $codigo: String!, $salida: String, $nivel: Int) {
+    pedirPista(tareaId: $tareaId, codigo: $codigo, salida: $salida, nivel: $nivel) {
+      pista
+      nivel
+      restantesHoy
+    }
+  }
+`;
+
+// GraphQL query for checking if task is completed
+const ES_TAREA_COMPLETADA = gql`
+  query EsTareaCompletada($tareaId: ID!) {
+    esTareaCompletada(tareaId: $tareaId)
+  }
+`;
+
+interface ExerciseProps {
+  onBackToDashboard?: () => void;
+  exerciseData?: any;
+}
+
+const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) => {
+  // All hooks must be declared at the top before any conditional logic
+  const [code, setCode] = useState(exerciseData?.codigoBase || 'def sum_numbers(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\n# Test the function\nnumbers = [1, 2, 3, 4, 5]\nresult = sum_numbers(numbers)\nprint(f"Sum: {result}")');
+  const [output, setOutput] = useState('');
+  const [isRunning, setIsRunning] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(true);
+  const [showCongratulations, setShowCongratulations] = useState(false);
+  const [completionData, setCompletionData] = useState<any>(null);
+  // Pistas del tutor de IA: cada vez que se pide una, sube el nivel (1 → 3)
+  const [pista, setPista] = useState<{ texto: string; nivel: number; restantes: number } | null>(null);
+  const [pidiendoPista, setPidiendoPista] = useState(false);
+  const [nivelPista, setNivelPista] = useState(1);
+  const { data: iaData } = useQuery(IA_DISPONIBLE);
+  const [pedirPista] = useMutation(PEDIR_PISTA);
+  
+  // GraphQL mutation hooks
+  const [executeCode] = useMutation(EXECUTE_CODE);
+  const [enviarSolucion] = useMutation(ENVIAR_SOLUCION, {
+    // Actualizar cache después de completar tarea
+    refetchQueries: [
+      'GetUserStats', // Refrescar estadísticas del perfil
+      'TareasCompletadas' // Refrescar tareas completadas del dashboard
+    ],
+    awaitRefetchQueries: true
+  });
+  
+  // GraphQL query hook
+  const { data: tareaCompletadaData } = useQuery(ES_TAREA_COMPLETADA, {
+    variables: { tareaId: exerciseData?.id },
+    skip: !exerciseData?.id
+  });
+  
+  // All useEffect hooks must also be at the top
+  // Actualizar código cuando cambie exerciseData
+  useEffect(() => {
+    if (exerciseData?.codigoBase) {
+      setCode(exerciseData.codigoBase);
+    }
+  }, [exerciseData]);
+
+  // Generar estrellas para el fondo
+  useEffect(() => {
+    const generateStars = () => {
+      const starsContainer = document.querySelector('.stars');
+      if (starsContainer) {
+        starsContainer.innerHTML = '';
+        for (let i = 0; i < 200; i++) {
+          const star = document.createElement('div');
+          star.className = 'star';
+          star.style.left = Math.random() * 100 + '%';
+          star.style.top = Math.random() * 100 + '%';
+          star.style.animationDelay = Math.random() * 3 + 's';
+          starsContainer.appendChild(star);
+        }
+      }
+    };
+
+    generateStars();
+  }, []);
+
+  // Temporizador
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerRunning) {
+      interval = setInterval(() => {
+        setTimer(prevTimer => prevTimer + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning]);
+  
+  // Debug: Imprimir datos del ejercicio
+  // Debug logs removed to reduce console noise
+  
+  // Validar que exerciseData existe
+  if (!exerciseData) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        background: 'linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%)',
+        color: 'white',
+        textAlign: 'center'
+      }}>
+        <h2>Error: No se ha seleccionado ningún ejercicio</h2>
+        <p>Por favor, regresa al dashboard y selecciona un ejercicio válido.</p>
+        <button 
+          onClick={onBackToDashboard}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            marginTop: '20px'
+          }}
+        >
+          Volver al Dashboard
+        </button>
+      </div>
+    );
+  }
+
+  // Formatear tiempo en MM:SS
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleRun = () => {
-    // Aquí se implementaría la lógica para ejecutar el código
-    console.log('Running code:', code);
+  const handleReset = () => {
+    setCode(exerciseData?.codigoBase || 'def sum_numbers(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\n# Test the function\nnumbers = [1, 2, 3, 4, 5]\nresult = sum_numbers(numbers)\nprint(f"Sum: {result}")');
+    setOutput('');
+  };
+
+  const handlePista = async () => {
+    setPidiendoPista(true);
+    try {
+      const { data } = await pedirPista({
+        variables: { tareaId: exerciseData.id, codigo: code, salida: output || null, nivel: nivelPista }
+      });
+      const respuesta = data?.pedirPista;
+      if (respuesta) {
+        setPista({ texto: respuesta.pista, nivel: respuesta.nivel, restantes: respuesta.restantesHoy });
+        setNivelPista(Math.min(respuesta.nivel + 1, 3));
+      }
+    } catch (error: any) {
+      setPista({ texto: error.graphQLErrors?.[0]?.message || error.message, nivel: 0, restantes: 0 });
+    } finally {
+      setPidiendoPista(false);
+    }
+  };
+
+  const handleRun = async () => {
+    setIsRunning(true);
+    setOutput('Ejecutando código...\n');
+    
+    try {
+      const startTime = Date.now();
+      
+      // Con ejercicio: el servidor corrige. Sin ejercicio: solo se ejecuta
+      let ejecucion: any;
+      let resultado: any = null;
+      if (exerciseData?.id) {
+        const { data } = await enviarSolucion({
+          variables: { tareaId: exerciseData.id, codigo: code, tiempoCompletado: timer }
+        });
+        resultado = data?.enviarSolucion;
+        ejecucion = resultado?.ejecucion;
+      } else {
+        const { data } = await executeCode({
+          variables: { input: { sourceCode: code, languageId: 71, stdin: '' } }
+        });
+        ejecucion = data?.executeCode;
+      }
+
+      const endTime = Date.now();
+      const executionTime = ((endTime - startTime) / 1000).toFixed(3);
+
+      let outputText = '>>> Ejecutando código...\n\n';
+
+      if (ejecucion?.stdout) {
+        outputText += `Salida:\n${ejecucion.stdout}\n\n`;
+      }
+
+      if (ejecucion?.stderr) {
+        outputText += `Errores:\n${ejecucion.stderr}\n\n`;
+      }
+
+      if (ejecucion?.compile_output) {
+        outputText += `Errores de compilación:\n${ejecucion.compile_output}\n\n`;
+      }
+
+      outputText += `Tiempo de ejecución: ${ejecucion?.time || executionTime}s\n`;
+
+      if (resultado?.tests) {
+        outputText += `\nTests: ${resultado.tests.superados}/${resultado.tests.total} superados\n`;
+        for (const test of resultado.tests.resultados) {
+          outputText += `  ${test.superado ? '✅' : '❌'} ${test.descripcion}\n`;
+          if (!test.superado && !test.oculto) {
+            if (test.error) {
+              outputText += `      Error: ${test.error}\n`;
+            } else {
+              outputText += `      Esperado: ${test.esperado}\n      Obtenido: ${test.obtenido || '(nada)'}\n`;
+            }
+          }
+        }
+      }
+
+      if (resultado) {
+        if (resultado.correcto) {
+          outputText += '\n✅ ¡Resultado correcto! Tu código produce la salida esperada.';
+          if (resultado.yaCompletada) {
+            outputText += `\n${resultado.mensaje}`;
+          } else {
+            setCompletionData({
+              titulo: exerciseData.title,
+              puntos: resultado.puntos,
+              tiempo: resultado.tiempo,
+              mensaje: resultado.mensaje
+            });
+            setShowCongratulations(true);
+            setIsTimerRunning(false);
+          }
+        } else {
+          outputText += `\n❌ ${resultado.mensaje}`;
+        }
+      }
+
+      setOutput(outputText);
+      
+    } catch (error: any) {
+      console.error('Error ejecutando código:', error);
+      let errorMessage = 'Error desconocido';
+      
+      if (error.networkError) {
+        errorMessage = 'Error de conexión con el servidor GraphQL. Verifica que el servidor esté ejecutándose.';
+      } else if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        errorMessage = error.graphQLErrors[0].message;
+      } else {
+        errorMessage = error.message || 'Error desconocido';
+      }
+      
+      setOutput(`Error al ejecutar el código:\n${errorMessage}`);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   return (
-    <div className="exercise-container">
-      <div className="layout-container">
-        <header className="header">
-          <div className="header-left">
-            <div className="logo-icon">
-              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z"
-                  fill="currentColor"
-                />
-              </svg>
-            </div>
-            <h2 className="app-title">PyQuest</h2>
+    <div className="exercise-screen">
+      {/* Fondo de estrellas */}
+      <div className="stars"></div>
+      
+      {/* Header */}
+      <header className="exercise-header">
+        <div className="exercise-header-content">
+          <div className="exercise-logo">
+            <img 
+              src="/Logo.png" 
+              alt="AstroCode Logo" 
+              className="exercise-logo-img" 
+            />
           </div>
-          <div className="header-right">
-            <div className="nav-links">
-              <a href="#" className="nav-link">Home</a>
-              <a href="#" className="nav-link">Learn</a>
-              <a href="#" className="nav-link">Practice</a>
-              <a href="#" className="nav-link">Projects</a>
-              <a href="#" className="nav-link">Community</a>
-            </div>
-            <div className="header-buttons">
-              <button className="login-btn">
-                <span>Login</span>
-              </button>
-              <button className="cart-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256">
-                  <path d="M222.14,58.87A8,8,0,0,0,216,56H54.68L49.79,29.14A16,16,0,0,0,34.05,16H16a8,8,0,0,0,0,16h18L59.56,172.29a24,24,0,0,0,5.33,11.27,28,28,0,1,0,44.4,8.44h45.42A27.75,27.75,0,0,0,152,204a28,28,0,1,0,28-28H83.17a8,8,0,0,1-7.87-6.57L72.13,152h116a24,24,0,0,0,23.61-19.71l12.16-66.86A8,8,0,0,0,222.14,58.87ZM96,204a12,12,0,1,1-12-12A12,12,0,0,1,96,204Zm96,0a12,12,0,1,1-12-12A12,12,0,0,1,192,204Zm4-74.57A8,8,0,0,1,188.1,136H69.22L57.59,72H206.41Z" />
-                </svg>
-              </button>
-            </div>
+          <h1 className="exercise-title-header">AstroCode - Ejercicio</h1>
+          <div className="exercise-header-actions">
+            <button 
+              className="exercise-back-btn"
+              onClick={onBackToDashboard}
+            >
+              ← Volver
+            </button>
+            <button className="exercise-help-btn">
+              ?
+            </button>
           </div>
-        </header>
-        
-        <div className="main-content">
-          <div className="content-container">
-            <h2 className="exercise-title">Find the bug</h2>
-            <p className="exercise-description">
-              The code below is supposed to print the sum of all the numbers in the list. However, it contains a bug. Can you find and fix it?
-            </p>
-            
-            <div className="code-input-container">
+        </div>
+      </header>
+
+      {/* Contenido principal */}
+      <main className="exercise-main">
+        <div className="exercise-content">
+          {/* Panel izquierdo - Editor de código */}
+          <div className="code-panel">
+            <div className="panel-header">
+              <h3>Editor de Código</h3>
+              <div className="panel-actions">
+                <div className="timer-display">
+                  <span className="timer-icon">⏱️</span>
+                  <span className="timer-text">{formatTime(timer)}</span>
+                </div>
+                <button onClick={handleReset} className="action-btn reset-btn">
+                  Reset
+                </button>
+                <button 
+                  onClick={handleRun} 
+                  className={`action-btn run-btn ${isRunning ? 'running' : ''}`}
+                  disabled={isRunning}
+                >
+                  {isRunning ? 'Ejecutando...' : '▶ Ejecutar'}
+                </button>
+                {iaData?.iaDisponible && exerciseData?.id && (
+                  <button
+                    onClick={handlePista}
+                    className="action-btn hint-btn"
+                    disabled={pidiendoPista}
+                    title="El tutor de IA te da una pista sin decirte la solución"
+                  >
+                    {pidiendoPista ? 'Pensando...' : `💡 Pista ${nivelPista}/3`}
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="code-editor">
               <textarea
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="def sum_numbers(numbers):"
                 className="code-textarea"
+                placeholder="Escribe tu código aquí..."
+                spellCheck={false}
               />
             </div>
-            
-            <div className="button-container">
-              <button onClick={handleReset} className="reset-btn">
-                <span>Reset</span>
-              </button>
-              <button onClick={handleRun} className="run-btn">
-                <span>Run</span>
+          </div>
+
+          {/* Panel derecho - Enunciado y Terminal */}
+          <div className="right-panel">
+            {/* Panel de enunciado */}
+            <div className="exercise-statement-panel">
+              <div className="panel-header">
+                <h3>Enunciado del Ejercicio</h3>
+                <div className="exercise-info">
+                  <span className={`difficulty-badge ${exerciseData?.difficulty?.toLowerCase() || 'easy'}`}>
+                    {exerciseData?.difficulty || 'Fácil'}
+                  </span>
+                  <span className="points-badge">{exerciseData?.points || 100} pts</span>
+                </div>
+              </div>
+              <div className="statement-content">
+                <h4>{exerciseData?.title || 'Suma de Números'}</h4>
+                <p>{exerciseData?.description || 'Crea una función que reciba una lista de números y devuelva la suma de todos ellos.'}</p>
+                {exerciseData?.resultadoEsperado && (
+                  <div className="expected-result">
+                    <h5>Resultado Esperado:</h5>
+                    <pre><code>{exerciseData.resultadoEsperado}</code></pre>
+                  </div>
+                )}
+                {!exerciseData && (
+                  <>
+                    <div className="requirements">
+                      <h5>Requisitos:</h5>
+                      <ul>
+                        <li>La función debe llamarse <code>sum_numbers</code></li>
+                        <li>Debe recibir un parámetro <code>numbers</code> (lista)</li>
+                        <li>Debe retornar la suma total</li>
+                        <li>Maneja listas vacías retornando 0</li>
+                      </ul>
+                    </div>
+                    <div className="example">
+                      <h5>Ejemplo:</h5>
+                      <code>sum_numbers([1, 2, 3, 4, 5]) → 15</code>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Panel de terminal */}
+            <div className="output-panel">
+              <div className="panel-header">
+                <h3>Terminal de Salida</h3>
+                <div className="terminal-controls">
+                  <div className="terminal-dots">
+                    <span className="dot red"></span>
+                    <span className="dot yellow"></span>
+                    <span className="dot green"></span>
+                  </div>
+                </div>
+              </div>
+              <div className="terminal-output">
+                <pre className="output-text">{output || 'Presiona "Ejecutar" para ver la salida del código...'}</pre>
+              </div>
+              {pista && (
+                <div className="hint-panel">
+                  <div className="hint-header">
+                    <span>🤖 AstroTutor{pista.nivel > 0 ? ` · pista ${pista.nivel}/3` : ''}</span>
+                    <button className="hint-close" onClick={() => setPista(null)} aria-label="Cerrar pista">✕</button>
+                  </div>
+                  <p className="hint-text">{pista.texto}</p>
+                  {pista.nivel > 0 && <span className="hint-remaining">Te quedan {pista.restantes} pistas hoy</span>}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+      
+      {/* Ventana de felicitación */}
+      {showCongratulations && completionData && (
+        <div className="congratulations-overlay">
+          <div className="congratulations-modal">
+            <div className="congratulations-header">
+              <h2>🎉 ¡Enhorabuena!</h2>
+            </div>
+            <div className="congratulations-content">
+              <h3>Has completado el ejercicio:</h3>
+              <h4 className="exercise-title">{completionData.titulo}</h4>
+              
+              <div className="completion-stats">
+                <div className="stat-item">
+                  <span className="stat-label">Puntos ganados:</span>
+                  <span className="stat-value">{completionData.puntos}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Tiempo empleado:</span>
+                  <span className="stat-value">{completionData.tiempo}</span>
+                </div>
+              </div>
+              
+              <p className="completion-message">{completionData.mensaje}</p>
+              
+              <button 
+                className="back-to-menu-btn"
+                onClick={() => {
+                  setShowCongratulations(false);
+                  if (onBackToDashboard) {
+                    onBackToDashboard();
+                  }
+                }}
+              >
+                Volver al Menú Principal
               </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

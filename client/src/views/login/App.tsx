@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
+import { API_URL } from '../../config';
 import './App.css';
 import Register from './Register';
 
 
-function App() {
+interface LoginAppProps {
+  onLoginSuccess?: () => void;
+}
+
+function App({ onLoginSuccess }: LoginAppProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,13 +33,14 @@ function App() {
             nombre_usuario
             correo_electronico
             nombre_completo
+            puntos
           }
         }
       }
     `;
 
     try {
-      const response = await fetch('http://localhost:4001/graphql', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,15 +62,35 @@ function App() {
         setMessage('Error: ' + result.errors[0].message);
       } else if (result.data?.login) {
         // Guardar token en localStorage
-        localStorage.setItem('token', result.data.login.token);
+        const token = result.data.login.token;
+        localStorage.setItem('token', token);
         localStorage.setItem('usuario', JSON.stringify(result.data.login.usuario));
+        
+        console.log('Login: Usuario guardado correctamente');
+        
+        // Verificar que el token se guardó correctamente
+        const savedToken = localStorage.getItem('token');
+        if (savedToken) {
+          try {
+            const tokenParts = savedToken.split('.');
+            if (tokenParts.length !== 3) {
+              throw new Error('Formato de token inválido');
+            }
+            const tokenData = JSON.parse(atob(tokenParts[1]));
+          } catch (error) {
+            console.error('Login: Error al decodificar el token:', error);
+          }
+        }
         
         setMessage('¡Login exitoso! Bienvenido ' + result.data.login.usuario.nombre_usuario);
         
-        // Redirigir a la pantalla principal después de 1.5 segundos
-        setTimeout(() => {
-          window.location.href = '/main';
-        }, 1500);
+        // Llamar a la función de login exitoso inmediatamente
+        if (onLoginSuccess) {
+          console.log('Login: Llamando a onLoginSuccess');
+          onLoginSuccess();
+        }
+        // Ya no forzamos la recarga, dejamos que Apollo Client maneje el token
+        // window.location.reload();
       }
     } catch (error: any) {
       setMessage('Error de conexión: ' + error.message);
@@ -78,7 +104,10 @@ function App() {
 
   // Mostrar componente de registro si showRegister es true
   if (showRegister) {
-    return <Register onBackToLogin={() => setShowRegister(false)} />;
+    return <Register 
+      onBackToLogin={() => setShowRegister(false)} 
+      onLoginSuccess={onLoginSuccess} 
+    />;
   }
 
   return (

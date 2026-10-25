@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
+import { API_URL } from '../../config';
 import './Register.css';
+import Welcome from './Welcome';
 
 
 interface RegisterProps {
   onBackToLogin: () => void;
+  onLoginSuccess?: () => void; // Función opcional para manejar el login exitoso después del registro
 }
 
-function Register({ onBackToLogin }: RegisterProps) {
+function Register({ onBackToLogin, onLoginSuccess }: RegisterProps) {
   const [formData, setFormData] = useState({
     nombre_usuario: '',
     correo_electronico: '',
@@ -16,6 +19,8 @@ function Register({ onBackToLogin }: RegisterProps) {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [registeredUsername, setRegisteredUsername] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,8 +42,8 @@ function Register({ onBackToLogin }: RegisterProps) {
       return;
     }
 
-    if (formData.contrasena.length < 6) {
-      setMessage('La contraseña debe tener al menos 6 caracteres');
+    if (formData.contrasena.length < 8) {
+      setMessage('La contraseña debe tener al menos 8 caracteres');
       return;
     }
 
@@ -64,7 +69,7 @@ function Register({ onBackToLogin }: RegisterProps) {
     `;
 
     try {
-      const response = await fetch('http://localhost:4001/graphql', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,19 +92,21 @@ function Register({ onBackToLogin }: RegisterProps) {
       if (result.errors) {
         setMessage('Error: ' + result.errors[0].message);
       } else if (result.data?.crearUsuario) {
-        setMessage('¡Registro exitoso! Ya puedes iniciar sesión.');
-        // Limpiar formulario
-        setFormData({
-          nombre_usuario: '',
-          correo_electronico: '',
-          contrasena: '',
-          confirmarContrasena: '',
-          nombre_completo: ''
-        });
-        // Regresar al login después de 2 segundos
-        setTimeout(() => {
-          onBackToLogin();
-        }, 2000);
+        setMessage('¡Registro exitoso!');
+        // Guardar el nombre de usuario para mostrarlo en la pantalla de bienvenida
+        setRegisteredUsername(result.data.crearUsuario.nombre_usuario);
+        
+        // Guardar los datos de inicio de sesión para el login automático
+        const loginData = {
+          correo_electronico: formData.correo_electronico,
+          contrasena: formData.contrasena
+        };
+        
+        // Guardar temporalmente los datos de login en localStorage
+        localStorage.setItem('tempLoginData', JSON.stringify(loginData));
+        
+        // Mostrar pantalla de bienvenida
+        setShowWelcome(true);
       }
     } catch (error: any) {
       setMessage('Error de conexión: ' + error.message);
@@ -108,6 +115,98 @@ function Register({ onBackToLogin }: RegisterProps) {
       setLoading(false);
     }
   };
+
+  // Manejar el cierre de la pantalla de bienvenida
+  const handleWelcomeComplete = async () => {
+    // Si existe la función onLoginSuccess, la llamamos para ir al menú principal
+    // Si no existe, volvemos al login
+    if (onLoginSuccess) {
+      try {
+        // Recuperar los datos de inicio de sesión guardados temporalmente
+        const tempLoginDataStr = localStorage.getItem('tempLoginData');
+        if (!tempLoginDataStr) {
+          throw new Error('No se encontraron datos de inicio de sesión');
+        }
+        
+        const tempLoginData = JSON.parse(tempLoginDataStr);
+        
+        // Realizar login automático con los datos del usuario registrado
+        const loginMutation = `
+          mutation Login($input: LoginInput!) {
+            login(input: $input) {
+              token
+              usuario {
+                id
+                nombre_usuario
+                correo_electronico
+                nombre_completo
+              }
+            }
+          }
+        `;
+
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: loginMutation,
+            variables: {
+              input: {
+                correo_electronico: tempLoginData.correo_electronico,
+                contrasena: tempLoginData.contrasena
+              }
+            }
+          })
+        });
+
+        const result = await response.json();
+        
+        if (result.data?.login) {
+          // Eliminar los datos temporales de inicio de sesión
+          localStorage.removeItem('tempLoginData');
+          
+          // Guardar token en localStorage
+          localStorage.setItem('token', result.data.login.token);
+          localStorage.setItem('usuario', JSON.stringify(result.data.login.usuario));
+          
+          console.log('Registro: Usuario guardado correctamente');
+          
+          // Verificar que el token se guardó correctamente
+          const savedToken = localStorage.getItem('token');
+          if (savedToken) {
+            try {
+              const tokenData = JSON.parse(atob(savedToken.split('.')[1]));
+            } catch (error) {
+              console.error('Registro: Error al decodificar el token:', error);
+            }
+          }
+          
+          // Llamar a la función de login exitoso inmediatamente
+          console.log('Registro: Llamando a onLoginSuccess');
+          onLoginSuccess();
+          
+          // Ya no forzamos la recarga, dejamos que Apollo Client maneje el token
+          // window.location.reload();
+        } else {
+          // Si hay algún error en el login automático, volver al login normal
+          onBackToLogin();
+        }
+      } catch (error) {
+        console.error('Error en login automático:', error);
+        onBackToLogin();
+      }
+    } else {
+      // Si no hay función de login exitoso, volver al login
+      onBackToLogin();
+    }
+  };
+
+  // Si se debe mostrar la pantalla de bienvenida
+  if (showWelcome) {
+    return <Welcome onContinue={handleWelcomeComplete} username={registeredUsername} />;
+  }
 
   return (
     <div className="login-bg">
