@@ -1,0 +1,88 @@
+.visor-mision {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.visor-lienzo {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(124, 140, 255, 0.3);
+  background: #070b24;
+}
+
+.visor-lienzo canvas {
+  display: block;
+  width: 100%;
+}
+
+.visor-controles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.visor-controles button,
+.visor-controles select {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.visor-controles select option {
+  color: black;
+}
+
+.visor-controles .visor-play {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: rgba(0, 255, 136, 0.5);
+  min-width: 42px;
+}
+
+.visor-controles input[type='range'] {
+  flex: 1;
+  min-width: 120px;
+  accent-color: #00ff88;
+}
+
+.visor-tick {
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  min-width: 70px;
+  text-align: right;
+}
+
+.grafica-vuelo {
+  width: 100%;
+  height: 70px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+}
+
+.grafica-altura,
+.grafica-velocidad {
+  fill: none;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.grafica-altura { stroke: #7cb8ff; }
+.grafica-velocidad { stroke: #ffb066; }
+
+.grafica-limite {
+  stroke: rgba(255, 82, 82, 0.5);
+  stroke-dasharray: 4 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.grafica-cursor {
+  stroke: rgba(255, 255, 255, 0.6);
+  vector-effect: non-scaling-stroke;
+}

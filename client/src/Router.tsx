@@ -10,6 +10,7 @@ import { GET_TAREA, mapTareaToExercise } from './utils/tareas';
 
 // Carga diferida: el editor (CodeMirror) y el panel de admin solo se descargan cuando se usan
 const Exercise = lazy(() => import('./views/exercises/Exercise'));
+const MisionView = lazy(() => import('./views/mision/MisionView'));
 const AdminPanel = lazy(() => import('./views/admin/AdminPanel'));
 
 const GET_ROL = gql`
@@ -85,7 +86,9 @@ const RutaEjercicio: React.FC = () => {
   const volver = () => navigate('/');
 
   if (usarEstado) {
-    return <Exercise key={id} onBackToDashboard={volver} exerciseData={desdeDashboard} />;
+    return desdeDashboard.tipo === 'pilotaje'
+      ? <MisionView key={id} tareaId={String(id)} onBack={volver} />
+      : <Exercise key={id} onBackToDashboard={volver} exerciseData={desdeDashboard} />;
   }
   if (loading) return <Pantalla>Cargando ejercicio...</Pantalla>;
   if (error || !data?.tarea) {
@@ -103,6 +106,7 @@ const RutaEjercicio: React.FC = () => {
       </Pantalla>
     );
   }
+  if (data.tarea.tipo === 'pilotaje') return <MisionView key={id} tareaId={String(id)} onBack={volver} />;
   return <Exercise key={id} onBackToDashboard={volver} exerciseData={mapTareaToExercise(data.tarea)} />;
 };
 
