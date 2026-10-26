@@ -3,6 +3,7 @@ import { gql, useMutation, useQuery } from '@apollo/client';
 import CodeEditor, { lineaDeError } from '../../components/code-editor/CodeEditor';
 import TextoIA from '../../components/texto-ia/TextoIA';
 import DiffSabotaje from '../../components/diff-sabotaje/DiffSabotaje';
+import CajaNegra, { Traza } from '../../components/caja-negra/CajaNegra';
 import './Exercise.css';
 
 // GraphQL mutation for code execution
@@ -69,6 +70,20 @@ const IA_DISPONIBLE = gql`
   }
 `;
 
+const CAMPOS_TRAZA = 'pasos totalPasos salida error truncado';
+
+const TRAZAR = gql`
+  mutation TrazarEjecucion($codigo: String!) {
+    trazarEjecucion(codigo: $codigo) { ${CAMPOS_TRAZA} }
+  }
+`;
+
+const TRAZAR_TEST = gql`
+  mutation TrazarTest($tareaId: ID!, $codigo: String!, $indiceTest: Int!) {
+    trazarTest(tareaId: $tareaId, codigo: $codigo, indiceTest: $indiceTest) { ${CAMPOS_TRAZA} }
+  }
+`;
+
 const PEDIR_PISTA = gql`
   mutation PedirPista($tareaId: ID!, $codigo: String!, $salida: String, $nivel: Int) {
     pedirPista(tareaId: $tareaId, codigo: $codigo, salida: $salida, nivel: $nivel) {
@@ -107,6 +122,31 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   const [insigniasNuevas, setInsigniasNuevas] = useState<string[]>([]);
   // Pistas del tutor de IA: cada vez que se pide una, sube el nivel (1 → 3)
   const [pista, setPista] = useState<{ texto: string; nivel: number; restantes: number } | null>(null);
+  // Caja negra (ejecución paso a paso) y últimos resultados de los tests (para «Ver qué pasó»)
+  const [cajaNegra, setCajaNegra] = useState<{ titulo: string; codigo: string; traza: Traza } | null>(null);
+  const [trazando, setTrazando] = useState(false);
+  const [testsUltimos, setTestsUltimos] = useState<any[] | null>(null);
+  const [trazar] = useMutation(TRAZAR);
+  const [trazarTest] = useMutation(TRAZAR_TEST);
+
+  const abrirCajaNegra = async (indiceTest?: number, descripcion?: string) => {
+    setTrazando(true);
+    try {
+      const { data } = indiceTest === undefined
+        ? await trazar({ variables: { codigo: code } })
+        : await trazarTest({ variables: { tareaId: exerciseData.id, codigo: code, indiceTest } });
+      const t = data.trazarEjecucion || data.trazarTest;
+      setCajaNegra({
+        titulo: indiceTest === undefined ? 'Caja negra: tu programa' : `Caja negra: test ${descripcion}`,
+        codigo: code,
+        traza: { ...t, pasos: JSON.parse(t.pasos) },
+      });
+    } catch (error: any) {
+      setOutput((anterior) => `${anterior}\n⚠️ Caja negra: ${error.graphQLErrors?.[0]?.message || error.message}`);
+    } finally {
+      setTrazando(false);
+    }
+  };
   const [pidiendoPista, setPidiendoPista] = useState(false);
   const [nivelPista, setNivelPista] = useState(1);
   const { data: iaData } = useQuery(IA_DISPONIBLE);
@@ -278,6 +318,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
 
       outputText += `Tiempo de ejecución: ${ejecucion?.time || executionTime}s\n`;
 
+      setTestsUltimos(resultado?.tests?.resultados || null);
       if (resultado?.tests) {
         outputText += `\nTests: ${resultado.tests.superados}/${resultado.tests.total} superados\n`;
         for (const test of resultado.tests.resultados) {
@@ -393,6 +434,14 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
                 >
                   {isRunning ? 'Ejecutando...' : '▶ Ejecutar'}
                 </button>
+                <button
+                  onClick={() => abrirCajaNegra()}
+                  className="action-btn caja-negra-btn"
+                  disabled={trazando}
+                  title="Ver tu programa ejecutándose paso a paso, con sus variables"
+                >
+                  {trazando ? 'Trazando...' : '🔭 Ver ejecución'}
+                </button>
                 {iaData?.iaDisponible && exerciseData?.id && (
                   <button
                     onClick={handlePista}
@@ -488,6 +537,29 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
               <div className="terminal-output">
                 <pre className="output-text">{output || 'Presiona "Ejecutar" para ver la salida del código...'}</pre>
               </div>
+              {testsUltimos && testsUltimos.some((t) => !t.superado && !t.oculto) && (
+                <div className="tests-fallidos" data-testid="tests-fallidos">
+                  <h4>Tests visibles que fallan</h4>
+                  <ul>
+                    {(() => {
+                      let indiceVisible = -1;
+                      return testsUltimos.map((t, i) => {
+                        if (!t.oculto) indiceVisible++;
+                        if (t.superado || t.oculto) return null;
+                        const indice = indiceVisible;
+                        return (
+                          <li key={i}>
+                            <code>{t.descripcion}</code>
+                            <button onClick={() => abrirCajaNegra(indice, t.descripcion)} disabled={trazando}>
+                              🔭 Ver qué pasó
+                            </button>
+                          </li>
+                        );
+                      });
+                    })()}
+                  </ul>
+                </div>
+              )}
               {revelacion && (
                 <div className="revelacion-panel" data-testid="revelacion">
                   <div className="hint-header">
@@ -562,6 +634,14 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
             </div>
           </div>
         </div>
+      )}
+      {cajaNegra && (
+        <CajaNegra
+          titulo={cajaNegra.titulo}
+          codigo={cajaNegra.codigo}
+          traza={cajaNegra.traza}
+          onCerrar={() => setCajaNegra(null)}
+        />
       )}
     </div>
   );

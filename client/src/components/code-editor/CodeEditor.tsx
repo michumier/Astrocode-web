@@ -102,7 +102,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, onRun, lineaEr
   }, [value]);
 
   useEffect(() => {
-    vista.current?.dispatch({ effects: marcarLineas.of({ error: lineaError, activa: lineaActiva }) });
+    const view = vista.current;
+    if (!view) return;
+    const efectos: StateEffect<any>[] = [marcarLineas.of({ error: lineaError, activa: lineaActiva })];
+    // La línea activa (caja negra) se mantiene a la vista
+    if (lineaActiva && lineaActiva >= 1 && lineaActiva <= view.state.doc.lines) {
+      efectos.push(EditorView.scrollIntoView(view.state.doc.line(lineaActiva).from, { y: 'nearest' }));
+    }
+    view.dispatch({ effects: efectos });
   }, [lineaError, lineaActiva, value]);
 
   useEffect(() => {
