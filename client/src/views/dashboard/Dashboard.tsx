@@ -800,6 +800,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
                           {exercise.difficulty}
                         </span>
                         <span className="exercise-points">{exercise.points} pts</span>
+                        {exercise.tipo === 'pilotaje' && <span className="mision-badge">🚀 Misión</span>}
                         {isTaskCompleted(exercise.id) && <span className="completed-badge">✓ Completado</span>}
                       </div>
                     </div>

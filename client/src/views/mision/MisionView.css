@@ -1,0 +1,359 @@
+.mision-pagina {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%);
+  color: white;
+  font-family: 'Arial', sans-serif;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.mision-cargando {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #0c1445;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.mision-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  max-width: 1400px;
+  margin: 0 auto 16px;
+}
+
+.mision-cabecera h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  flex: 1;
+}
+
+.mision-puntos {
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-weight: bold;
+}
+
+.mision-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1000px) {
+  .mision-cuerpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.mision-izquierda,
+.mision-derecha {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mision-enunciado {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.mision-enunciado summary {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.mision-enunciado p {
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-line;
+  line-height: 1.5;
+  margin: 10px 0 0;
+  font-size: 0.95rem;
+}
+
+.mision-objetivo {
+  color: #ffd27f;
+}
+
+.mision-editor {
+  height: 360px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.mision-editor .code-editor-cm,
+.mision-editor .code-editor-cm .cm-editor {
+  border-radius: 12px;
+}
+
+.mision-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.mision-escenario {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.mision-escenario select {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  border-radius: 8px;
+  padding: 7px 8px;
+}
+
+.mision-escenario select option {
+  color: black;
+}
+
+.mision-boton {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #111118;
+}
+
+.mision-boton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.mision-boton.lanzar { background: #00ff88; }
+.mision-boton.enviar { background: #7cb8ff; }
+.mision-boton.pista { background: #b388ff; }
+
+.mision-boton.secundario {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  font-weight: normal;
+}
+
+.mision-mensaje {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.mision-mensaje.ok {
+  background: rgba(0, 255, 136, 0.12);
+  color: #b8ffd9;
+}
+
+.mision-mensaje.error {
+  background: rgba(255, 82, 82, 0.14);
+  color: #ffd0d0;
+}
+
+.mision-pista {
+  background: rgba(179, 136, 255, 0.12);
+  border: 1px solid rgba(179, 136, 255, 0.45);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.mision-pista p {
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+
+.mision-pista code {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.mision-espera {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px dashed rgba(124, 140, 255, 0.4);
+  background: rgba(7, 11, 36, 0.6);
+  white-space: pre-wrap;
+}
+
+.mision-resultados {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mision-resumen {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+}
+
+.mision-estrellas {
+  letter-spacing: 2px;
+}
+
+.mision-estrellas.grande {
+  font-size: 2rem;
+  margin: 8px 0;
+}
+
+.mision-escenarios {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mision-escenario-item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: white;
+  cursor: pointer;
+}
+
+.mision-escenario-item.activo {
+  border-color: rgba(0, 255, 136, 0.6);
+}
+
+.mision-escenario-item:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.mision-motivo {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mision-metricas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+  margin: 0;
+}
+
+.mision-metricas div {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.mision-metricas dt {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.mision-metricas dd {
+  margin: 2px 0 0;
+  font-weight: bold;
+  font-family: 'Fira Code', Consolas, monospace;
+}
+
+.mision-registro h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.mision-registro ol {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  max-height: 160px;
+  overflow-y: auto;
+  background: #070b24;
+  border-radius: 8px;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.8rem;
+}
+
+.mision-registro li {
+  opacity: 0.4;
+  white-space: pre-wrap;
+}
+
+.mision-registro li.pasado {
+  opacity: 1;
+}
+
+.mision-registro-tick {
+  color: #7c8cff;
+}
+
+.mision-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 2000;
+}
+
+.mision-modal-caja {
+  background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+.mision-modal-caja h2 {
+  margin: 0;
+}
+
+.mision-nota {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.mision-modal-botones {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
