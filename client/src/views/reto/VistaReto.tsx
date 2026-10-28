@@ -98,6 +98,8 @@ const NOMBRES_METRICAS: Record<string, string> = {
   total: 'Total',
   celdas_bien: 'Celdas correctas',
   celdas: 'Celdas en total',
+  pixeles: 'Píxeles en total',
+  porcentaje: 'Coincidencia (%)',
 };
 
 const estrellasTexto = (n: number) => '⭐'.repeat(n) + '☆'.repeat(Math.max(0, 3 - n));

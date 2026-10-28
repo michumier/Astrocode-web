@@ -1,0 +1,134 @@
+.nebulosa-visor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 30% 20%, #241a3d 0%, #070a14 85%);
+  border: 1px solid rgba(180, 140, 255, 0.35);
+  min-width: 0;
+}
+
+.nebulosa-visor.exito { border-color: rgba(0, 255, 136, 0.6); }
+.nebulosa-visor.fallo { border-color: rgba(255, 82, 82, 0.55); }
+
+.nebulosa-lienzos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.nebulosa-lienzo {
+  flex: 1 1 140px;
+  max-width: 260px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.nebulosa-marco {
+  position: relative;
+  width: 100%;
+  min-height: 4px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #2f3550;
+  box-sizing: border-box;
+}
+
+.nebulosa-marco canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  cursor: crosshair;
+}
+
+/* Línea de luz del escáner */
+.nebulosa-escaner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #fff6c8;
+  box-shadow: 0 0 8px 2px rgba(255, 246, 200, 0.8);
+  pointer-events: none;
+}
+
+.nebulosa-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nebulosa-coincidencia {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.nebulosa-barra {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  background: #222840;
+  overflow: hidden;
+}
+
+.nebulosa-barra span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #8e24aa, #00bcd4);
+  transition: width 0.5s ease-out;
+}
+
+.nebulosa-boton {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #ff2bd6;
+  background: rgba(255, 43, 214, 0.12);
+  color: inherit;
+  cursor: pointer;
+}
+
+.nebulosa-boton:disabled { opacity: 0.45; cursor: default; border-color: #3a3f55; background: none; }
+.nebulosa-boton[aria-pressed='true'] { background: rgba(255, 43, 214, 0.3); }
+
+.nebulosa-pixel {
+  margin: 0;
+  min-height: 1.3em;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.nebulosa-material {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nebulosa-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.nebulosa-leyenda i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  vertical-align: -2px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nebulosa-barra span { transition: none; }
+}
