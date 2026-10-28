@@ -102,13 +102,32 @@ const NOMBRES_METRICAS: Record<string, string> = {
 
 const estrellasTexto = (n: number) => '⭐'.repeat(n) + '☆'.repeat(Math.max(0, 3 - n));
 
-// Borrador del código por misión o reto (comodidad del navegador: si falla, no pasa nada)
+// Borrador del código por misión o reto (comodidad del navegador: si falla, no pasa nada).
+// Se guarda con una firma de la tarea (título + código base): si con el mismo id aparece otra
+// tarea (base de datos recreada, reto cambiado), el borrador viejo se ignora.
+interface TareaBorrador { id: string; titulo: string; codigoBase?: string | null }
 const claveBorrador = (id: string) => `astrocode-mision-${id}`;
-const leerBorrador = (id: string) => {
-  try { return localStorage.getItem(claveBorrador(id)); } catch { return null; }
+const firmaTarea = (tarea: TareaBorrador) => {
+  const texto = `${tarea.titulo}\n${tarea.codigoBase || ''}`;
+  let hash = 5381;
+  for (let i = 0; i < texto.length; i++) hash = ((hash * 33) ^ texto.charCodeAt(i)) >>> 0;
+  return hash.toString(36);
 };
-const guardarBorrador = (id: string, codigo: string) => {
-  try { localStorage.setItem(claveBorrador(id), codigo); } catch { /* sin almacenamiento */ }
+const leerBorrador = (tarea: TareaBorrador): string | null => {
+  try {
+    const guardado = localStorage.getItem(claveBorrador(tarea.id));
+    if (!guardado) return null;
+    const { firma, codigo } = JSON.parse(guardado);
+    return firma === firmaTarea(tarea) && typeof codigo === 'string' ? codigo : null;
+  } catch {
+    // Sin almacenamiento o borrador antiguo (texto sin firma): se descarta
+    return null;
+  }
+};
+const guardarBorrador = (tarea: TareaBorrador, codigo: string) => {
+  try {
+    localStorage.setItem(claveBorrador(tarea.id), JSON.stringify({ firma: firmaTarea(tarea), codigo }));
+  } catch { /* sin almacenamiento */ }
 };
 
 // Vista de las tareas que se corrigen simulando escenarios: misiones de pilotaje (fase 2)
@@ -138,12 +157,12 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
   const [pedirPista, { loading: pidiendo }] = useMutation(PEDIR_PISTA);
 
   useEffect(() => {
-    if (tarea) setCodigo(leerBorrador(tarea.id) ?? tarea.codigoBase ?? '');
+    if (tarea) setCodigo(leerBorrador(tarea) ?? tarea.codigoBase ?? '');
   }, [tarea]);
 
   const cambiarCodigo = (nuevo: string) => {
     setCodigo(nuevo);
-    if (tarea) guardarBorrador(tarea.id, nuevo);
+    if (tarea) guardarBorrador(tarea, nuevo);
   };
 
   const errorDe = (e: any) => e.graphQLErrors?.[0]?.message || e.message;

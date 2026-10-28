@@ -848,11 +848,11 @@
   box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
 }
 
-.exercise-info {
+.dashboard .exercise-info {
   flex: 1;
 }
 
-.exercise-title {
+.dashboard .exercise-title {
   color: #ffffff;
   font-size: 1.1rem;
   font-weight: 600;
