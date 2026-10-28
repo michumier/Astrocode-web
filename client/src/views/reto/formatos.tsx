@@ -6,6 +6,8 @@ import VisorBomba from '../../components/visor-reto/bomba/VisorBomba';
 import MaterialBomba from '../../components/visor-reto/bomba/MaterialBomba';
 import VisorLengua from '../../components/visor-reto/lengua/VisorLengua';
 import MaterialLengua from '../../components/visor-reto/lengua/MaterialLengua';
+import VisorCamara from '../../components/visor-reto/camara/VisorCamara';
+import MaterialCamara from '../../components/visor-reto/camara/MaterialCamara';
 
 // Registro de formatos de reto (fase 5). Cada formato aporta su visor y su pestaña de material;
 // los que no tienen aún los suyos usan los genéricos. Las misiones de pilotaje usan VisorMision.
@@ -34,6 +36,7 @@ const FORMATOS: Record<string, Partial<Formato>> = {
   diagnostico: { tituloMaterial: '🧪 Datos de calibración' },
   bomba: { probar: '✂️ Desactivar', tituloMaterial: '📕 Manual', exito: '💚 ¡Bomba desactivada!', Visor: VisorBomba, Material: MaterialBomba },
   lengua: { probar: '🛸 Traducir', tituloMaterial: '🛸 Ejemplos', exito: '🛸 ¡Los alienígenas te entienden!', Visor: VisorLengua, Material: MaterialLengua },
+  camara: { probar: '🔓 Intentar abrir', tituloMaterial: '🏦 Cámaras', exito: '🔓 ¡Cámara abierta!', Visor: VisorCamara, Material: MaterialCamara },
 };
 
 export const formatoDe = (id: string): Formato => ({

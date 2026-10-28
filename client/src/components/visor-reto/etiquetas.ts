@@ -5,6 +5,7 @@ export const ETIQUETAS: Record<string, string> = {
   diagnostico: '🧪 Calibración',
   bomba: '💣 Bomba',
   lengua: '👽 Lengua alienígena',
+  camara: '🔐 Cámara acorazada',
 };
 
 export const etiquetaFormato = (formato?: string | null) => ETIQUETAS[formato || ''] || '🧪 Reto';
