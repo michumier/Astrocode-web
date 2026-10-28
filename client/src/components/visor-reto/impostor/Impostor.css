@@ -1,0 +1,345 @@
+.impostor-visor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 70% 10%, #1d2338 0%, #070a14 85%);
+  border: 1px solid rgba(124, 184, 255, 0.35);
+  min-width: 0;
+}
+
+.impostor-visor.exito { border-color: rgba(0, 255, 136, 0.6); }
+.impostor-visor.fallo { border-color: rgba(255, 82, 82, 0.55); }
+
+.impostor-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  color: #ff8080;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.9rem;
+}
+
+.impostor-enlace {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #7cb8ff;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+/* ---------- Plano ---------- */
+.impostor-plano {
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+  border-radius: 10px;
+  background: #0b1020;
+}
+
+.impostor-pasillo {
+  stroke: #3d4660;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.impostor-pasillo.denegado {
+  stroke: #ff8080;
+  stroke-dasharray: 6 5;
+  stroke-width: 3;
+}
+
+.impostor-pasillo-nota {
+  fill: #ff9d9d;
+  font-size: 8px;
+  text-anchor: middle;
+}
+
+.impostor-ruta {
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: impostor-trazo 0.5s ease forwards;
+}
+
+.impostor-ruta.ida { stroke: #ffd27f; }
+.impostor-ruta.vuelta { stroke: #b48cff; transform: translate(0, 3px); }
+.impostor-ruta.mal { stroke: #ff5252; }
+
+@keyframes impostor-trazo {
+  to { stroke-dashoffset: 0; }
+}
+
+.impostor-sala rect {
+  fill: #1a2238;
+  stroke: #5d6b8f;
+  stroke-width: 1.5;
+}
+
+.impostor-sala text {
+  fill: #dfe6ff;
+  font-size: 11px;
+  text-anchor: middle;
+  font-family: 'Fira Code', Consolas, monospace;
+}
+
+.impostor-sala.crimen rect {
+  fill: #3a1218;
+  stroke: #ff5252;
+  stroke-width: 2.5;
+}
+
+.impostor-sala text.impostor-ocupante {
+  fill: #ffd27f;
+  font-size: 9px;
+}
+
+.impostor-plano.oscuro .impostor-sala:not(.foco):not(.crimen) { opacity: 0.55; }
+
+.impostor-foco {
+  fill: rgba(255, 240, 180, 0.16);
+  stroke: rgba(255, 240, 180, 0.5);
+  animation: impostor-foco 0.8s ease-out;
+}
+
+@keyframes impostor-foco {
+  from { r: 120; opacity: 0; }
+}
+
+/* ---------- I1: fichas ---------- */
+.impostor-fichas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 6px;
+}
+
+.impostor-ficha {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #121a2e;
+  border: 1px solid #2a3450;
+  font-size: 0.8rem;
+  overflow: hidden;
+}
+
+.impostor-ficha small { opacity: 0.6; }
+.impostor-ficha.en-crimen { border-color: #ff5252; }
+.impostor-ficha.acusada { box-shadow: 0 0 0 2px #ffd27f inset; }
+
+.impostor-sello {
+  position: absolute;
+  right: -4px;
+  top: 8px;
+  transform: rotate(12deg);
+  padding: 1px 6px;
+  border: 2px solid #ff5252;
+  border-radius: 4px;
+  color: #ff5252;
+  font-weight: bold;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  animation: impostor-sello 0.4s ease-out;
+}
+
+.impostor-sello.mini {
+  position: static;
+  display: inline-block;
+  margin-left: 6px;
+  transform: rotate(-4deg);
+  font-size: 0.6rem;
+}
+
+@keyframes impostor-sello {
+  from { transform: rotate(12deg) scale(2.2); opacity: 0; }
+}
+
+.impostor-veredicto {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.impostor-veredicto.ok { background: rgba(0, 255, 136, 0.14); }
+.impostor-veredicto.mal,
+.impostor-veredicto.revelacion { background: rgba(255, 82, 82, 0.14); }
+
+/* ---------- I2: apagón ---------- */
+.impostor-linea-tiempo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.impostor-tramo {
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: #1a2238;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.impostor-leyenda {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.impostor-leyenda .ida { color: #ffd27f; }
+.impostor-leyenda .vuelta { color: #b48cff; }
+
+.impostor-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.impostor-tabla th,
+.impostor-tabla td {
+  padding: 4px 6px;
+  text-align: left;
+  border-bottom: 1px solid #222a40;
+}
+
+.impostor-tabla tbody tr { cursor: pointer; }
+.impostor-tabla tr.actual { background: rgba(124, 184, 255, 0.14); }
+.impostor-tabla tr.pudo td:first-child { color: #00ff88; }
+.impostor-tabla td.ok { color: #9dffcf; }
+.impostor-tabla td.mal { color: #ff9d9d; }
+
+/* ---------- Expediente (material) ---------- */
+.impostor-material {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.impostor-casos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.impostor-casos button {
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid #2a3450;
+  background: #121a2e;
+  color: inherit;
+  cursor: pointer;
+}
+
+.impostor-casos button.activa { border-color: #7cb8ff; background: #1a2848; }
+
+.impostor-plano-material summary,
+.impostor-filtros summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.impostor-log {
+  border-radius: 10px;
+  border: 1px solid #2a3450;
+  background: #060912;
+  overflow: hidden;
+}
+
+.impostor-log-cabecera {
+  padding: 6px 10px;
+  background: #121a2e;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.8rem;
+}
+
+.impostor-filtros {
+  padding: 4px 10px;
+  border-bottom: 1px solid #1c2338;
+}
+
+.impostor-filtros-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0;
+}
+
+.impostor-filtros-fila input[type='search'],
+.impostor-filtros-fila select {
+  flex: 1 1 140px;
+  min-width: 0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #2a3450;
+  background: #0b1020;
+  color: inherit;
+}
+
+.impostor-tipo {
+  font-size: 0.7rem;
+  font-family: 'Fira Code', Consolas, monospace;
+  white-space: nowrap;
+}
+
+.impostor-log-lineas {
+  overflow: auto;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.impostor-linea {
+  position: absolute;
+  left: 0;
+  min-width: 100%;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 0 8px;
+  white-space: pre;
+  box-sizing: border-box;
+}
+
+.impostor-n { opacity: 0.35; }
+.impostor-hora { color: #8a93ad; }
+.impostor-tipo-col { min-width: 7.5em; }
+
+.t-puerta, .t-puerta .impostor-tipo-col { color: #7cd9ff; }
+.t-alerta { color: #ff5252; font-weight: bold; }
+.t-alerta.impostor-linea { background: rgba(255, 82, 82, 0.12); }
+.t-error, .t-info { color: #ffd27f; }
+.t-error.impostor-linea, .t-info.impostor-linea { background: rgba(255, 210, 127, 0.1); }
+.t-recuento { color: #9dffcf; }
+.t-tripulacion { color: #ffd27f; }
+.t-energia { color: #6f7896; }
+.t-comms { color: #b48cff; }
+.t-mantenimiento { color: #7d8fbf; }
+.t-titulo { color: #dfe6ff; }
+.impostor-linea.denegado { color: #ff9d9d; }
+.impostor-linea.resaltada { outline: 2px solid #ffd27f; background: rgba(255, 210, 127, 0.2); }
+
+.impostor-vacio {
+  padding: 10px;
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .impostor-ruta { animation: none; stroke-dashoffset: 0; }
+  .impostor-foco,
+  .impostor-sello { animation: none; }
+}
+
+@media (max-width: 600px) {
+  .impostor-tabla th:nth-child(2),
+  .impostor-tabla td:nth-child(2) { display: none; }
+}

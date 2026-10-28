@@ -4,6 +4,8 @@ import './VisorReto.css';
 export interface PropsMaterial {
   // Un elemento por escenario visible: lo que el alumno puede estudiar antes de ejecutar
   material: { nombre: string; material: any }[];
+  // Línea a la que saltar cuando el visor lo pide (por ejemplo, «ver la línea 1.204 del registro»)
+  foco?: { escenario: string; linea: number; n: number } | null;
 }
 
 // Material de reserva: los datos públicos de cada escenario visible, tal cual

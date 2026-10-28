@@ -8,6 +8,9 @@ export interface PropsVisor {
   // Cambia en cada ejecución para reiniciar el visor
   idVuelo: number;
   onTick?: (tick: number) => void;
+  // Nombre del escenario que se ve y salto a la pestaña de material (lo usa el impostor)
+  escenario?: string;
+  irAMaterial?: (linea: number) => void;
 }
 
 // Visor de reserva: enseña los datos de cada paso tal cual. Lo usan la calibración del motor

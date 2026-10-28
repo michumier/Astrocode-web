@@ -6,6 +6,7 @@ export const ETIQUETAS: Record<string, string> = {
   bomba: '💣 Bomba',
   lengua: '👽 Lengua alienígena',
   camara: '🔐 Cámara acorazada',
+  impostor: '🔍 Impostor a bordo',
 };
 
 export const etiquetaFormato = (formato?: string | null) => ETIQUETAS[formato || ''] || '🧪 Reto';

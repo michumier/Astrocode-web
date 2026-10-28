@@ -139,6 +139,8 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
   const formato = formatoDe(tarea?.mision?.formato || 'pilotaje');
   const material = useMemo(() => (tarea?.mision?.material ? JSON.parse(tarea.mision.material) : null), [tarea]);
   const [pestana, setPestana] = useState<'enunciado' | 'material'>('enunciado');
+  // Línea del material a la que pide saltar el visor (el impostor enlaza con su línea del registro)
+  const [focoMaterial, setFocoMaterial] = useState<{ escenario: string; linea: number; n: number } | null>(null);
   const [codigo, setCodigo] = useState('');
   const [escenario, setEscenario] = useState(0);
   const [resultado, setResultado] = useState<any>(null);
@@ -216,6 +218,11 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
   const metricas = useMemo(() => (escenarioVisto?.metricas ? JSON.parse(escenarioVisto.metricas) : null), [escenarioVisto]);
   const lineaError = escenarioVisto && !escenarioVisto.exito ? lineaDeError(escenarioVisto.motivo) : null;
   const alCambiarTick = useCallback((t: number) => setTickActual(t), []);
+  const irAMaterial = useCallback((linea: number) => {
+    if (!escenarioVisto) return;
+    setFocoMaterial({ escenario: escenarioVisto.nombre, linea, n: Date.now() });
+    setPestana('material');
+  }, [escenarioVisto]);
 
   const pedir = async () => {
     try {
@@ -262,11 +269,11 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
                   onClick={() => setPestana('enunciado')}>📜 Reto</button>
                 {material && (
                   <button role="tab" aria-selected={pestana === 'material'} className={pestana === 'material' ? 'activa' : ''}
-                    onClick={() => setPestana('material')}>{formato.tituloMaterial}</button>
+                    onClick={() => { setFocoMaterial(null); setPestana('material'); }}>{formato.tituloMaterial}</button>
                 )}
               </div>
               {pestana === 'material' && material ? (
-                <div className="mision-material" role="tabpanel"><formato.Material material={material} /></div>
+                <div className="mision-material" role="tabpanel"><formato.Material material={material} foco={focoMaterial} /></div>
               ) : (
                 <div role="tabpanel">
                   <p>{tarea.descripcion}</p>
@@ -331,6 +338,8 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
               exito={escenarioVisto.exito}
               idVuelo={idVuelo * 100 + vista}
               onTick={alCambiarTick}
+              escenario={escenarioVisto.nombre}
+              irAMaterial={irAMaterial}
             />
           ) : (
             <div className="mision-espera">
