@@ -8,6 +8,7 @@ export const ETIQUETAS: Record<string, string> = {
   camara: '🔐 Cámara acorazada',
   impostor: '🔍 Impostor a bordo',
   nebulosa: '🎨 Nebulosa',
+  radio: '🎵 Señal de radio',
 };
 
 export const etiquetaFormato = (formato?: string | null) => ETIQUETAS[formato || ''] || '🧪 Reto';

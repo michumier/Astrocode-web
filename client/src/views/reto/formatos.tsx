@@ -12,6 +12,8 @@ import VisorImpostor from '../../components/visor-reto/impostor/VisorImpostor';
 import MaterialImpostor from '../../components/visor-reto/impostor/MaterialImpostor';
 import VisorNebulosa from '../../components/visor-reto/nebulosa/VisorNebulosa';
 import MaterialNebulosa from '../../components/visor-reto/nebulosa/MaterialNebulosa';
+import VisorRadio from '../../components/visor-reto/radio/VisorRadio';
+import MaterialRadio from '../../components/visor-reto/radio/MaterialRadio';
 
 // Registro de formatos de reto (fase 5). Cada formato aporta su visor y su pestaña de material;
 // los que no tienen aún los suyos usan los genéricos. Las misiones de pilotaje usan VisorMision.
@@ -43,6 +45,7 @@ const FORMATOS: Record<string, Partial<Formato>> = {
   camara: { probar: '🔓 Intentar abrir', tituloMaterial: '🏦 Cámaras', exito: '🔓 ¡Cámara abierta!', Visor: VisorCamara, Material: MaterialCamara },
   impostor: { probar: '🔍 Acusar', tituloMaterial: '📁 Expediente', exito: '🔍 ¡Impostor desenmascarado!', Visor: VisorImpostor, Material: MaterialImpostor },
   nebulosa: { probar: '🖌️ Pintar', tituloMaterial: '🎯 Objetivos', exito: '🎨 ¡Nebulosa pintada!', Visor: VisorNebulosa, Material: MaterialNebulosa },
+  radio: { probar: '📡 Transmitir', tituloMaterial: '📻 Frecuencias', exito: '📡 ¡Señal recibida!', Visor: VisorRadio, Material: MaterialRadio },
 };
 
 export const formatoDe = (id: string): Formato => ({
