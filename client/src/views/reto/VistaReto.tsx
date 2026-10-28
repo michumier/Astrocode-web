@@ -100,6 +100,7 @@ const NOMBRES_METRICAS: Record<string, string> = {
   celdas: 'Celdas en total',
   pixeles: 'Píxeles en total',
   porcentaje: 'Coincidencia (%)',
+  generacion: 'Generación en que se cubrió',
 };
 
 const estrellasTexto = (n: number) => '⭐'.repeat(n) + '☆'.repeat(Math.max(0, 3 - n));

@@ -1,0 +1,144 @@
+.colonia-visor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 30% 10%, #0f2a26 0%, #050a10 85%);
+  border: 1px solid rgba(92, 255, 208, 0.3);
+  min-width: 0;
+}
+
+.colonia-visor.exito { border-color: rgba(0, 255, 136, 0.6); }
+.colonia-visor.fallo { border-color: rgba(255, 82, 82, 0.55); }
+
+.colonia-controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.colonia-controles button {
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid #2a4a44;
+  background: #0b1a1a;
+  color: inherit;
+  cursor: pointer;
+}
+
+.colonia-controles button.activa { border-color: #5cffd0; }
+.colonia-controles input[type='range'] { flex: 1 1 100px; min-width: 80px; }
+
+.colonia-cuerpo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.colonia-mapa {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 1px solid #1d3a35;
+  box-sizing: border-box;
+}
+
+.colonia-mapa.alarma { animation: colonia-alarma 0.6s steps(2) 3; border-color: #ff5252; }
+
+@keyframes colonia-alarma {
+  50% { box-shadow: 0 0 16px rgba(255, 82, 82, 0.8); }
+}
+
+.colonia-panel {
+  flex: 1 1 200px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.colonia-grafica {
+  display: block;
+  width: 100%;
+  height: 32px;
+  margin-top: 2px;
+}
+
+.colonia-grafica polyline { fill: none; stroke: #5cffd0; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.colonia-grafica line { stroke: #ffd27f; stroke-width: 1; vector-effect: non-scaling-stroke; }
+
+.colonia-ok { color: #9dffcf; }
+.colonia-mal { color: #ff5252; }
+
+.colonia-tabla {
+  border-collapse: collapse;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.colonia-tabla caption { text-align: left; margin-bottom: 4px; font-family: inherit; }
+.colonia-tabla th, .colonia-tabla td { padding: 2px 4px; text-align: center; }
+.colonia-tabla th:first-child { text-align: left; }
+.colonia-tabla td.si { color: #5cffd0; }
+.colonia-tabla td.no { color: #ff8080; opacity: 0.7; }
+
+.colonia-aviso {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 82, 82, 0.14);
+}
+
+.colonia-material {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.colonia-mapas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.colonia-mapas figure {
+  flex: 1 1 160px;
+  max-width: 240px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.colonia-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.colonia-leyenda i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  vertical-align: -2px;
+}
+
+.colonia-leyenda i.viva { background: #5cffd0; border-radius: 50%; }
+.colonia-leyenda i.roca { background: #5b5f6b; }
+.colonia-leyenda i.base { background: repeating-linear-gradient(45deg, #3a1218 0 3px, #ff5252 3px 4px); }
+.colonia-leyenda i.zona { background: #0d2a17; border: 1px dashed #3ddc84; }
+
+@media (prefers-reduced-motion: reduce) {
+  .colonia-mapa.alarma { animation: none; }
+}

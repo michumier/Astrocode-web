@@ -9,6 +9,7 @@ export const ETIQUETAS: Record<string, string> = {
   impostor: '🔍 Impostor a bordo',
   nebulosa: '🎨 Nebulosa',
   radio: '🎵 Señal de radio',
+  colonia: '🧬 Colonia',
 };
 
 export const etiquetaFormato = (formato?: string | null) => ETIQUETAS[formato || ''] || '🧪 Reto';
