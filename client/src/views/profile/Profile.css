@@ -44,7 +44,7 @@
   margin-bottom: 30px;
 }
 
-.back-btn {
+.profile-container .back-btn {
   padding: 10px 20px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -56,7 +56,7 @@
   backdrop-filter: blur(10px);
 }
 
-.back-btn:hover {
+.profile-container .back-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
 }
@@ -170,7 +170,7 @@
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
-.points-label {
+.profile-container .points-label {
   font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.7);
 }
@@ -200,7 +200,7 @@
   margin-bottom: 12px;
 }
 
-.stat-value {
+.profile-container .stat-value {
   font-size: 2rem;
   font-weight: bold;
   color: #4ecdc4;
@@ -208,7 +208,7 @@
   text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
 }
 
-.stat-label {
+.profile-container .stat-label {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;

@@ -1,0 +1,159 @@
+.radio-visor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 20% 10%, #13283a 0%, #060a14 85%);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  min-width: 0;
+}
+
+.radio-visor.exito { border-color: rgba(0, 255, 136, 0.6); }
+.radio-visor.fallo { border-color: rgba(255, 82, 82, 0.55); }
+
+.radio-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.radio-volumen {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.radio-volumen input { width: 90px; }
+
+.radio-botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.radio-boton {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #00ff88;
+  background: rgba(0, 255, 136, 0.12);
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.12s ease-out;
+}
+
+.radio-boton:active { transform: scale(0.97); }
+.radio-boton.secundario { border-color: #7cb8ff; background: rgba(124, 184, 255, 0.1); }
+.radio-boton:disabled { opacity: 0.45; cursor: default; }
+
+.radio-pista {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.radio-pista-titulo {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.radio-pista svg {
+  width: 100%;
+  height: 60px;
+  border-radius: 6px;
+  background: #050812;
+  border: 1px solid #1f2a3d;
+  box-sizing: border-box;
+}
+
+/* Los espacios del mensaje importan (dobles, triples…): se enseñan tal cual */
+.radio-material code { white-space: pre-wrap; }
+
+.radio-base { stroke: #1f2a3d; stroke-width: 0.2; vector-effect: non-scaling-stroke; }
+.radio-pitido { fill: #00ff88; }
+.radio-pitido.mal { fill: #ff5252; }
+.radio-estatica { fill: rgba(160, 160, 170, 0.45); }
+.radio-diferencia { fill: rgba(255, 82, 82, 0.22); }
+.radio-cabezal { stroke: #ffd27f; stroke-width: 2; vector-effect: non-scaling-stroke; }
+
+.radio-nota {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.radio-nota code { color: #ffd27f; }
+
+.radio-teletipo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #0d0b05;
+  border: 1px solid #3a3320;
+}
+
+.radio-teletipo-etiqueta { font-size: 0.8rem; opacity: 0.8; }
+
+.radio-teletipo-texto {
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  color: #ffd27f;
+  word-break: break-all;
+}
+
+.radio-teletipo-texto .mal { color: #ff5252; text-decoration: underline; }
+.radio-cursor { animation: radio-parpadeo 0.8s steps(2) infinite; }
+
+@keyframes radio-parpadeo {
+  50% { opacity: 0; }
+}
+
+.radio-osciloscopio {
+  width: 100%;
+  height: 60px;
+  border-radius: 6px;
+  background: #031008;
+  border: 1px solid #12301f;
+  box-sizing: border-box;
+}
+
+.radio-material {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.radio-material section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.radio-material h4,
+.radio-material p { margin: 0; }
+
+.radio-material .radio-boton { align-self: flex-start; }
+
+.radio-lista {
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.75rem;
+  word-break: break-word;
+  opacity: 0.85;
+}
+
+.radio-leyenda {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radio-cursor { animation: none; }
+  .radio-boton { transition: none; }
+}

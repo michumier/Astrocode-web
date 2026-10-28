@@ -1,0 +1,286 @@
+.camara-visor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 30% 20%, #2b2f3d 0%, #0b0d17 80%);
+  border: 1px solid rgba(255, 210, 127, 0.35);
+}
+
+.camara-visor.exito { border-color: rgba(0, 255, 136, 0.6); }
+
+.camara-rodillo-zona,
+.camara-dial-zona,
+.camara-combinacion-zona {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* ---------- Puerta ---------- */
+.camara-puerta {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #1c1f29;
+  border: 4px solid #6b6f7d;
+  perspective: 300px;
+  margin: 0 auto;
+}
+
+.camara-hoja {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #9aa0ad 0%, #5d626f 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: left center;
+  transition: transform 0.8s ease;
+  z-index: 1;
+}
+
+.camara-volante {
+  font-size: 2.2rem;
+  color: #2b2f3d;
+  transition: transform 0.8s ease;
+}
+
+.camara-puerta.abierta .camara-hoja { transform: rotateY(-75deg); }
+.camara-puerta.abierta .camara-volante { transform: rotate(180deg); }
+.camara-puerta.alarma { border-color: #ff3b3b; box-shadow: 0 0 18px rgba(255, 59, 59, 0.6); animation: camara-alarma 0.6s steps(2) 3; }
+
+.camara-oro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+@keyframes camara-alarma {
+  50% { box-shadow: 0 0 2px rgba(255, 59, 59, 0.2); }
+}
+
+/* ---------- Rodillo (C1) ---------- */
+.camara-rodillo,
+.camara-dial-panel,
+.camara-combinacion {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.camara-objetivo,
+.camara-contador,
+.camara-posibles {
+  font-size: 0.9rem;
+}
+
+.camara-rodillo ol,
+.camara-combinacion ol {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  border-radius: 8px;
+  background: #070b18;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.85rem;
+  min-height: 110px;
+}
+
+.camara-rodillo li {
+  display: grid;
+  grid-template-columns: 70px 1fr auto;
+  gap: 8px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  opacity: 0.75;
+}
+
+.camara-rodillo li.coincide {
+  opacity: 1;
+  background: rgba(0, 255, 136, 0.18);
+  color: #b8ffd9;
+  font-weight: bold;
+}
+
+.camara-pin {
+  letter-spacing: 2px;
+}
+
+/* ---------- Dial (C2) ---------- */
+.camara-dial {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #070b18;
+  border: 2px solid #3a3f4d;
+  animation: camara-giro 0.35s ease-out;
+}
+
+@keyframes camara-giro {
+  from { transform: rotate(-4deg); opacity: 0.4; }
+  to { transform: rotate(0); opacity: 1; }
+}
+
+.camara-dial-numero {
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 1.8rem;
+  color: #ffd27f;
+}
+
+.camara-dial-flecha { font-weight: bold; }
+.camara-dial-flecha.mayor { color: #7cb8ff; }
+.camara-dial-flecha.menor { color: #ffb47c; }
+.camara-dial-flecha.abierta { color: #00ff88; }
+.camara-dial-flecha.invalido { color: #ff8080; }
+
+.camara-bombillas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.camara-bombillas span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #00ff88;
+  box-shadow: 0 0 6px rgba(0, 255, 136, 0.7);
+}
+
+.camara-bombillas span.usada {
+  background: #3a3f4d;
+  box-shadow: none;
+}
+
+.camara-rango-barra {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  background: #2a2f3d;
+  overflow: hidden;
+}
+
+.camara-rango-barra span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #ffd27f, #ffb347);
+  transition: left 0.4s ease, width 0.4s ease;
+}
+
+.camara-rango-texto {
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+/* ---------- Combinación (C3) ---------- */
+.camara-combinacion li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 4px;
+}
+
+.camara-n {
+  width: 18px;
+  opacity: 0.6;
+}
+
+.camara-tubos {
+  display: flex;
+  gap: 3px;
+}
+
+.camara-tubos span {
+  width: 20px;
+  text-align: center;
+  border-radius: 4px;
+  background: #1a0f08;
+  color: #ff9d3c;
+  text-shadow: 0 0 6px rgba(255, 157, 60, 0.9);
+  font-size: 1rem;
+}
+
+.camara-fichas {
+  color: #ffd27f;
+  letter-spacing: 2px;
+}
+
+.camara-fichas small {
+  letter-spacing: 0;
+  color: #cfd3e0;
+  opacity: 0.8;
+}
+
+.camara-nada { opacity: 0.6; }
+
+.camara-revelacion {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 82, 82, 0.14);
+}
+
+/* ---------- Material ---------- */
+.camara-material {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.camara-material h4 {
+  margin: 0 0 4px;
+}
+
+.camara-material p {
+  margin: 2px 0;
+}
+
+.camara-huella {
+  word-break: break-all;
+  font-size: 0.8rem;
+}
+
+.camara-lista {
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.camara-leyenda {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camara-hoja,
+  .camara-volante,
+  .camara-rango-barra span { transition: none; }
+  .camara-dial,
+  .camara-puerta.alarma { animation: none; }
+}
+
+.camara-quedan {
+  margin-left: auto;
+  font-size: 0.75rem;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.camara-combinacion li {
+  flex-wrap: wrap;
+}

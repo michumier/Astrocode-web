@@ -4,6 +4,7 @@ import client from '../../apollo/client';
 import './Dashboard.css';
 import { useNavigate } from 'react-router-dom';
 import { mapTareaToExercise } from '../../utils/tareas';
+import { esSimulacion, etiquetaFormato } from '../../components/visor-reto/etiquetas';
 import SalaDeMaquinas from './SalaDeMaquinas';
 import SolarSystem from '../../components/solar-system/SolarSystem';
 import Starfield from '../../components/solar-system/Starfield';
@@ -41,6 +42,7 @@ const GET_DAILY_CHALLENGE = gql`
     dailyChallenge {
       id
       tipo
+      formato
       titulo
       descripcion
       puntosBase
@@ -61,6 +63,7 @@ const GET_TASKS_BY_LEVEL = gql`
     tareasPorNivel(nivelId: $nivelId) {
       id
       tipo
+      formato
       titulo
       descripcion
       puntosBase
@@ -800,7 +803,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
                           {exercise.difficulty}
                         </span>
                         <span className="exercise-points">{exercise.points} pts</span>
-                        {exercise.tipo === 'pilotaje' && <span className="mision-badge">🚀 Misión</span>}
+                        {esSimulacion(exercise.tipo) && (
+                          <span className="mision-badge">{etiquetaFormato(exercise.tipo === 'reto' ? exercise.formato : 'pilotaje')}</span>
+                        )}
                         {isTaskCompleted(exercise.id) && <span className="completed-badge">✓ Completado</span>}
                       </div>
                     </div>
