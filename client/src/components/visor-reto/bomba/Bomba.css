@@ -236,7 +236,7 @@
 }
 
 .bomba-resultado.ok { background: rgba(0, 255, 136, 0.14); }
-.bomba-resultado.error { background: rgba(255, 82, 82, 0.16); }
+.bomba-resultado.fallo { background: rgba(255, 82, 82, 0.16); }
 
 .bomba-resultado p {
   margin: 6px 0 0;

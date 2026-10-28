@@ -104,7 +104,7 @@ const VisorBomba: React.FC<PropsVisor> = ({ escena, fotogramas, exito, idVuelo }
       </div>
 
       {terminado && (
-        <div className={`bomba-resultado ${exito ? 'ok' : 'error'}`} role="status">
+        <div className={`bomba-resultado ${exito ? 'ok' : 'fallo'}`} role="status">
           <strong>{exito ? '💚 Bomba desactivada' : '💥 ¡BOOM!'}</strong>
           {!exito && final?.explicacion && <p>{final.explicacion}</p>}
           {!exito && final?.fase !== 'fin' && <p>Tu función falló antes de cortar nada: mira el motivo en la lista de escenarios.</p>}

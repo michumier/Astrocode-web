@@ -1,0 +1,138 @@
+.rejilla {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.rejilla figcaption {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.rejilla-celdas {
+  display: grid;
+  gap: 2px;
+  padding: 3px;
+  background: #2a2f45;
+  border-radius: 6px;
+}
+
+.rejilla-celda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+.rejilla-celda.celda-mal {
+  box-shadow: inset 0 0 0 3px #ff2bd6;
+  animation: lengua-parpadeo 1s ease-in-out infinite alternate;
+}
+
+@keyframes lengua-parpadeo {
+  from { box-shadow: inset 0 0 0 3px #ff2bd6; }
+  to { box-shadow: inset 0 0 0 3px rgba(255, 43, 214, 0.35); }
+}
+
+.lengua-barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lengua-barra label {
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.lengua-material {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lengua-ejemplo h4 {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+}
+
+.lengua-pareja,
+.lengua-trio {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lengua-pareja {
+  gap: 6px;
+}
+
+.lengua-flecha {
+  font-size: 1.4rem;
+  opacity: 0.8;
+}
+
+.lengua-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.75rem;
+  margin: 0;
+  opacity: 0.85;
+}
+
+.lengua-leyenda i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  vertical-align: middle;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.lengua-visor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 0%, #22164a 0%, #0a0d1f 75%);
+  border: 1px solid rgba(124, 140, 255, 0.4);
+}
+
+.lengua-visor.exito {
+  border-color: rgba(0, 255, 136, 0.7);
+  box-shadow: 0 0 18px rgba(0, 255, 136, 0.25);
+}
+
+.lengua-visor.fallo {
+  border-color: rgba(255, 43, 214, 0.6);
+}
+
+.lengua-sin-salida {
+  padding: 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.lengua-resumen {
+  margin: 0;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rejilla-celda.celda-mal { animation: none; }
+}

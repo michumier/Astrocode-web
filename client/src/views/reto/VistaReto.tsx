@@ -96,6 +96,8 @@ const NOMBRES_METRICAS: Record<string, string> = {
   intentos: 'Intentos',
   aciertos: 'Aciertos',
   total: 'Total',
+  celdas_bien: 'Celdas correctas',
+  celdas: 'Celdas en total',
 };
 
 const estrellasTexto = (n: number) => '⭐'.repeat(n) + '☆'.repeat(Math.max(0, 3 - n));

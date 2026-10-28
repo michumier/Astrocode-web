@@ -200,13 +200,13 @@
 }
 
 /* Loading and Error States */
-.loading, .error {
+.full-ranking .loading, .full-ranking .error {
   text-align: center;
   padding: 40px;
   font-size: 1.2rem;
 }
 
-.error {
+.full-ranking .error {
   color: #f44336;
 }
 
