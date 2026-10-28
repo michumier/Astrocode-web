@@ -20,6 +20,10 @@ jobs:
       - run: npm ci
       - name: Comprobar tipos
         run: npx tsc --noEmit
+      - name: Pruebas unitarias
+        run: npm run test:ci
+        env:
+          CI: true
       - name: Build de producción
         run: npm run build
         env:

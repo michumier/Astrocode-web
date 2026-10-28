@@ -55,7 +55,7 @@ const Reactor: React.FC<{ escena: any; final: any; exito: boolean; irAMaterial?:
 
 // ---------- I2: quién pudo ir y volver durante el apagón ----------
 const Apagon: React.FC<{ escena: any; final: any; idVuelo: number }> = ({ escena, final, idVuelo }) => {
-  const tripulantes: any[] = final.tripulantes || [];
+  const tripulantes: any[] = useMemo(() => final.tripulantes || [], [final.tripulantes]);
   // Se repasa a cada tripulante y se termina en el culpable; luego se puede elegir a mano
   const orden = useMemo(() => {
     const otros = tripulantes.filter((t) => t.nombre !== final.culpable);

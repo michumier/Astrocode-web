@@ -1,0 +1,100 @@
+/* Sistema de diseño de AstroCode (fase 6). Prediseño: https://claude.ai/artifact/EhzYLRtiZoSsgY135Ff24G
+   El color sale del logo: azul noche, turquesa del cohete y oro de la llama.
+   Las vistas antiguas siguen con sus estilos hasta que les toque su subfase. */
+
+:root {
+  /* Superficies */
+  --ac-noche: #0e1c2b;
+  --ac-sarga: #15263a;
+  --ac-relieve: #1c3149;
+  --ac-relieve-2: #233b57;
+  --ac-linea: #2a4260;
+  --ac-codigo: #0a1521;
+
+  /* Texto */
+  --ac-texto: #eef3f7;
+  --ac-texto-2: #d5e0ea;
+  --ac-suave: #a9bccf;
+  --ac-tenue: #7f95ab;
+
+  /* Papeles: turquesa = progreso y lo hecho · oro = acción principal y puntos · coral = solo «Difícil» */
+  --ac-turquesa: #5cc8c2;
+  --ac-turquesa-fondo: rgba(92, 200, 194, 0.16);
+  --ac-oro: #f4b942;
+  --ac-oro-claro: #f7c865;
+  --ac-oro-fondo: rgba(244, 185, 66, 0.16);
+  --ac-tinta-oro: #2a1c04;
+  --ac-coral: #ff7a59;
+  --ac-coral-fondo: rgba(255, 122, 89, 0.16);
+  --ac-error: #ff6b7d;
+  --ac-error-fondo: rgba(255, 107, 125, 0.14);
+  --ac-estrella: #f3e9d2;
+
+  /* Tipografía */
+  --ac-display: 'Bricolage Grotesque Variable', system-ui, sans-serif;
+  --ac-ui: 'Onest Variable', system-ui, sans-serif;
+  --ac-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  /* Formas y movimiento (curvas de Emil Kowalski: salida fuerte, nada rebota) */
+  --ac-radio: 12px;
+  --ac-radio-panel: 18px;
+  --ac-sombra: 0 12px 30px rgba(0, 0, 0, 0.35);
+  --ac-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ac-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ac-pulsar: 140ms;
+}
+
+body {
+  margin: 0;
+  background: var(--ac-noche);
+  color: var(--ac-texto);
+  font-family: var(--ac-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: var(--ac-mono);
+}
+
+/* Superficies del navegador que no dibujamos nosotros, también con la paleta */
+::selection {
+  background: var(--ac-oro);
+  color: var(--ac-noche);
+}
+
+:focus-visible {
+  outline: 3px solid var(--ac-oro);
+  outline-offset: 3px;
+}
+
+* {
+  scrollbar-color: var(--ac-linea) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ac-linea);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Solo para lectores de pantalla */
+.ac-oculto {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

@@ -13,6 +13,8 @@ import { esSimulacion } from './components/visor-reto/etiquetas';
 const Exercise = lazy(() => import('./views/exercises/Exercise'));
 const VistaReto = lazy(() => import('./views/reto/VistaReto'));
 const AdminPanel = lazy(() => import('./views/admin/AdminPanel'));
+// Muestrario del sistema de diseño de la fase 6: solo en desarrollo
+const GuiaDiseno = process.env.NODE_ENV !== 'production' ? lazy(() => import('./views/diseno/GuiaDiseno')) : null;
 
 const GET_ROL = gql`
   query RolActual {
@@ -166,6 +168,7 @@ const Rutas: React.FC = () => {
         element={protegida(<Profile onBackToDashboard={() => navigate('/')} onNavigateToAdmin={() => navigate('/admin')} />)}
       />
       <Route path="/admin" element={protegida(<AdminPanel onBack={() => navigate('/perfil')} />, ['admin'])} />
+      {GuiaDiseno && <Route path="/diseno" element={<GuiaDiseno />} />}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </Suspense>
