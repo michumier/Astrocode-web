@@ -7,10 +7,11 @@ import PythonGuide from './views/python-guide/PythonGuide';
 import Profile from './views/profile/Profile';
 import FullRanking from './views/ranking/FullRanking';
 import { GET_TAREA, mapTareaToExercise } from './utils/tareas';
+import { esSimulacion } from './components/visor-reto/etiquetas';
 
 // Carga diferida: el editor (CodeMirror) y el panel de admin solo se descargan cuando se usan
 const Exercise = lazy(() => import('./views/exercises/Exercise'));
-const MisionView = lazy(() => import('./views/mision/MisionView'));
+const VistaReto = lazy(() => import('./views/reto/VistaReto'));
 const AdminPanel = lazy(() => import('./views/admin/AdminPanel'));
 
 const GET_ROL = gql`
@@ -86,8 +87,8 @@ const RutaEjercicio: React.FC = () => {
   const volver = () => navigate('/');
 
   if (usarEstado) {
-    return desdeDashboard.tipo === 'pilotaje'
-      ? <MisionView key={id} tareaId={String(id)} onBack={volver} />
+    return esSimulacion(desdeDashboard.tipo)
+      ? <VistaReto key={id} tareaId={String(id)} onBack={volver} />
       : <Exercise key={id} onBackToDashboard={volver} exerciseData={desdeDashboard} />;
   }
   if (loading) return <Pantalla>Cargando ejercicio...</Pantalla>;
@@ -106,7 +107,7 @@ const RutaEjercicio: React.FC = () => {
       </Pantalla>
     );
   }
-  if (data.tarea.tipo === 'pilotaje') return <MisionView key={id} tareaId={String(id)} onBack={volver} />;
+  if (esSimulacion(data.tarea.tipo)) return <VistaReto key={id} tareaId={String(id)} onBack={volver} />;
   return <Exercise key={id} onBackToDashboard={volver} exerciseData={mapTareaToExercise(data.tarea)} />;
 };
 

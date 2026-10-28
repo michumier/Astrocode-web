@@ -3,13 +3,15 @@ import { gql, useMutation, useQuery } from '@apollo/client';
 import CodeEditor, { lineaDeError } from '../../components/code-editor/CodeEditor';
 import VisorMision from '../../components/visor-mision/VisorMision';
 import TextoIA from '../../components/texto-ia/TextoIA';
-import './MisionView.css';
+import { formatoDe } from './formatos';
+import './VistaReto.css';
 
 const GET_MISION = gql`
   query MisionPorId($id: ID!) {
     iaDisponible
     tarea(id: $id) {
       id
+      tipo
       titulo
       descripcion
       codigoBase
@@ -17,8 +19,11 @@ const GET_MISION = gql`
       puntosBase
       mision {
         id
+        formato
+        funcion
         escenarios
         ocultos
+        material
       }
     }
   }
@@ -73,7 +78,7 @@ const PEDIR_PISTA = gql`
   }
 `;
 
-interface MisionViewProps {
+interface VistaRetoProps {
   tareaId: string;
   onBack: () => void;
 }
@@ -88,11 +93,14 @@ const NOMBRES_METRICAS: Record<string, string> = {
   optimo: 'Óptimo',
   limite: 'Límite',
   choques: 'Choques',
+  intentos: 'Intentos',
+  aciertos: 'Aciertos',
+  total: 'Total',
 };
 
 const estrellasTexto = (n: number) => '⭐'.repeat(n) + '☆'.repeat(Math.max(0, 3 - n));
 
-// Borrador del código por misión (comodidad del navegador: si falla, no pasa nada)
+// Borrador del código por misión o reto (comodidad del navegador: si falla, no pasa nada)
 const claveBorrador = (id: string) => `astrocode-mision-${id}`;
 const leerBorrador = (id: string) => {
   try { return localStorage.getItem(claveBorrador(id)); } catch { return null; }
@@ -101,9 +109,15 @@ const guardarBorrador = (id: string, codigo: string) => {
   try { localStorage.setItem(claveBorrador(id), codigo); } catch { /* sin almacenamiento */ }
 };
 
-const MisionView: React.FC<MisionViewProps> = ({ tareaId, onBack }) => {
+// Vista de las tareas que se corrigen simulando escenarios: misiones de pilotaje (fase 2)
+// y retos (fase 5). Cada formato aporta su visor y su material (ver formatos.tsx).
+const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
   const { data, loading, error } = useQuery(GET_MISION, { variables: { id: tareaId } });
   const tarea = data?.tarea;
+  const esPilotaje = !tarea?.mision || tarea.mision.formato === 'pilotaje';
+  const formato = formatoDe(tarea?.mision?.formato || 'pilotaje');
+  const material = useMemo(() => (tarea?.mision?.material ? JSON.parse(tarea.mision.material) : null), [tarea]);
+  const [pestana, setPestana] = useState<'enunciado' | 'material'>('enunciado');
   const [codigo, setCodigo] = useState('');
   const [escenario, setEscenario] = useState(0);
   const [resultado, setResultado] = useState<any>(null);
@@ -193,11 +207,11 @@ const MisionView: React.FC<MisionViewProps> = ({ tareaId, onBack }) => {
     }
   };
 
-  if (loading) return <div className="mision-cargando">Preparando la misión...</div>;
+  if (loading) return <div className="mision-cargando">Preparando la simulación...</div>;
   if (error || !tarea?.mision) {
     return (
       <div className="mision-cargando">
-        <p>No se pudo cargar la misión.</p>
+        <p>No se pudo cargar {tarea?.tipo === 'reto' ? 'el reto' : 'la misión'}.</p>
         <button className="mision-boton" onClick={onBack}>Volver</button>
       </div>
     );
@@ -208,16 +222,38 @@ const MisionView: React.FC<MisionViewProps> = ({ tareaId, onBack }) => {
       <header className="mision-cabecera">
         <button className="mision-boton secundario" onClick={onBack}>← Volver</button>
         <h1>{tarea.titulo}</h1>
+        {!esPilotaje && <span className="mision-formato">{formato.etiqueta}</span>}
         <span className="mision-puntos">{tarea.puntosBase} pts</span>
       </header>
 
       <main className="mision-cuerpo">
         <section className="mision-izquierda">
-          <details className="mision-enunciado" open>
-            <summary>📋 Briefing de la misión</summary>
-            <p>{tarea.descripcion}</p>
-            {tarea.resultadoEsperado && <p className="mision-objetivo">🎯 {tarea.resultadoEsperado}</p>}
-          </details>
+          {esPilotaje ? (
+            <details className="mision-enunciado" open>
+              <summary>📋 Briefing de la misión</summary>
+              <p>{tarea.descripcion}</p>
+              {tarea.resultadoEsperado && <p className="mision-objetivo">🎯 {tarea.resultadoEsperado}</p>}
+            </details>
+          ) : (
+            <div className="mision-enunciado reto">
+              <div className="mision-pestanas" role="tablist">
+                <button role="tab" aria-selected={pestana === 'enunciado'} className={pestana === 'enunciado' ? 'activa' : ''}
+                  onClick={() => setPestana('enunciado')}>📜 Reto</button>
+                {material && (
+                  <button role="tab" aria-selected={pestana === 'material'} className={pestana === 'material' ? 'activa' : ''}
+                    onClick={() => setPestana('material')}>{formato.tituloMaterial}</button>
+                )}
+              </div>
+              {pestana === 'material' && material ? (
+                <div className="mision-material" role="tabpanel"><formato.Material material={material} /></div>
+              ) : (
+                <div role="tabpanel">
+                  <p>{tarea.descripcion}</p>
+                  {tarea.resultadoEsperado && <p className="mision-objetivo">🎯 {tarea.resultadoEsperado}</p>}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="mision-editor">
             <CodeEditor value={codigo} onChange={cambiarCodigo} onRun={() => !modo && lanzar()} lineaError={lineaError} />
@@ -233,7 +269,7 @@ const MisionView: React.FC<MisionViewProps> = ({ tareaId, onBack }) => {
               </select>
             </label>
             <button className="mision-boton lanzar" onClick={lanzar} disabled={!!modo} title="Ctrl+Enter">
-              {modo === 'probar' ? 'Simulando...' : '🚀 Lanzar'}
+              {modo === 'probar' ? 'Simulando...' : formato.probar}
             </button>
             <button className="mision-boton enviar" onClick={enviarSolucion} disabled={!!modo}>
               {modo === 'enviar' ? 'Corrigiendo...' : `📡 Enviar (${tarea.mision.escenarios.length + tarea.mision.ocultos} escenarios)`}
@@ -258,9 +294,17 @@ const MisionView: React.FC<MisionViewProps> = ({ tareaId, onBack }) => {
         </section>
 
         <section className="mision-derecha">
-          {fotogramas && escena ? (
+          {fotogramas && escena && esPilotaje ? (
             <VisorMision
               mision={tarea.mision.id}
+              escena={escena}
+              fotogramas={fotogramas}
+              exito={escenarioVisto.exito}
+              idVuelo={idVuelo * 100 + vista}
+              onTick={alCambiarTick}
+            />
+          ) : fotogramas && escena ? (
+            <formato.Visor
               escena={escena}
               fotogramas={fotogramas}
               exito={escenarioVisto.exito}
@@ -271,7 +315,9 @@ const MisionView: React.FC<MisionViewProps> = ({ tareaId, onBack }) => {
             <div className="mision-espera">
               {escenarioVisto
                 ? <p>❌ {escenarioVisto.motivo}</p>
-                : <p>Escribe tu función <code>piloto(sensores)</code> y pulsa <strong>🚀 Lanzar</strong> para ver el vuelo.</p>}
+                : esPilotaje
+                  ? <p>Escribe tu función <code>piloto(sensores)</code> y pulsa <strong>🚀 Lanzar</strong> para ver el vuelo.</p>
+                  : <p>Escribe tu función <code>{tarea.mision.funcion}()</code> y pulsa <strong>{formato.probar}</strong> para ver qué hace.</p>}
             </div>
           )}
 
@@ -288,7 +334,7 @@ const MisionView: React.FC<MisionViewProps> = ({ tareaId, onBack }) => {
                       className={`mision-escenario-item ${i === vista ? 'activo' : ''}`}
                       onClick={() => { if (!e.oculto) { setVista(i); setIdVuelo((v) => v + 1); } }}
                       disabled={e.oculto}
-                      title={e.oculto ? 'Escenario oculto: no se puede ver el vuelo' : 'Ver este vuelo'}
+                      title={e.oculto ? 'Escenario oculto: no se puede ver' : 'Ver este escenario'}
                     >
                       <span>{e.exito ? '✅' : '❌'} {e.oculto ? '🔒 Escenario oculto' : e.nombre}</span>
                       <span className="mision-motivo">{e.motivo}</span>
@@ -305,7 +351,7 @@ const MisionView: React.FC<MisionViewProps> = ({ tareaId, onBack }) => {
               )}
               {escenarioVisto?.registro?.length > 0 && (
                 <div className="mision-registro">
-                  <h3>📟 Registro de vuelo (tus print)</h3>
+                  <h3>{esPilotaje ? '📟 Registro de vuelo (tus print)' : '📟 Registro (tus print)'}</h3>
                   <ol>
                     {escenarioVisto.registro.map((r: any, i: number) => (
                       <li key={i} className={r.t <= tickActual ? 'pasado' : ''}>
@@ -323,12 +369,12 @@ const MisionView: React.FC<MisionViewProps> = ({ tareaId, onBack }) => {
       {completado && (
         <div className="mision-modal" role="dialog" aria-modal="true" aria-labelledby="mision-modal-titulo">
           <div className="mision-modal-caja">
-            <h2 id="mision-modal-titulo">🎉 ¡Misión cumplida!</h2>
+            <h2 id="mision-modal-titulo">{formato.exito}</h2>
             <p className="mision-estrellas grande">{estrellasTexto(completado.estrellas)}</p>
             <p>Has ganado <strong>{completado.puntos} puntos</strong>.</p>
-            {completado.estrellas < 3 && <p className="mision-nota">Puedes seguir mejorando tu piloto para conseguir más estrellas (volver a enviarla ya no suma puntos).</p>}
+            {completado.estrellas < 3 && <p className="mision-nota">Puedes seguir mejorando tu código para conseguir más estrellas (volver a enviarlo ya no suma puntos).</p>}
             <div className="mision-modal-botones">
-              <button className="mision-boton secundario" onClick={() => setCompletado(null)}>Ver los vuelos</button>
+              <button className="mision-boton secundario" onClick={() => setCompletado(null)}>{esPilotaje ? 'Ver los vuelos' : 'Ver los escenarios'}</button>
               <button className="mision-boton lanzar" onClick={onBack}>Volver al mapa</button>
             </div>
           </div>
@@ -338,4 +384,4 @@ const MisionView: React.FC<MisionViewProps> = ({ tareaId, onBack }) => {
   );
 };
 
-export default MisionView;
+export default VistaReto;

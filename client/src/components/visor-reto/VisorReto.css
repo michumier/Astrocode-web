@@ -1,0 +1,61 @@
+.visor-generico {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(7, 11, 36, 0.85);
+  border: 1px solid rgba(124, 140, 255, 0.4);
+}
+
+.visor-generico.exito { border-color: rgba(0, 255, 136, 0.55); }
+.visor-generico.fallo { border-color: rgba(255, 82, 82, 0.55); }
+
+.visor-generico-cabecera {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.visor-generico input[type='range'] {
+  width: 100%;
+  accent-color: #00ff88;
+}
+
+.visor-generico-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.visor-generico h4,
+.material-generico h4 {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.visor-generico pre,
+.material-generico pre {
+  margin: 0;
+  max-height: 260px;
+  overflow: auto;
+  padding: 8px;
+  border-radius: 8px;
+  background: #070b24;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.material-generico {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.material-generico p {
+  margin: 0 0 6px;
+}
