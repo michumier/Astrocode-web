@@ -1,0 +1,325 @@
+/* ---------- Visor de la bomba ---------- */
+.bomba-visor {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 30%, #1d2340 0%, #0a0d1f 80%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.bomba-visor.desactivada { border-color: rgba(0, 255, 136, 0.6); }
+.bomba-visor.explotada { border-color: rgba(255, 82, 82, 0.7); animation: bomba-sacudida 0.5s ease-in-out; }
+
+.bomba-destello {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 200, 80, 0.85) 0%, rgba(255, 60, 0, 0.5) 40%, transparent 75%);
+  animation: bomba-destello 0.9s ease-out forwards;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes bomba-destello {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes bomba-sacudida {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-6px, 3px); }
+  40% { transform: translate(5px, -4px); }
+  60% { transform: translate(-4px, -2px); }
+  80% { transform: translate(3px, 4px); }
+}
+
+.bomba-caja {
+  background: linear-gradient(160deg, #4a4f5c 0%, #2f333d 100%);
+  border: 3px solid #1b1d23;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+}
+
+.bomba-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.bomba-lcd {
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 1.5rem;
+  color: #ff3b3b;
+  background: #140404;
+  padding: 2px 10px;
+  border-radius: 6px;
+  border: 1px solid #3a0c0c;
+  text-shadow: 0 0 8px rgba(255, 59, 59, 0.8);
+}
+
+.bomba-lcd.parada {
+  color: #00ff88;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.8);
+}
+
+.bomba-serie {
+  font-family: 'Fira Code', Consolas, monospace;
+  background: #f1efe6;
+  color: #111;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.bomba-baterias {
+  font-size: 0.9rem;
+}
+
+.bomba-led {
+  margin-left: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #552222;
+  border: 2px solid #111;
+}
+
+.bomba-led.parpadeo { background: #ff3b3b; animation: bomba-parpadeo 0.8s steps(2) infinite; }
+.bomba-led.verde { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
+.bomba-led.rojo { background: #ff3b3b; box-shadow: 0 0 10px #ff3b3b; }
+
+@keyframes bomba-parpadeo {
+  50% { opacity: 0.3; }
+}
+
+.bomba-cables {
+  width: 100%;
+  max-height: 240px;
+}
+
+.bomba-cable-indice {
+  fill: #cfd3e0;
+  font-size: 12px;
+  font-family: 'Fira Code', Consolas, monospace;
+}
+
+.bomba-cable-nombre {
+  fill: #e6e8f0;
+  font-size: 11px;
+}
+
+.bomba-borne {
+  fill: #9aa0ad;
+  stroke: #111;
+}
+
+.bomba-tijeras {
+  font-size: 20px;
+  fill: #ffffff;
+  animation: bomba-corte 0.4s ease-out;
+}
+
+.bomba-chispa {
+  font-size: 12px;
+  fill: #ffd27f;
+}
+
+.bomba-debia {
+  font-size: 10px;
+  fill: #ffb3b3;
+  font-weight: bold;
+}
+
+@keyframes bomba-corte {
+  from { transform: translateX(-30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.bomba-modulos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.bomba-modulos .bomba-modulo:first-child {
+  grid-column: 1 / -1;
+}
+
+.bomba-modulo {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.bomba-modulo h4 {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.bomba-boton-zona {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bomba-boton {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.75rem;
+  border: 4px solid #111;
+  box-shadow: 0 5px 0 #111;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.bomba-boton.accion-pulsar { transform: translateY(4px); box-shadow: 0 1px 0 #111; }
+.bomba-boton.accion-mantener { transform: translateY(4px); box-shadow: 0 1px 0 #111, 0 0 18px rgba(255, 255, 255, 0.6); }
+
+.bomba-boton-color,
+.bomba-boton-accion {
+  font-size: 0.8rem;
+}
+
+.bomba-teclado {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.bomba-tecla {
+  position: relative;
+  background: #e9e4d4;
+  color: #111;
+  border-radius: 6px;
+  border: 2px solid #111;
+  font-size: 1.6rem;
+  text-align: center;
+  padding: 6px 0;
+}
+
+.bomba-tecla.pulsada {
+  background: #b9f5d4;
+  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+
+.bomba-tecla-orden {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  background: #111;
+  color: #fff;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+}
+
+.bomba-resultado {
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.bomba-resultado.ok { background: rgba(0, 255, 136, 0.14); }
+.bomba-resultado.error { background: rgba(255, 82, 82, 0.16); }
+
+.bomba-resultado p {
+  margin: 6px 0 0;
+  white-space: pre-line;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bomba-visor.explotada,
+  .bomba-tijeras,
+  .bomba-led.parpadeo { animation: none; }
+}
+
+/* ---------- Pestaña del manual ---------- */
+.bomba-manual {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #f4efe1;
+  color: #1d1d1d;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.bomba-manual h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  border-bottom: 2px solid #1d1d1d;
+}
+
+.bomba-manual h4 {
+  margin: 8px 0 4px;
+}
+
+.bomba-manual ol,
+.bomba-manual ul {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.bomba-manual-nota {
+  margin: 0 0 4px;
+  font-style: italic;
+}
+
+.bomba-columnas {
+  border-collapse: collapse;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.bomba-columnas th,
+.bomba-columnas td {
+  border: 1px solid #1d1d1d;
+  padding: 2px 10px;
+}
+
+.bomba-columnas th {
+  font-size: 0.85rem;
+}
+
+.bomba-ficha {
+  margin-bottom: 8px;
+}
+
+.bomba-ficha-cables {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0;
+}
+
+.bomba-chip {
+  border: 3px solid;
+  border-radius: 999px;
+  padding: 0 8px;
+  background: #fff;
+  font-size: 0.8rem;
+}
+
+.bomba-chip small {
+  opacity: 0.6;
+}

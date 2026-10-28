@@ -2,6 +2,8 @@ import React from 'react';
 import VisorGenerico, { PropsVisor } from '../../components/visor-reto/VisorGenerico';
 import MaterialGenerico, { PropsMaterial } from '../../components/visor-reto/MaterialGenerico';
 import { etiquetaFormato } from '../../components/visor-reto/etiquetas';
+import VisorBomba from '../../components/visor-reto/bomba/VisorBomba';
+import MaterialBomba from '../../components/visor-reto/bomba/MaterialBomba';
 
 // Registro de formatos de reto (fase 5). Cada formato aporta su visor y su pestaña de material;
 // los que no tienen aún los suyos usan los genéricos. Las misiones de pilotaje usan VisorMision.
@@ -28,6 +30,7 @@ const GENERICO: Omit<Formato, 'etiqueta'> = {
 const FORMATOS: Record<string, Partial<Formato>> = {
   pilotaje: { probar: '🚀 Lanzar', exito: '🎉 ¡Misión cumplida!' },
   diagnostico: { tituloMaterial: '🧪 Datos de calibración' },
+  bomba: { probar: '✂️ Desactivar', tituloMaterial: '📕 Manual', exito: '💚 ¡Bomba desactivada!', Visor: VisorBomba, Material: MaterialBomba },
 };
 
 export const formatoDe = (id: string): Formato => ({
