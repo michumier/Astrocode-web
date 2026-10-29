@@ -151,7 +151,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   const enCurso = abiertos.find((p) => (porPlaneta[p.key] || []).some((e: any) => !hechas.has(e.id)))
     || abiertos[abiertos.length - 1] || PLANETS[0];
   const proximo = PLANETS.find((p) => !abierto(p.key));
-  const ejerciciosEnCurso: any[] = porPlaneta[enCurso.key] || [];
+  const ejerciciosEnCurso: any[] = useMemo(() => porPlaneta[enCurso.key] || [], [porPlaneta, enCurso.key]);
   const siguienteEstrella = ejerciciosEnCurso.find((e: any) => !hechas.has(e.id));
   const estrellas: Estrella[] = useMemo(() => ejerciciosEnCurso.map((e: any) => ({
     id: e.id,

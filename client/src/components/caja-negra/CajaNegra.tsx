@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, Pause, Play, SkipBack, SkipForward, X } from 'lucide-react';
 import CodeEditor from '../code-editor/CodeEditor';
 import './CajaNegra.css';
 
@@ -62,7 +63,7 @@ const Valor: React.FC<{ v: any }> = ({ v }) => {
     case 'obj':
       return (
         <div className="cn-contenedor cn-objeto">
-          <span className="cn-tipo">🛰️ {v.clase}</span>
+          <span className="cn-tipo">{v.clase}</span>
           <div className="cn-dict">
             {Object.entries(v.atributos).map(([k, val]) => (
               <div key={k} className="cn-dict-fila">
@@ -132,7 +133,7 @@ const CajaNegra: React.FC<CajaNegraProps> = ({ titulo, codigo, traza, onCerrar }
     return (
       <div className="cn-fondo" role="dialog" aria-modal="true" aria-label={titulo}>
         <div className="cn-caja cn-caja-vacia">
-          <h2>🔭 {titulo}</h2>
+          <h2>{titulo}</h2>
           <p>{traza.error || 'El programa no ejecutó ninguna línea.'}</p>
           <button className="cn-boton" onClick={onCerrar}>Cerrar</button>
         </div>
@@ -148,12 +149,12 @@ const CajaNegra: React.FC<CajaNegraProps> = ({ titulo, codigo, traza, onCerrar }
     <div className="cn-fondo" role="dialog" aria-modal="true" aria-label={titulo}>
       <div className="cn-caja" ref={dialogo} tabIndex={-1}>
         <header className="cn-cabecera">
-          <h2>🔭 {titulo}</h2>
-          <button className="cn-boton" onClick={onCerrar} aria-label="Cerrar la caja negra">✕</button>
+          <h2>{titulo}</h2>
+          <button className="cn-boton cn-icono" onClick={onCerrar} aria-label="Cerrar la caja negra"><X size={20} aria-hidden="true" /></button>
         </header>
 
         {traza.truncado && (
-          <p className="cn-aviso">⚠️ Se muestran los primeros {pasos.length} pasos: el programa siguió (¿un bucle infinito?).</p>
+          <p className="cn-aviso">Se muestran los primeros {pasos.length} pasos: el programa siguió (¿un bucle infinito?).</p>
         )}
 
         <div className="cn-cuerpo">
@@ -178,13 +179,13 @@ const CajaNegra: React.FC<CajaNegraProps> = ({ titulo, codigo, traza, onCerrar }
               Paso {indice + 1} de {pasos.length} · línea {paso.linea}
               {/* El «return» del programa principal (siempre None) no aporta nada */}
               {paso.evento === 'return' && paso.pila[paso.pila.length - 1]?.funcion !== '<programa>' && (
-                <span className="cn-retorno"> · ↩ {paso.pila[paso.pila.length - 1].funcion}() devuelve <Valor v={paso.retorno} /></span>
+                <span className="cn-retorno"> · {paso.pila[paso.pila.length - 1].funcion}() devuelve <Valor v={paso.retorno} /></span>
               )}
               {paso.evento === 'return' && paso.pila[paso.pila.length - 1]?.funcion === '<programa>' && (
-                <span className="cn-retorno"> · 🏁 fin del programa</span>
+                <span className="cn-retorno"> · fin del programa</span>
               )}
             </div>
-            {paso.evento === 'exception' && <div className="cn-excepcion">💥 {paso.excepcion}</div>}
+            {paso.evento === 'exception' && <div className="cn-excepcion">Excepción: {paso.excepcion}</div>}
 
             <h3>Pila de llamadas</h3>
             <div className="cn-pila">
@@ -194,7 +195,7 @@ const CajaNegra: React.FC<CajaNegraProps> = ({ titulo, codigo, traza, onCerrar }
                 return (
                   <div key={`${n}-${nivel.funcion}`} className={`cn-nivel ${i === 0 ? 'actual' : ''}`}>
                     <div className="cn-nivel-titulo">
-                      🚀 {nivel.funcion === '<programa>' ? 'Programa principal' : `${nivel.funcion}()`}
+                      {nivel.funcion === '<programa>' ? 'Programa principal' : `${nivel.funcion}()`}
                       <span className="cn-nivel-linea">línea {nivel.linea}</span>
                     </div>
                     {variables.length === 0 && <span className="cn-vacio">sin variables todavía</span>}
@@ -212,17 +213,17 @@ const CajaNegra: React.FC<CajaNegraProps> = ({ titulo, codigo, traza, onCerrar }
         </div>
 
         <footer className="cn-controles">
-          <button className="cn-boton" onClick={() => { setReproduciendo(false); setIndice(0); }} aria-label="Primer paso">⏮</button>
-          <button className="cn-boton" onClick={() => { setReproduciendo(false); setIndice((i) => Math.max(i - 1, 0)); }} aria-label="Paso anterior">◀</button>
+          <button className="cn-boton" onClick={() => { setReproduciendo(false); setIndice(0); }} aria-label="Primer paso"><SkipBack size={18} aria-hidden="true" /></button>
+          <button className="cn-boton" onClick={() => { setReproduciendo(false); setIndice((i) => Math.max(i - 1, 0)); }} aria-label="Paso anterior"><ChevronLeft size={18} aria-hidden="true" /></button>
           <button
             className="cn-boton cn-play"
             onClick={() => { if (indice >= ultimo) setIndice(0); setReproduciendo((r) => !r); }}
             aria-label={reproduciendo ? 'Pausa' : 'Reproducir'}
           >
-            {reproduciendo ? '⏸' : '▶'}
+            {reproduciendo ? <Pause size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}
           </button>
-          <button className="cn-boton" onClick={() => { setReproduciendo(false); setIndice((i) => Math.min(i + 1, ultimo)); }} aria-label="Paso siguiente">▶|</button>
-          <button className="cn-boton" onClick={() => { setReproduciendo(false); setIndice(ultimo); }} aria-label="Último paso">⏭</button>
+          <button className="cn-boton" onClick={() => { setReproduciendo(false); setIndice((i) => Math.min(i + 1, ultimo)); }} aria-label="Paso siguiente"><ChevronRight size={18} aria-hidden="true" /></button>
+          <button className="cn-boton" onClick={() => { setReproduciendo(false); setIndice(ultimo); }} aria-label="Último paso"><SkipForward size={18} aria-hidden="true" /></button>
           <input
             type="range"
             min={0}
@@ -241,7 +242,7 @@ const CajaNegra: React.FC<CajaNegraProps> = ({ titulo, codigo, traza, onCerrar }
           )}
         </footer>
         {traza.error && paso.evento !== 'exception' && indice === ultimo && (
-          <p className="cn-aviso error">💥 {traza.error}</p>
+          <p className="cn-aviso error">{traza.error}</p>
         )}
       </div>
     </div>

@@ -1,29 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
+import { Award, Bot, ChevronLeft, CircleCheck, CircleX, Lightbulb, Play, RotateCcw, ScanEye, Timer, X } from 'lucide-react';
 import CodeEditor, { lineaDeError } from '../../components/code-editor/CodeEditor';
 import TextoIA from '../../components/texto-ia/TextoIA';
 import DiffSabotaje from '../../components/diff-sabotaje/DiffSabotaje';
 import CajaNegra, { Traza } from '../../components/caja-negra/CajaNegra';
-import './Exercise.css';
+import Enunciado from '../../components/enunciado/Enunciado';
+import { Aviso, Boton, Etiqueta, tonoDeNivel } from '../../components/ui';
+import './Ejercicio.css';
 
-// GraphQL mutation for code execution
-const EXECUTE_CODE = gql`
-  mutation ExecuteCode($input: ExecuteCodeInput!) {
-    executeCode(input: $input) {
-      stdout
-      stderr
-      compile_output
-      status {
-        id
-        description
-      }
-      time
-      memory
-    }
-  }
-`;
-
-// GraphQL mutation: el servidor ejecuta, corrige y suma los puntos
+// El servidor ejecuta, corrige y suma los puntos
 const ENVIAR_SOLUCION = gql`
   mutation EnviarSolucion($tareaId: ID!, $codigo: String!, $tiempoCompletado: Int!) {
     enviarSolucion(tareaId: $tareaId, codigo: $codigo, tiempoCompletado: $tiempoCompletado) {
@@ -94,40 +80,100 @@ const PEDIR_PISTA = gql`
   }
 `;
 
-// GraphQL query for checking if task is completed
-const ES_TAREA_COMPLETADA = gql`
-  query EsTareaCompletada($tareaId: ID!) {
-    esTareaCompletada(tareaId: $tareaId)
-  }
-`;
+interface Prueba {
+  descripcion: string;
+  oculto: boolean;
+  superado: boolean;
+  esperado?: string | null;
+  obtenido?: string | null;
+  error?: string | null;
+}
+
+interface Resultado {
+  stdout?: string | null;
+  stderr?: string | null;
+  compilacion?: string | null;
+  tiempo?: string | null;
+  pruebas?: { superados: number; total: number; resultados: Prueba[] } | null;
+  correcto?: boolean;
+  yaCompletada?: boolean;
+  mensaje?: string | null;
+  fallo?: string;
+}
 
 interface ExerciseProps {
   onBackToDashboard?: () => void;
   exerciseData?: any;
 }
 
+const formatearTiempo = (segundos: number) =>
+  `${String(Math.floor(segundos / 60)).padStart(2, '0')}:${String(segundos % 60).padStart(2, '0')}`;
+
 const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) => {
-  // All hooks must be declared at the top before any conditional logic
-  const [code, setCode] = useState(exerciseData?.codigoBase || 'def sum_numbers(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\n# Test the function\nnumbers = [1, 2, 3, 4, 5]\nresult = sum_numbers(numbers)\nprint(f"Sum: {result}")');
-  const [output, setOutput] = useState('');
-  const [isRunning, setIsRunning] = useState(false);
+  const [code, setCode] = useState<string>(exerciseData?.codigoBase || '');
+  const [resultado, setResultado] = useState<Resultado | null>(null);
+  const [ejecutando, setEjecutando] = useState(false);
   const [lineaError, setLineaError] = useState<number | null>(null);
-  const [timer, setTimer] = useState(0);
-  const [isTimerRunning, setIsTimerRunning] = useState(true);
-  const [showCongratulations, setShowCongratulations] = useState(false);
-  const [completionData, setCompletionData] = useState<any>(null);
+  const [segundos, setSegundos] = useState(0);
+  const [relojEnMarcha, setRelojEnMarcha] = useState(true);
+  const [premio, setPremio] = useState<{ puntos: number; tiempo: string; mensaje: string } | null>(null);
   // Sabotajes: qué había cambiado el saboteador (se revela al resolverlo) e insignias ganadas
   const esSabotaje = exerciseData?.tipo === 'sabotaje';
   const [revelacion, setRevelacion] = useState<{ descripcion: string; linea: number | null; diff: string } | null>(null);
   const [insigniasNuevas, setInsigniasNuevas] = useState<string[]>([]);
   // Pistas del tutor de IA: cada vez que se pide una, sube el nivel (1 → 3)
   const [pista, setPista] = useState<{ texto: string; nivel: number; restantes: number } | null>(null);
-  // Caja negra (ejecución paso a paso) y últimos resultados de los tests (para «Ver qué pasó»)
+  const [pidiendoPista, setPidiendoPista] = useState(false);
+  const [nivelPista, setNivelPista] = useState(1);
+  // Caja negra (ejecución paso a paso)
   const [cajaNegra, setCajaNegra] = useState<{ titulo: string; codigo: string; traza: Traza } | null>(null);
   const [trazando, setTrazando] = useState(false);
-  const [testsUltimos, setTestsUltimos] = useState<any[] | null>(null);
+  const dialogo = useRef<HTMLDivElement>(null);
+
+  const { data: iaData } = useQuery(IA_DISPONIBLE);
+  const [pedirPista] = useMutation(PEDIR_PISTA);
   const [trazar] = useMutation(TRAZAR);
   const [trazarTest] = useMutation(TRAZAR_TEST);
+  const [enviarSolucion] = useMutation(ENVIAR_SOLUCION, {
+    // Puntos, estrellas del mapa y sabotajes desbloqueados
+    refetchQueries: ['GetUserStats', 'GetCompletedTasks', 'GetCurrentUser', 'SalaDeMaquinas'],
+    awaitRefetchQueries: true,
+  });
+
+  useEffect(() => {
+    if (exerciseData?.codigoBase) setCode(exerciseData.codigoBase);
+  }, [exerciseData]);
+
+  useEffect(() => {
+    if (!relojEnMarcha) return;
+    const t = setInterval(() => setSegundos((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [relojEnMarcha]);
+
+  // La ventana de enhorabuena se cierra con Escape y lleva el foco a su botón
+  useEffect(() => {
+    if (!premio) return;
+    dialogo.current?.querySelector('button')?.focus();
+    const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape') setPremio(null); };
+    document.addEventListener('keydown', tecla);
+    return () => document.removeEventListener('keydown', tecla);
+  }, [premio]);
+
+  if (!exerciseData) {
+    return (
+      <div className="ejercicio ejercicio--vacio">
+        <h1>No se ha encontrado el ejercicio</h1>
+        <p>Vuelve al mapa y elige uno.</p>
+        <Boton variante="primario" onClick={onBackToDashboard}>Volver al mapa</Boton>
+      </div>
+    );
+  }
+
+  const reiniciar = () => {
+    setCode(exerciseData.codigoBase || '');
+    setResultado(null);
+    setLineaError(null);
+  };
 
   const abrirCajaNegra = async (indiceTest?: number, descripcion?: string) => {
     setTrazando(true);
@@ -137,133 +183,22 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
         : await trazarTest({ variables: { tareaId: exerciseData.id, codigo: code, indiceTest } });
       const t = data.trazarEjecucion || data.trazarTest;
       setCajaNegra({
-        titulo: indiceTest === undefined ? 'Caja negra: tu programa' : `Caja negra: test ${descripcion}`,
+        titulo: indiceTest === undefined ? 'Caja negra: tu programa' : `Caja negra: ${descripcion}`,
         codigo: code,
         traza: { ...t, pasos: JSON.parse(t.pasos) },
       });
     } catch (error: any) {
-      setOutput((anterior) => `${anterior}\n⚠️ Caja negra: ${error.graphQLErrors?.[0]?.message || error.message}`);
+      setResultado((r) => ({ ...(r || {}), fallo: `No se pudo abrir la caja negra: ${error.graphQLErrors?.[0]?.message || error.message}` }));
     } finally {
       setTrazando(false);
     }
-  };
-  const [pidiendoPista, setPidiendoPista] = useState(false);
-  const [nivelPista, setNivelPista] = useState(1);
-  const { data: iaData } = useQuery(IA_DISPONIBLE);
-  const [pedirPista] = useMutation(PEDIR_PISTA);
-  
-  // GraphQL mutation hooks
-  const [executeCode] = useMutation(EXECUTE_CODE);
-  const [enviarSolucion] = useMutation(ENVIAR_SOLUCION, {
-    // Actualizar cache después de completar tarea
-    refetchQueries: [
-      'GetUserStats', // Refrescar estadísticas del perfil
-      'TareasCompletadas', // Refrescar tareas completadas del dashboard
-      'SalaDeMaquinas' // Puede haberse desbloqueado un sabotaje
-    ],
-    awaitRefetchQueries: true
-  });
-  
-  // GraphQL query hook
-  const { data: tareaCompletadaData } = useQuery(ES_TAREA_COMPLETADA, {
-    variables: { tareaId: exerciseData?.id },
-    skip: !exerciseData?.id
-  });
-  
-  // All useEffect hooks must also be at the top
-  // Actualizar código cuando cambie exerciseData
-  useEffect(() => {
-    if (exerciseData?.codigoBase) {
-      setCode(exerciseData.codigoBase);
-    }
-  }, [exerciseData]);
-
-  // Generar estrellas para el fondo
-  useEffect(() => {
-    const generateStars = () => {
-      const starsContainer = document.querySelector('.stars');
-      if (starsContainer) {
-        starsContainer.innerHTML = '';
-        for (let i = 0; i < 200; i++) {
-          const star = document.createElement('div');
-          star.className = 'star';
-          star.style.left = Math.random() * 100 + '%';
-          star.style.top = Math.random() * 100 + '%';
-          star.style.animationDelay = Math.random() * 3 + 's';
-          starsContainer.appendChild(star);
-        }
-      }
-    };
-
-    generateStars();
-  }, []);
-
-  // Temporizador
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isTimerRunning) {
-      interval = setInterval(() => {
-        setTimer(prevTimer => prevTimer + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isTimerRunning]);
-  
-  // Debug: Imprimir datos del ejercicio
-  // Debug logs removed to reduce console noise
-  
-  // Validar que exerciseData existe
-  if (!exerciseData) {
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        background: 'linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%)',
-        color: 'white',
-        textAlign: 'center'
-      }}>
-        <h2>Error: No se ha seleccionado ningún ejercicio</h2>
-        <p>Por favor, regresa al dashboard y selecciona un ejercicio válido.</p>
-        <button 
-          onClick={onBackToDashboard}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            marginTop: '20px'
-          }}
-        >
-          Volver al Dashboard
-        </button>
-      </div>
-    );
-  }
-
-  // Formatear tiempo en MM:SS
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleReset = () => {
-    setCode(exerciseData?.codigoBase || 'def sum_numbers(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\n# Test the function\nnumbers = [1, 2, 3, 4, 5]\nresult = sum_numbers(numbers)\nprint(f"Sum: {result}")');
-    setOutput('');
-    setLineaError(null);
   };
 
   const handlePista = async () => {
     setPidiendoPista(true);
     try {
-      const { data } = await pedirPista({
-        variables: { tareaId: exerciseData.id, codigo: code, salida: output || null, nivel: nivelPista }
-      });
+      const salida = resultado ? [resultado.stdout, resultado.stderr, resultado.mensaje].filter(Boolean).join('\n') : null;
+      const { data } = await pedirPista({ variables: { tareaId: exerciseData.id, codigo: code, salida, nivel: nivelPista } });
       const respuesta = data?.pedirPista;
       if (respuesta) {
         setPista({ texto: respuesta.pista, nivel: respuesta.nivel, restantes: respuesta.restantesHoy });
@@ -276,372 +211,219 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
     }
   };
 
-  const handleRun = async () => {
-    setIsRunning(true);
-    setOutput('Ejecutando código...\n');
-    
+  const ejecutar = async () => {
+    if (ejecutando) return;
+    setEjecutando(true);
     try {
-      const startTime = Date.now();
-      
-      // Con ejercicio: el servidor corrige. Sin ejercicio: solo se ejecuta
-      let ejecucion: any;
-      let resultado: any = null;
-      if (exerciseData?.id) {
-        const { data } = await enviarSolucion({
-          variables: { tareaId: exerciseData.id, codigo: code, tiempoCompletado: timer }
-        });
-        resultado = data?.enviarSolucion;
-        ejecucion = resultado?.ejecucion;
-      } else {
-        const { data } = await executeCode({
-          variables: { input: { sourceCode: code, languageId: 71, stdin: '' } }
-        });
-        ejecucion = data?.executeCode;
-      }
-
-      const endTime = Date.now();
-      const executionTime = ((endTime - startTime) / 1000).toFixed(3);
-
-      let outputText = '>>> Ejecutando código...\n\n';
-
-      if (ejecucion?.stdout) {
-        outputText += `Salida:\n${ejecucion.stdout}\n\n`;
-      }
-
-      if (ejecucion?.stderr) {
-        outputText += `Errores:\n${ejecucion.stderr}\n\n`;
-      }
-
-      if (ejecucion?.compile_output) {
-        outputText += `Errores de compilación:\n${ejecucion.compile_output}\n\n`;
-      }
-
-      outputText += `Tiempo de ejecución: ${ejecucion?.time || executionTime}s\n`;
-
-      setTestsUltimos(resultado?.tests?.resultados || null);
-      if (resultado?.tests) {
-        outputText += `\nTests: ${resultado.tests.superados}/${resultado.tests.total} superados\n`;
-        for (const test of resultado.tests.resultados) {
-          outputText += `  ${test.superado ? '✅' : '❌'} ${test.descripcion}\n`;
-          if (!test.superado && !test.oculto) {
-            if (test.error) {
-              outputText += `      Error: ${test.error}\n`;
-            } else {
-              outputText += `      Esperado: ${test.esperado}\n      Obtenido: ${test.obtenido || '(nada)'}\n`;
-            }
-          }
-        }
-      }
-
-      if (resultado) {
-        if (resultado.correcto) {
-          if (resultado.revelacion) setRevelacion(resultado.revelacion);
-          if (resultado.insigniasNuevas?.length) setInsigniasNuevas(resultado.insigniasNuevas);
-          outputText += esSabotaje
-            ? '\n✅ ¡Sistema reparado! Has encontrado y arreglado el sabotaje.'
-            : '\n✅ ¡Resultado correcto! Tu código produce la salida esperada.';
-          if (resultado.yaCompletada) {
-            outputText += `\n${resultado.mensaje}`;
-          } else {
-            setCompletionData({
-              titulo: exerciseData.title,
-              puntos: resultado.puntos,
-              tiempo: resultado.tiempo,
-              mensaje: resultado.mensaje
-            });
-            setShowCongratulations(true);
-            setIsTimerRunning(false);
-          }
-        } else {
-          outputText += `\n❌ ${resultado.mensaje}`;
-        }
-      }
-
+      const { data } = await enviarSolucion({ variables: { tareaId: exerciseData.id, codigo: code, tiempoCompletado: segundos } });
+      const r = data?.enviarSolucion;
+      const ejecucion = r?.ejecucion;
+      setResultado({
+        stdout: ejecucion?.stdout,
+        stderr: ejecucion?.stderr,
+        compilacion: ejecucion?.compile_output,
+        tiempo: ejecucion?.time,
+        pruebas: r?.tests,
+        correcto: r?.correcto,
+        yaCompletada: r?.yaCompletada,
+        mensaje: r?.mensaje,
+      });
       setLineaError(lineaDeError(ejecucion?.stderr));
-      setOutput(outputText);
-      
-    } catch (error: any) {
-      console.error('Error ejecutando código:', error);
-      let errorMessage = 'Error desconocido';
-      
-      if (error.networkError) {
-        errorMessage = 'Error de conexión con el servidor GraphQL. Verifica que el servidor esté ejecutándose.';
-      } else if (error.graphQLErrors && error.graphQLErrors.length > 0) {
-        errorMessage = error.graphQLErrors[0].message;
-      } else {
-        errorMessage = error.message || 'Error desconocido';
+      if (r?.correcto) {
+        if (r.revelacion) setRevelacion(r.revelacion);
+        if (r.insigniasNuevas?.length) setInsigniasNuevas(r.insigniasNuevas);
+        if (!r.yaCompletada) {
+          setPremio({ puntos: r.puntos, tiempo: r.tiempo, mensaje: r.mensaje });
+          setRelojEnMarcha(false);
+        }
       }
-      
-      setOutput(`Error al ejecutar el código:\n${errorMessage}`);
+    } catch (error: any) {
+      setResultado({
+        fallo: error.networkError
+          ? 'No hay conexión con el servidor. Comprueba que está en marcha e inténtalo de nuevo.'
+          : error.graphQLErrors?.[0]?.message || error.message || 'Error desconocido',
+      });
     } finally {
-      setIsRunning(false);
+      setEjecutando(false);
     }
   };
 
+  // Índice de cada prueba entre las visibles: es el que necesita la caja negra («Ver qué pasó»)
+  let visibles = -1;
+  const pruebas = (resultado?.pruebas?.resultados || []).map((p) => ({ ...p, indiceVisible: p.oculto ? -1 : ++visibles }));
+  const cirujano = insigniasNuevas.includes('Cirujano');
+
   return (
-    <div className="exercise-screen">
-      {/* Fondo de estrellas */}
-      <div className="stars"></div>
-      
-      {/* Header */}
-      <header className="exercise-header">
-        <div className="exercise-header-content">
-          <div className="exercise-logo">
-            <img 
-              src="/Logo.png" 
-              alt="AstroCode Logo" 
-              className="exercise-logo-img" 
-            />
-          </div>
-          <h1 className="exercise-title-header">AstroCode - Ejercicio</h1>
-          <div className="exercise-header-actions">
-            <button 
-              className="exercise-back-btn"
-              onClick={onBackToDashboard}
-            >
-              ← Volver
-            </button>
-            <button className="exercise-help-btn">
-              ?
-            </button>
-          </div>
+    <div className="ejercicio">
+      <header className="ejercicio__barra">
+        <Boton variante="fantasma" onClick={onBackToDashboard} icono={<ChevronLeft size={18} aria-hidden="true" />} className="ejercicio__volver">Mapa</Boton>
+        <span className="ejercicio__miga">{exerciseData.categoria}</span>
+        <Etiqueta tono={tonoDeNivel(exerciseData.difficulty)}>{exerciseData.difficulty}</Etiqueta>
+        <Etiqueta>{exerciseData.points} pts</Etiqueta>
+        {esSabotaje && <Etiqueta tono="dificil">Sabotaje</Etiqueta>}
+        <div className="ejercicio__barra-der">
+          <span className="ejercicio__reloj" aria-label={`Tiempo: ${formatearTiempo(segundos)}`}>
+            <Timer size={16} aria-hidden="true" />{formatearTiempo(segundos)}
+          </span>
+          {iaData?.iaDisponible && (
+            <Boton variante="secundario" onClick={handlePista} cargando={pidiendoPista}
+              icono={<Lightbulb size={18} aria-hidden="true" />} title="El tutor de IA te da una pista sin decirte la solución">
+              {pidiendoPista ? 'Pensando…' : `Pista ${nivelPista} de 3`}
+            </Boton>
+          )}
         </div>
       </header>
 
-      {/* Contenido principal */}
-      <main className="exercise-main">
-        <div className="exercise-content">
-          {/* Panel izquierdo - Editor de código */}
-          <div className="code-panel">
-            <div className="panel-header">
-              <h3>Editor de Código</h3>
-              <div className="panel-actions">
-                <div className="timer-display">
-                  <span className="timer-icon">⏱️</span>
-                  <span className="timer-text">{formatTime(timer)}</span>
-                </div>
-                <button
-                  onClick={handleReset}
-                  className="action-btn reset-btn"
-                  title={esSabotaje ? 'Vuelve al código saboteado original' : 'Vuelve al código inicial'}
-                >
-                  {esSabotaje ? 'Restaurar' : 'Reset'}
-                </button>
-                <button 
-                  onClick={handleRun} 
-                  className={`action-btn run-btn ${isRunning ? 'running' : ''}`}
-                  disabled={isRunning}
-                >
-                  {isRunning ? 'Ejecutando...' : '▶ Ejecutar'}
-                </button>
-                <button
-                  onClick={() => abrirCajaNegra()}
-                  className="action-btn caja-negra-btn"
-                  disabled={trazando}
-                  title="Ver tu programa ejecutándose paso a paso, con sus variables"
-                >
-                  {trazando ? 'Trazando...' : '🔭 Ver ejecución'}
-                </button>
-                {iaData?.iaDisponible && exerciseData?.id && (
-                  <button
-                    onClick={handlePista}
-                    className="action-btn hint-btn"
-                    disabled={pidiendoPista}
-                    title="El tutor de IA te da una pista sin decirte la solución"
-                  >
-                    {pidiendoPista ? 'Pensando...' : `💡 Pista ${nivelPista}/3`}
-                  </button>
-                )}
+      <main className="ejercicio__cuerpo">
+        <article className="ejercicio__enunciado">
+          {esSabotaje && (
+            <Aviso tono="error" titulo="Alerta de sabotaje">
+              {exerciseData.contexto || 'Un saboteador ha alterado el código de la nave.'} El código del editor casi funciona:
+              alguien ha introducido un único fallo. Encuéntralo y arréglalo cambiando lo mínimo posible.
+            </Aviso>
+          )}
+          <h1>{exerciseData.title}</h1>
+          {exerciseData.description && <Enunciado texto={exerciseData.description} />}
+          {exerciseData.resultadoEsperado && (
+            <section className="ejercicio__esperado">
+              <h2>Resultado esperado</h2>
+              <pre>{exerciseData.resultadoEsperado}</pre>
+            </section>
+          )}
+          {pista && (
+            <section className="ejercicio__tutor" aria-live="polite">
+              <span className="ejercicio__tutor-icono"><Bot size={20} aria-hidden="true" /></span>
+              <div>
+                <strong>AstroTutor{pista.nivel > 0 ? ` · pista ${pista.nivel} de 3` : ''}</strong>
+                <TextoIA texto={pista.texto} />
+                {pista.nivel > 0 && <small>Te quedan {pista.restantes} pistas hoy</small>}
+              </div>
+              <Boton variante="fantasma" tamano="peq" soloIcono aria-label="Cerrar la pista" onClick={() => setPista(null)} icono={<X size={16} aria-hidden="true" />} />
+            </section>
+          )}
+        </article>
+
+        <section className="ejercicio__trabajo" aria-label="Tu código">
+          <div className="ejercicio__editor">
+            <div className="ejercicio__editor-barra">
+              <span className="ejercicio__pestana">main.py</span>
+              <div className="ejercicio__acciones">
+                <Boton variante="fantasma" soloIcono onClick={reiniciar} icono={<RotateCcw size={18} aria-hidden="true" />}
+                  aria-label={esSabotaje ? 'Volver al código saboteado original' : 'Volver al código inicial'}
+                  title={esSabotaje ? 'Volver al código saboteado original' : 'Volver al código inicial'} />
+                <Boton variante="secundario" onClick={() => abrirCajaNegra()} cargando={trazando}
+                  icono={<ScanEye size={18} aria-hidden="true" />} title="Ver tu programa ejecutándose paso a paso, con sus variables">
+                  {trazando ? 'Trazando…' : 'Paso a paso'}
+                </Boton>
+                <Boton variante="primario" onClick={ejecutar} cargando={ejecutando} title="Ejecuta y corrige tu código (Ctrl+Enter)"
+                  icono={<Play size={16} fill="currentColor" aria-hidden="true" />}>
+                  {ejecutando ? 'Ejecutando…' : 'Ejecutar'}
+                </Boton>
               </div>
             </div>
-            <div className="code-editor">
-              <CodeEditor
-                value={code}
-                onChange={(nuevo) => {
-                  setCode(nuevo);
-                  setLineaError(null);
-                }}
-                onRun={() => {
-                  if (!isRunning) handleRun();
-                }}
-                lineaError={lineaError}
-                placeholder="Escribe tu código aquí..."
-              />
+            <div className="ejercicio__codigo">
+              <CodeEditor value={code} onChange={(nuevo) => { setCode(nuevo); setLineaError(null); }} onRun={ejecutar}
+                lineaError={lineaError} placeholder="Escribe tu código aquí…" />
             </div>
           </div>
 
-          {/* Panel derecho - Enunciado y Terminal */}
-          <div className="right-panel">
-            {/* Panel de enunciado */}
-            <div className="exercise-statement-panel">
-              <div className="panel-header">
-                <h3>Enunciado del Ejercicio</h3>
-                <div className="exercise-info">
-                  <span className={`difficulty-badge ${exerciseData?.difficulty?.toLowerCase() || 'easy'}`}>
-                    {exerciseData?.difficulty || 'Fácil'}
-                  </span>
-                  <span className="points-badge">{exerciseData?.points || 100} pts</span>
-                </div>
-              </div>
-              <div className="statement-content">
-                {esSabotaje && (
-                  <div className="alerta-sabotaje" role="alert">
-                    <strong>⚠️ Alerta de sabotaje</strong>
-                    <p>{exerciseData?.contexto || 'Un saboteador ha alterado el código de la nave.'}</p>
-                    <p className="alerta-sabotaje-nota">
-                      El código del editor <em>casi</em> funciona: alguien ha introducido un único fallo. Encuéntralo y arréglalo
-                      cambiando lo mínimo posible.
-                    </p>
-                  </div>
-                )}
-                <h4>{exerciseData?.title || 'Suma de Números'}</h4>
-                <p>{exerciseData?.description || 'Crea una función que reciba una lista de números y devuelva la suma de todos ellos.'}</p>
-                {exerciseData?.resultadoEsperado && (
-                  <div className="expected-result">
-                    <h5>Resultado Esperado:</h5>
-                    <pre><code>{exerciseData.resultadoEsperado}</code></pre>
-                  </div>
-                )}
-                {!exerciseData && (
-                  <>
-                    <div className="requirements">
-                      <h5>Requisitos:</h5>
-                      <ul>
-                        <li>La función debe llamarse <code>sum_numbers</code></li>
-                        <li>Debe recibir un parámetro <code>numbers</code> (lista)</li>
-                        <li>Debe retornar la suma total</li>
-                        <li>Maneja listas vacías retornando 0</li>
-                      </ul>
-                    </div>
-                    <div className="example">
-                      <h5>Ejemplo:</h5>
-                      <code>sum_numbers([1, 2, 3, 4, 5]) → 15</code>
-                    </div>
-                  </>
-                )}
-              </div>
+          <div className="ejercicio__salida" aria-live="polite" aria-busy={ejecutando}>
+            <div className="ejercicio__salida-cabecera">
+              <h2>Salida</h2>
+              {resultado?.pruebas && (
+                <span className={`ejercicio__marcador ${resultado.correcto ? 'ok' : 'mal'}`}>
+                  {resultado.correcto ? <CircleCheck size={16} aria-hidden="true" /> : <CircleX size={16} aria-hidden="true" />}
+                  {resultado.pruebas.superados} de {resultado.pruebas.total} pruebas{resultado.tiempo ? ` · ${resultado.tiempo} s` : ''}
+                </span>
+              )}
             </div>
-
-            {/* Panel de terminal */}
-            <div className="output-panel">
-              <div className="panel-header">
-                <h3>Terminal de Salida</h3>
-                <div className="terminal-controls">
-                  <div className="terminal-dots">
-                    <span className="dot red"></span>
-                    <span className="dot yellow"></span>
-                    <span className="dot green"></span>
-                  </div>
-                </div>
-              </div>
-              <div className="terminal-output">
-                <pre className="output-text">{output || 'Presiona "Ejecutar" para ver la salida del código...'}</pre>
-              </div>
-              {testsUltimos && testsUltimos.some((t) => !t.superado && !t.oculto) && (
-                <div className="tests-fallidos" data-testid="tests-fallidos">
-                  <h4>Tests visibles que fallan</h4>
-                  <ul>
-                    {(() => {
-                      let indiceVisible = -1;
-                      return testsUltimos.map((t, i) => {
-                        if (!t.oculto) indiceVisible++;
-                        if (t.superado || t.oculto) return null;
-                        const indice = indiceVisible;
-                        return (
-                          <li key={i}>
-                            <code>{t.descripcion}</code>
-                            <button onClick={() => abrirCajaNegra(indice, t.descripcion)} disabled={trazando}>
-                              🔭 Ver qué pasó
-                            </button>
-                          </li>
-                        );
-                      });
-                    })()}
-                  </ul>
-                </div>
+            <div className="ejercicio__consola">
+              {!resultado ? (
+                <p className="ejercicio__vacio">Pulsa <strong>Ejecutar</strong> (o Ctrl+Enter) para probar y corregir tu código.</p>
+              ) : (
+                <>
+                  {resultado.fallo && <Aviso tono="error" titulo="No se pudo completar">{resultado.fallo}</Aviso>}
+                  {resultado.stdout && <pre className="ejercicio__stdout">{resultado.stdout}</pre>}
+                  {resultado.stderr && <pre className="ejercicio__stderr">{resultado.stderr}</pre>}
+                  {resultado.compilacion && <pre className="ejercicio__stderr">{resultado.compilacion}</pre>}
+                  {!resultado.fallo && !resultado.stdout && !resultado.stderr && !resultado.compilacion && (
+                    <p className="ejercicio__vacio">Tu programa no ha escrito nada.</p>
+                  )}
+                  {pruebas.length > 0 && (
+                    <ul className="ejercicio__pruebas">
+                      {pruebas.map((p, i) => (
+                        <li key={i} className={p.superado ? 'ok' : 'mal'}>
+                          {p.superado ? <CircleCheck size={16} aria-hidden="true" /> : <CircleX size={16} aria-hidden="true" />}
+                          <div>
+                            <span>{p.oculto ? `${p.descripcion} (oculta)` : p.descripcion}</span>
+                            {!p.superado && !p.oculto && (
+                              <div className="ejercicio__detalle">
+                                {p.error ? <span>Error: {p.error}</span> : (
+                                  <>
+                                    <span>Esperado: <code>{p.esperado}</code></span>
+                                    <span>Obtenido: <code>{p.obtenido || '(nada)'}</code></span>
+                                  </>
+                                )}
+                                <Boton variante="fantasma" tamano="peq" onClick={() => abrirCajaNegra(p.indiceVisible, p.descripcion)}
+                                  disabled={trazando} icono={<ScanEye size={16} aria-hidden="true" />}>Ver qué pasó</Boton>
+                              </div>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {resultado.mensaje && (
+                    resultado.correcto
+                      ? <Aviso tono="exito" titulo={esSabotaje ? '¡Sistema reparado!' : '¡Correcto!'}>{resultado.mensaje}</Aviso>
+                      : <Aviso tono="atencion" titulo="Todavía no">{resultado.mensaje}</Aviso>
+                  )}
+                </>
               )}
               {revelacion && (
-                <div className="revelacion-panel" data-testid="revelacion">
-                  <div className="hint-header">
-                    <span>🔍 Así era el sabotaje{revelacion.linea ? ` (línea ${revelacion.linea})` : ''}</span>
-                  </div>
-                  <p className="hint-text">{revelacion.descripcion}</p>
+                <div className="ejercicio__revelacion" data-testid="revelacion">
+                  <strong>Así era el sabotaje{revelacion.linea ? ` (línea ${revelacion.linea})` : ''}</strong>
+                  <p>{revelacion.descripcion}</p>
                   <DiffSabotaje diff={revelacion.diff} />
-                  {insigniasNuevas.includes('Cirujano') && (
-                    <p className="insignia-nueva">🩺 ¡Insignia nueva: <strong>Cirujano</strong>! Lo arreglaste tocando lo mínimo.</p>
-                  )}
-                </div>
-              )}
-              {pista && (
-                <div className="hint-panel">
-                  <div className="hint-header">
-                    <span>🤖 AstroTutor{pista.nivel > 0 ? ` · pista ${pista.nivel}/3` : ''}</span>
-                    <button className="hint-close" onClick={() => setPista(null)} aria-label="Cerrar pista">✕</button>
-                  </div>
-                  <TextoIA className="hint-text" texto={pista.texto} />
-                  {pista.nivel > 0 && <span className="hint-remaining">Te quedan {pista.restantes} pistas hoy</span>}
+                  {cirujano && <p className="ejercicio__insignia"><Award size={18} aria-hidden="true" />Insignia nueva: <strong>Cirujano</strong>. Lo arreglaste tocando lo mínimo.</p>}
                 </div>
               )}
             </div>
           </div>
-        </div>
+        </section>
       </main>
-      
-      {/* Ventana de felicitación */}
-      {showCongratulations && completionData && (
-        <div className="congratulations-overlay">
-          <div className="congratulations-modal">
-            <div className="congratulations-header">
-              <h2>🎉 ¡Enhorabuena!</h2>
+
+      {premio && (
+        <div className="ejercicio__fondo" onClick={(e) => { if (e.target === e.currentTarget) setPremio(null); }}>
+          <div className="ejercicio__premio" role="dialog" aria-modal="true" aria-labelledby="premio-titulo" ref={dialogo}>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="10.5" stroke="var(--ac-turquesa)" strokeWidth="1.4" strokeDasharray="2.2 1.6" />
+              <path d="M12 6.2l1.6 3.6 3.9.4-2.9 2.6.8 3.8L12 14.7l-3.4 1.9.8-3.8-2.9-2.6 3.9-.4z" fill="var(--ac-oro)" />
+            </svg>
+            <h2 id="premio-titulo">{esSabotaje ? '¡Sistema reparado!' : '¡Ejercicio superado!'}</h2>
+            <p className="ejercicio__premio-sub">{exerciseData.title} · se ha encendido una estrella</p>
+            <div className="ejercicio__premio-datos">
+              <div><b>+{premio.puntos}</b><span>puntos</span></div>
+              <div><b>{premio.tiempo}</b><span>tiempo</span></div>
             </div>
-            <div className="congratulations-content">
-              <h3>Has completado el ejercicio:</h3>
-              <h4 className="exercise-title">{completionData.titulo}</h4>
-              
-              <div className="completion-stats">
-                <div className="stat-item">
-                  <span className="stat-label">Puntos ganados:</span>
-                  <span className="stat-value">{completionData.puntos}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Tiempo empleado:</span>
-                  <span className="stat-value">{completionData.tiempo}</span>
-                </div>
+            {premio.mensaje && <p className="ejercicio__premio-mensaje">{premio.mensaje}</p>}
+            {revelacion && (
+              <div className="ejercicio__premio-revelacion">
+                <p>Así era el sabotaje{revelacion.linea ? ` (línea ${revelacion.linea})` : ''}:</p>
+                <DiffSabotaje diff={revelacion.diff} />
               </div>
-              
-              <p className="completion-message">{completionData.mensaje}</p>
-              {revelacion && (
-                <div className="modal-revelacion">
-                  <p>🔍 Así era el sabotaje{revelacion.linea ? ` (línea ${revelacion.linea})` : ''}:</p>
-                  <DiffSabotaje diff={revelacion.diff} />
-                  {insigniasNuevas.includes('Cirujano') && (
-                    <p className="insignia-nueva">🩺 ¡Insignia nueva: <strong>Cirujano</strong>! Lo arreglaste tocando lo mínimo.</p>
-                  )}
-                </div>
-              )}
-              
-              <button 
-                className="back-to-menu-btn"
-                onClick={() => {
-                  setShowCongratulations(false);
-                  if (onBackToDashboard) {
-                    onBackToDashboard();
-                  }
-                }}
-              >
-                Volver al Menú Principal
-              </button>
+            )}
+            {cirujano && <p className="ejercicio__insignia"><Award size={18} aria-hidden="true" />Insignia nueva: <strong>Cirujano</strong></p>}
+            <div className="ejercicio__premio-botones">
+              <Boton variante="primario" tamano="grande" onClick={onBackToDashboard}>Volver al mapa</Boton>
+              <Boton variante="fantasma" onClick={() => setPremio(null)}>Quedarme aquí</Boton>
             </div>
           </div>
         </div>
       )}
+
       {cajaNegra && (
-        <CajaNegra
-          titulo={cajaNegra.titulo}
-          codigo={cajaNegra.codigo}
-          traza={cajaNegra.traza}
-          onCerrar={() => setCajaNegra(null)}
-        />
+        <CajaNegra titulo={cajaNegra.titulo} codigo={cajaNegra.codigo} traza={cajaNegra.traza} onCerrar={() => setCajaNegra(null)} />
       )}
     </div>
   );

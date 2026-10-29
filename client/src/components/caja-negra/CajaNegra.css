@@ -1,7 +1,7 @@
 .cn-fondo {
   position: fixed;
   inset: 0;
-  background: rgba(3, 6, 25, 0.82);
+  background: rgba(5, 10, 18, 0.78);
   z-index: 3000;
   display: flex;
   align-items: center;
@@ -14,9 +14,11 @@
   max-width: 1300px;
   max-height: 100%;
   overflow-y: auto;
-  background: linear-gradient(135deg, #0c1445 0%, #1a237e 60%, #283593 100%);
-  border: 1px solid rgba(124, 140, 255, 0.4);
-  border-radius: 16px;
+  background: var(--ac-sarga);
+  border: 1px solid var(--ac-linea);
+  border-radius: 22px;
+  box-shadow: var(--ac-sombra);
+  font-family: var(--ac-ui);
   padding: 16px;
   color: white;
   display: flex;
@@ -44,37 +46,51 @@
 }
 
 .cn-boton {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: white;
-  border-radius: 8px;
-  padding: 7px 11px;
+  min-height: 40px;
+  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--ac-relieve);
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--ac-linea);
+  color: var(--ac-texto);
+  border-radius: 10px;
+  padding: 0 12px;
   cursor: pointer;
-  font-size: 0.95rem;
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
   white-space: nowrap;
+  transition: transform var(--ac-pulsar) var(--ac-ease-out);
 }
 
+.cn-boton:active { transform: scale(0.96); }
+.cn-icono { padding: 0; }
+
 .cn-play {
-  background: rgba(0, 255, 136, 0.2);
-  border-color: rgba(0, 255, 136, 0.5);
+  background: var(--ac-oro);
+  color: var(--ac-tinta-oro);
+  box-shadow: none;
   min-width: 44px;
 }
 
 .cn-ir-error {
-  background: rgba(255, 82, 82, 0.2);
-  border-color: rgba(255, 82, 82, 0.5);
+  background: rgba(255, 107, 125, 0.2);
+  border-color: rgba(255, 107, 125, 0.5);
 }
 
 .cn-aviso {
   margin: 0;
   padding: 8px 12px;
   border-radius: 8px;
-  background: rgba(255, 204, 102, 0.15);
-  color: #ffe2a8;
+  background: rgba(244, 185, 66, 0.15);
+  color: var(--ac-oro);
 }
 
 .cn-aviso.error {
-  background: rgba(255, 82, 82, 0.15);
+  background: rgba(255, 107, 125, 0.15);
   color: #ffd0d0;
   white-space: pre-wrap;
 }
@@ -118,16 +134,16 @@
   min-height: 48px;
   max-height: 140px;
   overflow: auto;
-  background: #070b24;
+  background: var(--ac-codigo);
   border-radius: 8px;
   padding: 8px 10px;
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 0.85rem;
   white-space: pre-wrap;
 }
 
 .cn-evento {
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 0.9rem;
   display: flex;
   flex-wrap: wrap;
@@ -136,7 +152,7 @@
 }
 
 .cn-retorno {
-  color: #7dffb8;
+  color: var(--ac-turquesa);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -145,9 +161,9 @@
 .cn-excepcion {
   padding: 8px 12px;
   border-radius: 8px;
-  background: rgba(255, 82, 82, 0.2);
-  border: 1px solid rgba(255, 82, 82, 0.6);
-  font-family: 'Fira Code', Consolas, monospace;
+  background: rgba(255, 107, 125, 0.2);
+  border: 1px solid rgba(255, 107, 125, 0.6);
+  font-family: var(--ac-mono);
 }
 
 .cn-pila {
@@ -168,8 +184,8 @@
 
 .cn-nivel.actual {
   opacity: 1;
-  border-color: rgba(0, 255, 136, 0.55);
-  box-shadow: 0 0 12px rgba(0, 255, 136, 0.15);
+  border-color: rgba(92, 200, 194, 0.55);
+  box-shadow: 0 0 12px rgba(92, 200, 194, 0.15);
 }
 
 .cn-nivel-titulo {
@@ -198,27 +214,27 @@
 }
 
 @keyframes cn-destello {
-  from { background: rgba(255, 204, 102, 0.45); }
+  from { background: rgba(244, 185, 66, 0.45); }
   to { background: transparent; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .cn-variable.cambiada {
     animation: none;
-    background: rgba(255, 204, 102, 0.2);
+    background: rgba(244, 185, 66, 0.2);
   }
 }
 
 .cn-nombre {
-  font-family: 'Fira Code', Consolas, monospace;
-  color: #a9b6ff;
+  font-family: var(--ac-mono);
+  color: var(--ac-suave);
   min-width: 70px;
   padding-top: 2px;
 }
 
 .cn-chip {
   display: inline-block;
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 0.85rem;
   padding: 1px 8px;
   border-radius: 6px;
@@ -227,10 +243,10 @@
 }
 
 .cn-int, .cn-float { background: rgba(124, 184, 255, 0.25); }
-.cn-str { background: rgba(0, 255, 136, 0.18); }
+.cn-str { background: rgba(92, 200, 194, 0.18); }
 .cn-bool { background: rgba(179, 136, 255, 0.3); }
 .cn-NoneType { background: rgba(255, 255, 255, 0.08); opacity: 0.8; }
-.cn-ref { background: rgba(255, 204, 102, 0.25); }
+.cn-ref { background: rgba(244, 185, 66, 0.25); }
 
 .cn-contenedor {
   display: flex;
@@ -256,9 +272,9 @@
   align-items: center;
   gap: 2px;
   padding: 3px 4px;
-  border: 1px solid rgba(124, 140, 255, 0.35);
+  border: 1px solid var(--ac-linea);
   border-radius: 6px;
-  background: rgba(7, 11, 36, 0.6);
+  background: var(--ac-codigo);
 }
 
 .cn-indice {
@@ -271,9 +287,9 @@
   flex-direction: column;
   gap: 3px;
   padding: 4px 6px;
-  border: 1px solid rgba(124, 140, 255, 0.35);
+  border: 1px solid var(--ac-linea);
   border-radius: 6px;
-  background: rgba(7, 11, 36, 0.6);
+  background: var(--ac-codigo);
 }
 
 .cn-dict-fila {
@@ -283,13 +299,13 @@
 }
 
 .cn-objeto .cn-dict {
-  border-color: rgba(0, 255, 136, 0.35);
+  border-color: rgba(92, 200, 194, 0.35);
 }
 
 .cn-atributo {
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 0.85rem;
-  color: #7dffb8;
+  color: var(--ac-turquesa);
 }
 
 .cn-flecha {
@@ -312,7 +328,7 @@
 .cn-controles input[type='range'] {
   flex: 1;
   min-width: 140px;
-  accent-color: #00ff88;
+  accent-color: #f4b942;
 }
 
 .cn-controles select {

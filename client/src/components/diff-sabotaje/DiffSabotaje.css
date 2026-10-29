@@ -1,20 +1,21 @@
 .diff-sabotaje {
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: 8px;
+  background: var(--ac-noche, #0e1c2b);
+  border-radius: 10px;
   padding: 10px 12px;
   margin: 0;
-  font-family: 'Fira Code', 'Consolas', monospace;
+  font-family: var(--ac-mono, monospace);
   font-size: 0.85rem;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
+/* Lo que puso el saboteador (se quitó) y cómo era (se añadió) */
 .diff-quitada {
-  color: #ff8a8a;
-  background: rgba(255, 82, 82, 0.12);
+  color: #ffb3bd;
+  background: rgba(255, 107, 125, 0.14);
 }
 
 .diff-anadida {
-  color: #7dffb8;
-  background: rgba(0, 255, 136, 0.1);
+  color: var(--ac-turquesa, #5cc8c2);
+  background: rgba(92, 200, 194, 0.12);
 }
