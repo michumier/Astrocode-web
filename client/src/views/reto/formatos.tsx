@@ -1,4 +1,8 @@
 import React from 'react';
+import {
+  BookOpen, FlaskConical, FolderOpen, Languages, LockOpen, LucideIcon, Map, MessagesSquare, Paintbrush, Paperclip,
+  Play, Radio, RadioTower, Rocket, Scissors, Search, Sprout, Target, Vault,
+} from 'lucide-react';
 import VisorGenerico, { PropsVisor } from '../../components/visor-reto/VisorGenerico';
 import MaterialGenerico, { PropsMaterial } from '../../components/visor-reto/MaterialGenerico';
 import { etiquetaFormato } from '../../components/visor-reto/etiquetas';
@@ -21,34 +25,38 @@ import MaterialColonia from '../../components/visor-reto/colonia/MaterialColonia
 // los que no tienen aún los suyos usan los genéricos. Las misiones de pilotaje usan VisorMision.
 export interface Formato {
   etiqueta: string;
-  // Texto del botón que ejecuta un escenario visible
+  // Botón que ejecuta un escenario visible, con su icono
   probar: string;
-  // Título de la pestaña con el material (manual, ejemplos, expediente...)
+  IconoProbar: LucideIcon;
+  // Pestaña con el material (manual, ejemplos, expediente...)
   tituloMaterial: string;
-  // Título del modal al superarlo
+  IconoMaterial: LucideIcon;
+  // Título de la enhorabuena al superarlo
   exito: string;
   Visor: React.FC<PropsVisor>;
   Material: React.FC<PropsMaterial>;
 }
 
 const GENERICO: Omit<Formato, 'etiqueta'> = {
-  probar: '▶ Probar',
-  tituloMaterial: '📎 Material',
-  exito: '🎉 ¡Reto superado!',
+  probar: 'Probar',
+  IconoProbar: Play,
+  tituloMaterial: 'Material',
+  IconoMaterial: Paperclip,
+  exito: '¡Reto superado!',
   Visor: VisorGenerico,
   Material: MaterialGenerico,
 };
 
 const FORMATOS: Record<string, Partial<Formato>> = {
-  pilotaje: { probar: '🚀 Lanzar', exito: '🎉 ¡Misión cumplida!' },
-  diagnostico: { tituloMaterial: '🧪 Datos de calibración' },
-  bomba: { probar: '✂️ Desactivar', tituloMaterial: '📕 Manual', exito: '💚 ¡Bomba desactivada!', Visor: VisorBomba, Material: MaterialBomba },
-  lengua: { probar: '🛸 Traducir', tituloMaterial: '🛸 Ejemplos', exito: '🛸 ¡Los alienígenas te entienden!', Visor: VisorLengua, Material: MaterialLengua },
-  camara: { probar: '🔓 Intentar abrir', tituloMaterial: '🏦 Cámaras', exito: '🔓 ¡Cámara abierta!', Visor: VisorCamara, Material: MaterialCamara },
-  impostor: { probar: '🔍 Acusar', tituloMaterial: '📁 Expediente', exito: '🔍 ¡Impostor desenmascarado!', Visor: VisorImpostor, Material: MaterialImpostor },
-  nebulosa: { probar: '🖌️ Pintar', tituloMaterial: '🎯 Objetivos', exito: '🎨 ¡Nebulosa pintada!', Visor: VisorNebulosa, Material: MaterialNebulosa },
-  radio: { probar: '📡 Transmitir', tituloMaterial: '📻 Frecuencias', exito: '📡 ¡Señal recibida!', Visor: VisorRadio, Material: MaterialRadio },
-  colonia: { probar: '🧬 Sembrar', tituloMaterial: '🗺️ Mapas', exito: '🌱 ¡Terraformación completada!', Visor: VisorColonia, Material: MaterialColonia },
+  pilotaje: { probar: 'Lanzar', IconoProbar: Rocket, exito: '¡Misión cumplida!' },
+  diagnostico: { tituloMaterial: 'Datos de calibración', IconoMaterial: FlaskConical },
+  bomba: { probar: 'Desactivar', IconoProbar: Scissors, tituloMaterial: 'Manual', IconoMaterial: BookOpen, exito: '¡Bomba desactivada!', Visor: VisorBomba, Material: MaterialBomba },
+  lengua: { probar: 'Traducir', IconoProbar: Languages, tituloMaterial: 'Ejemplos', IconoMaterial: MessagesSquare, exito: '¡Los alienígenas te entienden!', Visor: VisorLengua, Material: MaterialLengua },
+  camara: { probar: 'Intentar abrir', IconoProbar: LockOpen, tituloMaterial: 'Cámaras', IconoMaterial: Vault, exito: '¡Cámara abierta!', Visor: VisorCamara, Material: MaterialCamara },
+  impostor: { probar: 'Acusar', IconoProbar: Search, tituloMaterial: 'Expediente', IconoMaterial: FolderOpen, exito: '¡Impostor desenmascarado!', Visor: VisorImpostor, Material: MaterialImpostor },
+  nebulosa: { probar: 'Pintar', IconoProbar: Paintbrush, tituloMaterial: 'Objetivos', IconoMaterial: Target, exito: '¡Nebulosa pintada!', Visor: VisorNebulosa, Material: MaterialNebulosa },
+  radio: { probar: 'Transmitir', IconoProbar: RadioTower, tituloMaterial: 'Frecuencias', IconoMaterial: Radio, exito: '¡Señal recibida!', Visor: VisorRadio, Material: MaterialRadio },
+  colonia: { probar: 'Sembrar', IconoProbar: Sprout, tituloMaterial: 'Mapas', IconoMaterial: Map, exito: '¡Terraformación completada!', Visor: VisorColonia, Material: MaterialColonia },
 };
 
 export const formatoDe = (id: string): Formato => ({

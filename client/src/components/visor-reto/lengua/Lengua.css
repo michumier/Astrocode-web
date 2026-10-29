@@ -26,7 +26,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 2px;
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-weight: bold;
   box-sizing: border-box;
 }
@@ -61,7 +61,7 @@
   gap: 12px;
 }
 
-.lengua-ejemplo h4 {
+.lengua-ejemplo h3 {
   margin: 0 0 6px;
   font-size: 0.9rem;
 }
@@ -109,12 +109,12 @@
   padding: 14px;
   border-radius: 12px;
   background: radial-gradient(circle at 50% 0%, #22164a 0%, #0a0d1f 75%);
-  border: 1px solid rgba(124, 140, 255, 0.4);
+  border: 1px solid var(--ac-linea);
 }
 
 .lengua-visor.exito {
-  border-color: rgba(0, 255, 136, 0.7);
-  box-shadow: 0 0 18px rgba(0, 255, 136, 0.25);
+  border-color: rgba(92, 200, 194, 0.7);
+  box-shadow: 0 0 18px rgba(92, 200, 194, 0.25);
 }
 
 .lengua-visor.fallo {

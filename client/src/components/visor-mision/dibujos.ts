@@ -18,14 +18,14 @@ export interface EstadoVisor {
 }
 
 const COLORES = {
-  cielo: '#070b24',
+  cielo: '#0a1521',
   estrella: 'rgba(255,255,255,0.8)',
-  texto: '#e8ecff',
-  ok: '#00ff88',
-  peligro: '#ff5252',
-  aviso: '#ffcc66',
-  casco: '#cfd8ff',
-  detalle: '#7c8cff',
+  texto: '#eef3f7',
+  ok: '#5cc8c2',
+  peligro: '#ff6b7d',
+  aviso: '#f4b942',
+  casco: '#d5e0ea',
+  detalle: '#5cc8c2',
 };
 
 // Pseudoaleatorio determinista (para estrellas y partículas)
@@ -114,7 +114,7 @@ function dibujarExplosion(ctx: CanvasRenderingContext2D, x: number, y: number, m
 
 function hud(l: Lienzo, lineas: { texto: string; color?: string }[]) {
   const { ctx } = l;
-  ctx.font = '600 13px "Fira Code", Consolas, monospace';
+  ctx.font = '600 13px "JetBrains Mono Variable", ui-monospace, monospace';
   ctx.textBaseline = 'top';
   lineas.forEach((linea, i) => {
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
@@ -131,7 +131,7 @@ function cartelFinal(l: Lienzo, e: EstadoVisor, textoOk: string, textoMal: strin
   const alfa = Math.min(e.tiempoFinal / 400, 1);
   ctx.fillStyle = `rgba(0,0,0,${0.35 * alfa})`;
   ctx.fillRect(0, l.alto / 2 - 30, l.ancho, 60);
-  ctx.font = '700 22px Arial, sans-serif';
+  ctx.font = '700 22px "Bricolage Grotesque Variable", system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = e.exito ? COLORES.ok : COLORES.peligro;
@@ -204,7 +204,7 @@ export function dibujarAterrizaje(l: Lienzo, e: EstadoVisor) {
   ctx.fillStyle = c > 0.4 ? COLORES.ok : c > 0.15 ? COLORES.aviso : COLORES.peligro;
   ctx.fillRect(ancho - 31, 17 + 114 * (1 - c), 14, 114 * c);
   ctx.fillStyle = COLORES.texto;
-  ctx.font = '11px Arial';
+  ctx.font = '11px "Onest Variable", system-ui, sans-serif';
   ctx.fillText('⛽', ancho - 32, 140);
 
   cartelFinal(l, e, '¡Aterrizaje completado!', '💥 La nave se ha estrellado');

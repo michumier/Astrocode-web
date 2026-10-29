@@ -8,6 +8,8 @@ import Profile from './views/profile/Profile';
 import FullRanking from './views/ranking/FullRanking';
 import { GET_TAREA, mapTareaToExercise } from './utils/tareas';
 import { esSimulacion } from './components/visor-reto/etiquetas';
+import { Lock } from 'lucide-react';
+import { Boton } from './components/ui';
 
 // Carga diferida: el editor (CodeMirror) y el panel de admin solo se descargan cuando se usan
 const Exercise = lazy(() => import('./views/exercises/Exercise'));
@@ -51,10 +53,11 @@ const Pantalla: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     justifyContent: 'center',
     alignItems: 'center',
     gap: '16px',
-    height: '100vh',
-    background: 'linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%)',
-    color: 'white',
-    fontSize: '1.3rem',
+    minHeight: '100vh',
+    background: 'var(--ac-noche)',
+    color: 'var(--ac-texto)',
+    fontFamily: 'var(--ac-ui)',
+    fontSize: '1.15rem',
     textAlign: 'center',
     padding: '0 16px'
   }}>
@@ -71,7 +74,7 @@ const RutaProtegida: React.FC<{ autenticado: boolean; roles?: string[]; children
     return <Navigate to="/login" replace state={{ desde: location.pathname }} />;
   }
   if (roles) {
-    if (loading) return <Pantalla>Cargando...</Pantalla>;
+    if (loading) return <Pantalla>Cargando…</Pantalla>;
     if (!roles.includes(data?.me?.rol)) return <Navigate to="/" replace />;
   }
   return children;
@@ -93,19 +96,18 @@ const RutaEjercicio: React.FC = () => {
       ? <VistaReto key={id} tareaId={String(id)} onBack={volver} />
       : <Exercise key={id} onBackToDashboard={volver} exerciseData={desdeDashboard} />;
   }
-  if (loading) return <Pantalla>Cargando ejercicio...</Pantalla>;
+  if (loading) return <Pantalla>Cargando ejercicio…</Pantalla>;
   if (error || !data?.tarea) {
     const bloqueado = error?.graphQLErrors?.some((e) => e.extensions?.code === 'FORBIDDEN');
     return (
       <Pantalla>
-        <p>
+        {bloqueado && <Lock size={32} aria-hidden="true" style={{ color: 'var(--ac-oro)' }} />}
+        <p style={{ margin: 0, maxWidth: '36ch' }}>
           {bloqueado
-            ? '🔒 Este sabotaje se desbloquea al completar el ejercicio original.'
+            ? 'Este sabotaje se desbloquea al completar el ejercicio original.'
             : 'No se ha encontrado este ejercicio.'}
         </p>
-        <button onClick={volver} style={{ padding: '10px 20px', borderRadius: 8, border: 'none', cursor: 'pointer' }}>
-          Volver al inicio
-        </button>
+        <Boton variante="primario" onClick={volver}>Volver al mapa</Boton>
       </Pantalla>
     );
   }
@@ -141,7 +143,7 @@ const Rutas: React.FC = () => {
   );
 
   return (
-    <Suspense fallback={<Pantalla>Cargando...</Pantalla>}>
+    <Suspense fallback={<Pantalla>Cargando…</Pantalla>}>
     <Routes>
       <Route
         path="/login"

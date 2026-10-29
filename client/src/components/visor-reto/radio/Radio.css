@@ -5,12 +5,12 @@
   padding: 14px;
   border-radius: 12px;
   background: radial-gradient(circle at 20% 10%, #13283a 0%, #060a14 85%);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  border: 1px solid rgba(92, 200, 194, 0.3);
   min-width: 0;
 }
 
-.radio-visor.exito { border-color: rgba(0, 255, 136, 0.6); }
-.radio-visor.fallo { border-color: rgba(255, 82, 82, 0.55); }
+.radio-visor.exito { border-color: rgba(92, 200, 194, 0.6); }
+.radio-visor.fallo { border-color: rgba(255, 107, 125, 0.55); }
 
 .radio-cabecera {
   display: flex;
@@ -38,8 +38,8 @@
 .radio-boton {
   padding: 6px 12px;
   border-radius: 8px;
-  border: 1px solid #00ff88;
-  background: rgba(0, 255, 136, 0.12);
+  border: 1px solid var(--ac-turquesa);
+  background: rgba(92, 200, 194, 0.12);
   color: inherit;
   cursor: pointer;
   transition: transform 0.12s ease-out;
@@ -74,18 +74,18 @@
 .radio-material code { white-space: pre-wrap; }
 
 .radio-base { stroke: #1f2a3d; stroke-width: 0.2; vector-effect: non-scaling-stroke; }
-.radio-pitido { fill: #00ff88; }
-.radio-pitido.mal { fill: #ff5252; }
+.radio-pitido { fill: var(--ac-turquesa); }
+.radio-pitido.mal { fill: var(--ac-error); }
 .radio-estatica { fill: rgba(160, 160, 170, 0.45); }
-.radio-diferencia { fill: rgba(255, 82, 82, 0.22); }
-.radio-cabezal { stroke: #ffd27f; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.radio-diferencia { fill: rgba(255, 107, 125, 0.22); }
+.radio-cabezal { stroke: var(--ac-oro); stroke-width: 2; vector-effect: non-scaling-stroke; }
 
 .radio-nota {
   margin: 0;
   font-size: 0.85rem;
 }
 
-.radio-nota code { color: #ffd27f; }
+.radio-nota code { color: var(--ac-oro); }
 
 .radio-teletipo {
   display: flex;
@@ -101,14 +101,14 @@
 .radio-teletipo-etiqueta { font-size: 0.8rem; opacity: 0.8; }
 
 .radio-teletipo-texto {
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 1.1rem;
   letter-spacing: 2px;
-  color: #ffd27f;
+  color: var(--ac-oro);
   word-break: break-all;
 }
 
-.radio-teletipo-texto .mal { color: #ff5252; text-decoration: underline; }
+.radio-teletipo-texto .mal { color: var(--ac-error); text-decoration: underline; }
 .radio-cursor { animation: radio-parpadeo 0.8s steps(2) infinite; }
 
 @keyframes radio-parpadeo {
@@ -136,13 +136,13 @@
   gap: 6px;
 }
 
-.radio-material h4,
+.radio-material h3,
 .radio-material p { margin: 0; }
 
 .radio-material .radio-boton { align-self: flex-start; }
 
 .radio-lista {
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 0.75rem;
   word-break: break-word;
   opacity: 0.85;

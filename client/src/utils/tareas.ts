@@ -1,12 +1,17 @@
 import { gql } from '@apollo/client';
 
+// Muchos títulos de la API empiezan con un emoji («🚀 Aterrizaje…»); en el rediseño el tipo lo dicen
+// los iconos y las etiquetas, así que se quita
+export const limpiarTitulo = (titulo?: string | null) =>
+  (titulo || '').replace(/^(?:[\p{Extended_Pictographic}\u{FE0F}\u{200D}]+\s*)+/u, '');
+
 // Convierte una tarea de la API al formato que usa la vista de ejercicio
 export const mapTareaToExercise = (tarea: any) => ({
   id: tarea.id,
   tipo: tarea.tipo || 'codigo',
   formato: tarea.formato || null,
   contexto: tarea.contexto || null,
-  title: tarea.titulo,
+  title: limpiarTitulo(tarea.titulo),
   difficulty: tarea.nivel?.nombre || 'Desconocido',
   points: tarea.puntosBase || tarea.puntos || 0,
   description: tarea.descripcion,

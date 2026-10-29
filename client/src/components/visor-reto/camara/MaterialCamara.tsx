@@ -9,7 +9,7 @@ const MaterialCamara: React.FC<PropsMaterial> = ({ material }) => (
   <div className="camara-material">
     {material.map(({ nombre, material: m }) => (
       <section key={nombre}>
-        <h4>🏦 {nombre}</h4>
+        <h3>🏦 {nombre}</h3>
         {m.variante === 'huella' && (
           <>
             <p>Huella del PIN: <code className="camara-huella">{m.huella}</code></p>

@@ -13,7 +13,7 @@ const MaterialGenerico: React.FC<PropsMaterial> = ({ material }) => (
   <div className="material-generico">
     {material.map((m) => (
       <section key={m.nombre}>
-        <h4>{m.nombre}</h4>
+        <h3>{m.nombre}</h3>
         {m.material?.explicacion && <p>{m.material.explicacion}</p>}
         <pre>{JSON.stringify(m.material, null, 2)}</pre>
       </section>

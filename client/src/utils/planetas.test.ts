@@ -1,4 +1,5 @@
 import { ejerciciosDelPlaneta, planetasDelNivel } from './planetas';
+import { limpiarTitulo } from './tareas';
 
 const nivel = (codigos: number, retos: number, misiones: number) => [
   ...Array.from({ length: codigos }, (_, i) => ({ id: String(i + 1), tipo: 'codigo' })),
@@ -28,4 +29,12 @@ test('el orden de llegada no cambia el reparto y Saturno se queda su nivel enter
   const alReves = [...ejercicios].reverse();
   expect(ejerciciosDelPlaneta('marte', alReves)).toEqual(ejerciciosDelPlaneta('marte', ejercicios));
   expect(ejerciciosDelPlaneta('saturno', ejercicios)).toHaveLength(8);
+});
+
+test('limpiarTitulo quita los emojis del principio y deja el resto', () => {
+  expect(limpiarTitulo('🚀 Aterrizaje de emergencia')).toBe('Aterrizaje de emergencia');
+  expect(limpiarTitulo('☄️ Cinturón de asteroides')).toBe('Cinturón de asteroides');
+  expect(limpiarTitulo('🕵️ Sabotaje: Validar Paréntesis')).toBe('Sabotaje: Validar Paréntesis');
+  expect(limpiarTitulo('Suma 2 + 2 🚀')).toBe('Suma 2 + 2 🚀');
+  expect(limpiarTitulo(null)).toBe('');
 });

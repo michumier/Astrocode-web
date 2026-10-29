@@ -16,7 +16,7 @@ const MaterialRadio: React.FC<PropsMaterial> = ({ material }) => {
         const senal = m.variante === 'descifrar' ? m.senal : m.objetivo;
         return (
           <section key={nombre}>
-            <h4>📻 {nombre}</h4>
+            <h3>📻 {nombre}</h3>
             {m.variante === 'sos' && <p>senal = <code>{`{"nota": "${m.nota}", "repeticiones": ${m.repeticiones}}`}</code></p>}
             {m.variante === 'morse' && <p>senal = <code>{`{"mensaje": "${m.mensaje}", "nota": "${m.nota}"}`}</code></p>}
             {m.variante === 'descifrar' && <p>Llegan <strong>{m.senal.length}</strong> parejas, con estática y duraciones imprecisas.</p>}

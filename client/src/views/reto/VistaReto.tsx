@@ -1,12 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import CodeEditor, { lineaDeError } from '../../components/code-editor/CodeEditor';
 import VisorMision from '../../components/visor-mision/VisorMision';
+import { Bot, ChevronLeft, CircleCheck, CircleX, Lightbulb, Lock, RotateCcw, Send, X } from 'lucide-react';
 import TextoIA from '../../components/texto-ia/TextoIA';
+import Enunciado from '../../components/enunciado/Enunciado';
+import { Aviso, Boton, Calificacion, Enhorabuena, Etiqueta } from '../../components/ui';
 import { formatoDe } from './formatos';
+import { limpiarTitulo } from '../../utils/tareas';
 import './VistaReto.css';
 
-const GET_MISION = gql`
+export const GET_MISION = gql`
   query MisionPorId($id: ID!) {
     iaDisponible
     tarea(id: $id) {
@@ -103,8 +107,6 @@ const NOMBRES_METRICAS: Record<string, string> = {
   generacion: 'Generación en que se cubrió',
 };
 
-const estrellasTexto = (n: number) => '⭐'.repeat(n) + '☆'.repeat(Math.max(0, 3 - n));
-
 // Borrador del código por misión o reto (comodidad del navegador: si falla, no pasa nada).
 // Se guarda con una firma de la tarea (título + código base): si con el mismo id aparece otra
 // tarea (base de datos recreada, reto cambiado), el borrador viejo se ignora.
@@ -151,11 +153,13 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
   const [idVuelo, setIdVuelo] = useState(0);
   const [tickActual, setTickActual] = useState(0);
   const [modo, setModo] = useState<'probar' | 'enviar' | null>(null);
-  const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
+  // ok: superado · mal: corregido pero no pasa · error: no se pudo ejecutar
+  const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'mal' | 'error'; texto: string } | null>(null);
   const [completado, setCompletado] = useState<{ puntos: number; estrellas: number } | null>(null);
   const [pista, setPista] = useState<{ texto: string; nivel: number } | null>(null);
   const [nivelPista, setNivelPista] = useState(1);
   const [inicio] = useState(() => Date.now());
+  const accionesRef = useRef<HTMLDivElement>(null);
 
   const [probar] = useMutation(PROBAR);
   const [enviar] = useMutation(ENVIAR, { refetchQueries: ['GetUserStats', 'TareasCompletadas', 'GetTopUsers', 'GetCurrentUser'] });
@@ -206,7 +210,7 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
         setMensaje({ tipo: 'ok', texto: r.yaCompletada ? '¡Misión superada otra vez! (ya la tenías completada, no suma puntos)' : r.mensaje });
         if (!r.yaCompletada) setCompletado({ puntos: r.puntos, estrellas: r.mision.estrellas });
       } else {
-        setMensaje({ tipo: 'error', texto: r.mensaje });
+        setMensaje({ tipo: 'mal', texto: r.mensaje });
       }
     } catch (e) {
       setMensaje({ tipo: 'error', texto: errorDe(e) });
@@ -238,157 +242,212 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
     }
   };
 
-  if (loading) return <div className="mision-cargando">Preparando la simulación...</div>;
+  // Al cerrar la enhorabuena el foco vuelve a «Enviar»
+  const cerrarPremio = () => {
+    setCompletado(null);
+    setTimeout(() => accionesRef.current?.querySelector<HTMLButtonElement>('.ui-boton--primario')?.focus(), 0);
+  };
+
+  if (loading) return <div className="reto reto--vacio"><p>Preparando la simulación…</p></div>;
   if (error || !tarea?.mision) {
     return (
-      <div className="mision-cargando">
-        <p>No se pudo cargar {tarea?.tipo === 'reto' ? 'el reto' : 'la misión'}.</p>
-        <button className="mision-boton" onClick={onBack}>Volver</button>
+      <div className="reto reto--vacio">
+        <h1>No se pudo cargar {tarea?.tipo === 'reto' ? 'el reto' : 'la misión'}</h1>
+        <Boton variante="primario" onClick={onBack}>Volver al mapa</Boton>
       </div>
     );
   }
 
+  const totalEscenarios = tarea.mision.escenarios.length + tarea.mision.ocultos;
+  const conMaterial = !esPilotaje && !!material;
+  const verMaterial = conMaterial && pestana === 'material';
+  const funcion = esPilotaje ? 'piloto(sensores)' : `${tarea.mision.funcion}()`;
+  const { IconoProbar, IconoMaterial } = formato;
+
   return (
-    <div className="mision-pagina">
-      <header className="mision-cabecera">
-        <button className="mision-boton secundario" onClick={onBack}>← Volver</button>
-        <h1>{tarea.titulo}</h1>
-        {!esPilotaje && <span className="mision-formato">{formato.etiqueta}</span>}
-        <span className="mision-puntos">{tarea.puntosBase} pts</span>
+    <div className="reto">
+      <header className="reto__barra">
+        <Boton variante="fantasma" onClick={onBack} icono={<ChevronLeft size={18} aria-hidden="true" />} className="reto__volver">Mapa</Boton>
+        <span className="reto__miga">{esPilotaje ? 'Misión de pilotaje' : `Reto · ${formato.etiqueta}`}</span>
+        <Etiqueta>{tarea.puntosBase} pts</Etiqueta>
+        <Etiqueta tono="turquesa">{totalEscenarios} escenarios</Etiqueta>
+        {data.iaDisponible && (
+          <div className="reto__barra-der">
+            <Boton variante="secundario" onClick={pedir} cargando={pidiendo}
+              icono={<Lightbulb size={18} aria-hidden="true" />} title="El tutor de IA te da una pista sin decirte la solución">
+              {pidiendo ? 'Pensando…' : `Pista ${nivelPista} de 3`}
+            </Boton>
+          </div>
+        )}
       </header>
 
-      <main className="mision-cuerpo">
-        <section className="mision-izquierda">
-          {esPilotaje ? (
-            <details className="mision-enunciado" open>
-              <summary>📋 Briefing de la misión</summary>
-              <p>{tarea.descripcion}</p>
-              {tarea.resultadoEsperado && <p className="mision-objetivo">🎯 {tarea.resultadoEsperado}</p>}
-            </details>
-          ) : (
-            <div className="mision-enunciado reto">
-              <div className="mision-pestanas" role="tablist">
-                <button role="tab" aria-selected={pestana === 'enunciado'} className={pestana === 'enunciado' ? 'activa' : ''}
-                  onClick={() => setPestana('enunciado')}>📜 Reto</button>
-                {material && (
-                  <button role="tab" aria-selected={pestana === 'material'} className={pestana === 'material' ? 'activa' : ''}
-                    onClick={() => { setFocoMaterial(null); setPestana('material'); }}>{formato.tituloMaterial}</button>
-                )}
+      <main className="reto__cuerpo">
+        <section className="reto__izq">
+          <article className="reto__enunciado" tabIndex={0} aria-label="Enunciado">
+            <h1>{limpiarTitulo(tarea.titulo)}</h1>
+            {conMaterial && (
+              <div className="reto__pestanas" role="tablist" aria-label="Información del reto">
+                <button role="tab" id="reto-pestana-enunciado" aria-selected={!verMaterial} aria-controls="reto-panel"
+                  onClick={() => setPestana('enunciado')}>Reto</button>
+                <button role="tab" id="reto-pestana-material" aria-selected={verMaterial} aria-controls="reto-panel"
+                  onClick={() => { setFocoMaterial(null); setPestana('material'); }}>
+                  <IconoMaterial size={16} aria-hidden="true" />{formato.tituloMaterial}
+                </button>
               </div>
-              {pestana === 'material' && material ? (
-                <div className="mision-material" role="tabpanel"><formato.Material material={material} foco={focoMaterial} /></div>
-              ) : (
-                <div role="tabpanel">
-                  <p>{tarea.descripcion}</p>
-                  {tarea.resultadoEsperado && <p className="mision-objetivo">🎯 {tarea.resultadoEsperado}</p>}
+            )}
+            <div id="reto-panel" role={conMaterial ? 'tabpanel' : undefined}
+              aria-labelledby={conMaterial ? (verMaterial ? 'reto-pestana-material' : 'reto-pestana-enunciado') : undefined}>
+              {verMaterial ? (
+                <div className="reto__material">
+                  <h2 className="ac-oculto">{formato.tituloMaterial}</h2>
+                  <formato.Material material={material} foco={focoMaterial} />
                 </div>
+              ) : (
+                <>
+                  {tarea.descripcion && <Enunciado texto={tarea.descripcion} />}
+                  {tarea.resultadoEsperado && (
+                    <section className="reto__objetivo">
+                      <h2>Objetivo</h2>
+                      <p>{tarea.resultadoEsperado}</p>
+                    </section>
+                  )}
+                </>
               )}
             </div>
-          )}
-
-          <div className="mision-editor">
-            <CodeEditor value={codigo} onChange={cambiarCodigo} onRun={() => !modo && lanzar()} lineaError={lineaError} />
-          </div>
-
-          <div className="mision-acciones">
-            <label className="mision-escenario">
-              Escenario
-              <select value={escenario} onChange={(e) => setEscenario(Number(e.target.value))}>
-                {tarea.mision.escenarios.map((nombre: string, i: number) => (
-                  <option key={nombre} value={i}>{nombre}</option>
-                ))}
-              </select>
-            </label>
-            <button className="mision-boton lanzar" onClick={lanzar} disabled={!!modo} title="Ctrl+Enter">
-              {modo === 'probar' ? 'Simulando...' : formato.probar}
-            </button>
-            <button className="mision-boton enviar" onClick={enviarSolucion} disabled={!!modo}>
-              {modo === 'enviar' ? 'Corrigiendo...' : `📡 Enviar (${tarea.mision.escenarios.length + tarea.mision.ocultos} escenarios)`}
-            </button>
-            {data.iaDisponible && (
-              <button className="mision-boton pista" onClick={pedir} disabled={pidiendo}>
-                {pidiendo ? 'Pensando...' : `💡 Pista ${nivelPista}/3`}
-              </button>
+            {pista && (
+              <section className="reto__tutor" aria-live="polite">
+                <span className="reto__tutor-icono"><Bot size={20} aria-hidden="true" /></span>
+                <div>
+                  <strong>AstroTutor{pista.nivel ? ` · pista ${pista.nivel} de 3` : ''}</strong>
+                  <TextoIA texto={pista.texto} />
+                </div>
+                <Boton variante="fantasma" tamano="peq" soloIcono aria-label="Cerrar la pista" onClick={() => setPista(null)} icono={<X size={16} aria-hidden="true" />} />
+              </section>
             )}
-            <button className="mision-boton secundario" onClick={() => cambiarCodigo(tarea.codigoBase)} title="Volver al código inicial">
-              Reiniciar código
-            </button>
+          </article>
+
+          <div className="reto__editor">
+            <div className="reto__editor-barra">
+              <span className="reto__pestana">{funcion}</span>
+              <div className="reto__acciones" ref={accionesRef}>
+                <Boton variante="fantasma" soloIcono onClick={() => cambiarCodigo(tarea.codigoBase)} icono={<RotateCcw size={18} aria-hidden="true" />}
+                  aria-label="Volver al código inicial" title="Volver al código inicial" />
+                <label className="reto__escenario">
+                  <span className="ac-oculto">Escenario que se prueba</span>
+                  <select value={escenario} onChange={(e) => setEscenario(Number(e.target.value))}>
+                    {tarea.mision.escenarios.map((nombre: string, i: number) => (
+                      <option key={nombre} value={i}>{nombre}</option>
+                    ))}
+                  </select>
+                </label>
+                <Boton variante="secundario" onClick={lanzar} disabled={!!modo && modo !== 'probar'} cargando={modo === 'probar'}
+                  icono={<IconoProbar size={18} aria-hidden="true" />} title="Prueba el escenario elegido (Ctrl+Enter)">
+                  {modo === 'probar' ? 'Simulando…' : formato.probar}
+                </Boton>
+                <Boton variante="primario" onClick={enviarSolucion} disabled={!!modo && modo !== 'enviar'} cargando={modo === 'enviar'}
+                  icono={<Send size={16} aria-hidden="true" />} title={`Corrige tu código en los ${totalEscenarios} escenarios, también los ocultos`}>
+                  {modo === 'enviar' ? 'Corrigiendo…' : 'Enviar'}
+                </Boton>
+              </div>
+            </div>
+            <div className="reto__codigo">
+              <CodeEditor value={codigo} onChange={cambiarCodigo} onRun={() => !modo && lanzar()} lineaError={lineaError} />
+            </div>
           </div>
 
-          {mensaje && <p className={`mision-mensaje ${mensaje.tipo}`} role="status">{mensaje.texto}</p>}
-          {pista && (
-            <div className="mision-pista">
-              <strong>🤖 AstroTutor{pista.nivel ? ` · pista ${pista.nivel}/3` : ''}</strong>
-              <TextoIA texto={pista.texto} />
-            </div>
-          )}
+          <div aria-live="polite">
+            {mensaje && (
+              mensaje.tipo === 'ok' ? <Aviso tono="exito" titulo={formato.exito}>{mensaje.texto}</Aviso>
+                : mensaje.tipo === 'mal' ? <Aviso tono="atencion" titulo="Todavía no">{mensaje.texto}</Aviso>
+                  : <Aviso tono="error" titulo="No se pudo completar">{mensaje.texto}</Aviso>
+            )}
+          </div>
         </section>
 
-        <section className="mision-derecha">
-          {fotogramas && escena && esPilotaje ? (
-            <VisorMision
-              mision={tarea.mision.id}
-              escena={escena}
-              fotogramas={fotogramas}
-              exito={escenarioVisto.exito}
-              idVuelo={idVuelo * 100 + vista}
-              onTick={alCambiarTick}
-            />
-          ) : fotogramas && escena ? (
-            <formato.Visor
-              escena={escena}
-              fotogramas={fotogramas}
-              exito={escenarioVisto.exito}
-              idVuelo={idVuelo * 100 + vista}
-              onTick={alCambiarTick}
-              escenario={escenarioVisto.nombre}
-              irAMaterial={irAMaterial}
-            />
-          ) : (
-            <div className="mision-espera">
-              {escenarioVisto
-                ? <p>❌ {escenarioVisto.motivo}</p>
-                : esPilotaje
-                  ? <p>Escribe tu función <code>piloto(sensores)</code> y pulsa <strong>🚀 Lanzar</strong> para ver el vuelo.</p>
-                  : <p>Escribe tu función <code>{tarea.mision.funcion}()</code> y pulsa <strong>{formato.probar}</strong> para ver qué hace.</p>}
-            </div>
-          )}
+        <section className="reto__der" aria-labelledby="reto-simulacion">
+          <h2 id="reto-simulacion" className="ac-oculto">Simulación</h2>
+          <div className="reto__visor">
+            {fotogramas && escena && esPilotaje ? (
+              <VisorMision
+                mision={tarea.mision.id}
+                escena={escena}
+                fotogramas={fotogramas}
+                exito={escenarioVisto.exito}
+                idVuelo={idVuelo * 100 + vista}
+                onTick={alCambiarTick}
+              />
+            ) : fotogramas && escena ? (
+              <formato.Visor
+                escena={escena}
+                fotogramas={fotogramas}
+                exito={escenarioVisto.exito}
+                idVuelo={idVuelo * 100 + vista}
+                onTick={alCambiarTick}
+                escenario={escenarioVisto.nombre}
+                irAMaterial={irAMaterial}
+              />
+            ) : (
+              <div className={`reto__espera${escenarioVisto ? ' mal' : ''}`}>
+                {escenarioVisto ? (
+                  <><CircleX size={28} aria-hidden="true" /><p>{escenarioVisto.motivo}</p></>
+                ) : (
+                  <>
+                    <IconoProbar size={32} aria-hidden="true" />
+                    <p>
+                      Escribe tu función <code>{funcion}</code> y pulsa <strong>{formato.probar}</strong> para {esPilotaje ? 'ver el vuelo' : 'ver qué hace'}.
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
 
           {resultado && (
-            <div className="mision-resultados">
-              <div className="mision-resumen">
-                <span>{resultado.superados}/{resultado.total} escenarios superados</span>
-                {resultado.superados === resultado.total && <span className="mision-estrellas" aria-label={`${resultado.estrellas} estrellas`}>{estrellasTexto(resultado.estrellas)}</span>}
+            <div className="reto__resultados">
+              <div className="reto__resultados-cabecera">
+                <h2>Escenarios</h2>
+                <span className={`reto__marcador ${resultado.superados === resultado.total ? 'ok' : 'mal'}`}>
+                  {resultado.superados === resultado.total ? <CircleCheck size={16} aria-hidden="true" /> : <CircleX size={16} aria-hidden="true" />}
+                  {resultado.superados} de {resultado.total} superados
+                </span>
+                {resultado.superados === resultado.total && <Calificacion estrellas={resultado.estrellas} />}
               </div>
-              <ul className="mision-escenarios">
+              <ul className="reto__escenarios">
                 {resultado.escenarios.map((e: any, i: number) => (
                   <li key={i}>
                     <button
-                      className={`mision-escenario-item ${i === vista ? 'activo' : ''}`}
+                      className={`reto__escenario-item ${e.exito ? 'ok' : 'mal'}${i === vista ? ' activo' : ''}`}
                       onClick={() => { if (!e.oculto) { setVista(i); setIdVuelo((v) => v + 1); } }}
                       disabled={e.oculto}
+                      aria-pressed={e.oculto ? undefined : i === vista}
                       title={e.oculto ? 'Escenario oculto: no se puede ver' : 'Ver este escenario'}
                     >
-                      <span>{e.exito ? '✅' : '❌'} {e.oculto ? '🔒 Escenario oculto' : e.nombre}</span>
-                      <span className="mision-motivo">{e.motivo}</span>
+                      {e.exito ? <CircleCheck size={16} aria-hidden="true" /> : <CircleX size={16} aria-hidden="true" />}
+                      <span className="reto__escenario-texto">
+                        <span className="reto__escenario-nombre">
+                          {e.oculto ? <><Lock size={14} aria-hidden="true" />Escenario oculto</> : e.nombre}
+                          <span className="ac-oculto">{e.exito ? ': superado' : ': no superado'}</span>
+                        </span>
+                        <span className="reto__motivo">{e.motivo}</span>
+                      </span>
                     </button>
                   </li>
                 ))}
               </ul>
               {metricas && (
-                <dl className="mision-metricas">
+                <dl className="reto__metricas">
                   {Object.entries(metricas).map(([k, v]) => (
                     <div key={k}><dt>{NOMBRES_METRICAS[k] || k}</dt><dd>{String(v)}</dd></div>
                   ))}
                 </dl>
               )}
               {escenarioVisto?.registro?.length > 0 && (
-                <div className="mision-registro">
-                  <h3>{esPilotaje ? '📟 Registro de vuelo (tus print)' : '📟 Registro (tus print)'}</h3>
-                  <ol>
+                <div className="reto__registro">
+                  <h3>{esPilotaje ? 'Registro de vuelo' : 'Registro'} <span>(tus print)</span></h3>
+                  <ol tabIndex={0} aria-label="Registro de tus print">
                     {escenarioVisto.registro.map((r: any, i: number) => (
                       <li key={i} className={r.t <= tickActual ? 'pasado' : ''}>
-                        <span className="mision-registro-tick">t={r.t}</span> {r.texto.trimEnd()}
+                        <span className="reto__registro-tick">t={r.t}</span> {r.texto.trimEnd()}
                       </li>
                     ))}
                   </ol>
@@ -400,18 +459,21 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
       </main>
 
       {completado && (
-        <div className="mision-modal" role="dialog" aria-modal="true" aria-labelledby="mision-modal-titulo">
-          <div className="mision-modal-caja">
-            <h2 id="mision-modal-titulo">{formato.exito}</h2>
-            <p className="mision-estrellas grande">{estrellasTexto(completado.estrellas)}</p>
-            <p>Has ganado <strong>{completado.puntos} puntos</strong>.</p>
-            {completado.estrellas < 3 && <p className="mision-nota">Puedes seguir mejorando tu código para conseguir más estrellas (volver a enviarlo ya no suma puntos).</p>}
-            <div className="mision-modal-botones">
-              <button className="mision-boton secundario" onClick={() => setCompletado(null)}>{esPilotaje ? 'Ver los vuelos' : 'Ver los escenarios'}</button>
-              <button className="mision-boton lanzar" onClick={onBack}>Volver al mapa</button>
-            </div>
-          </div>
-        </div>
+        <Enhorabuena
+          titulo={formato.exito}
+          subtitulo={limpiarTitulo(tarea.titulo)}
+          datos={[
+            { valor: `+${completado.puntos}`, etiqueta: 'puntos' },
+            { valor: <Calificacion estrellas={completado.estrellas} tamano={24} />, etiqueta: 'estrellas' },
+          ]}
+          alVolver={onBack}
+          alCerrar={cerrarPremio}
+          textoCerrar={esPilotaje ? 'Ver los vuelos' : 'Ver los escenarios'}
+        >
+          {completado.estrellas < 3 && (
+            <p className="ui-premio__mensaje">Puedes seguir mejorando tu código para conseguir más estrellas (volver a enviarlo ya no suma puntos).</p>
+          )}
+        </Enhorabuena>
       )}
     </div>
   );

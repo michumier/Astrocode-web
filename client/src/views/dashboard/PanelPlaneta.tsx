@@ -27,7 +27,7 @@ const GRUPOS = [
 const grupoDe = (ejercicio: any) => (ejercicio.tipo === 'reto' || ejercicio.tipo === 'pilotaje' ? ejercicio.tipo : 'codigo');
 
 const tipoLegible = (ejercicio: any) => {
-  if (ejercicio.tipo === 'reto') return `Reto · ${etiquetaFormato(ejercicio.formato).replace(/^\S+\s/, '')}`;
+  if (ejercicio.tipo === 'reto') return `Reto · ${etiquetaFormato(ejercicio.formato)}`;
   if (ejercicio.tipo === 'pilotaje') return 'Misión de pilotaje';
   return ejercicio.categoria || 'Ejercicio';
 };

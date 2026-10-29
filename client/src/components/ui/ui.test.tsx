@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { Boton, Campo, Constelacion, colocarEstrellas, tonoDeNivel } from './index';
+import { Boton, Calificacion, Campo, Constelacion, Enhorabuena, colocarEstrellas, tonoDeNivel } from './index';
 import { ALTO, ANCHO } from './Constelacion';
 import type { Estrella } from './index';
 
@@ -81,4 +81,20 @@ test('la dificultad da el tono de la etiqueta', () => {
   expect(tonoDeNivel('Intermedio')).toBe('intermedio');
   expect(tonoDeNivel('Difícil')).toBe('dificil');
   expect(tonoDeNivel(null)).toBe('neutro');
+});
+
+describe('Enhorabuena', () => {
+  test('lleva el foco a «Volver al mapa», se cierra con Escape y enseña la calificación', () => {
+    const alCerrar = jest.fn();
+    render(
+      <Enhorabuena titulo="¡Misión cumplida!" datos={[{ valor: '+300', etiqueta: 'puntos' }, { valor: <Calificacion estrellas={2} />, etiqueta: 'estrellas' }]}
+        alVolver={() => undefined} alCerrar={alCerrar} textoCerrar="Ver los vuelos" />,
+    );
+    expect(screen.getByRole('dialog', { name: '¡Misión cumplida!' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Volver al mapa' })).toHaveFocus();
+    expect(screen.getByRole('img', { name: '2 de 3 estrellas' })).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: 'Ver los vuelos' }));
+    expect(alCerrar).toHaveBeenCalledTimes(2);
+  });
 });

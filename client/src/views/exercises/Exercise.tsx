@@ -6,7 +6,7 @@ import TextoIA from '../../components/texto-ia/TextoIA';
 import DiffSabotaje from '../../components/diff-sabotaje/DiffSabotaje';
 import CajaNegra, { Traza } from '../../components/caja-negra/CajaNegra';
 import Enunciado from '../../components/enunciado/Enunciado';
-import { Aviso, Boton, Etiqueta, tonoDeNivel } from '../../components/ui';
+import { Aviso, Boton, Enhorabuena, Etiqueta, tonoDeNivel } from '../../components/ui';
 import './Ejercicio.css';
 
 // El servidor ejecuta, corrige y suma los puntos
@@ -130,7 +130,6 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   // Caja negra (ejecución paso a paso)
   const [cajaNegra, setCajaNegra] = useState<{ titulo: string; codigo: string; traza: Traza } | null>(null);
   const [trazando, setTrazando] = useState(false);
-  const dialogo = useRef<HTMLDivElement>(null);
 
   const ejecutarRef = useRef<HTMLDivElement>(null);
   // Al cerrar la enhorabuena, el foco vuelve a «Ejecutar»
@@ -158,14 +157,6 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
     return () => clearInterval(t);
   }, [relojEnMarcha]);
 
-  // La ventana de enhorabuena se cierra con Escape y lleva el foco a su botón
-  useEffect(() => {
-    if (!premio) return;
-    dialogo.current?.querySelector('button')?.focus();
-    const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape') cerrarPremio(); };
-    document.addEventListener('keydown', tecla);
-    return () => document.removeEventListener('keydown', tecla);
-  }, [premio]);
 
   if (!exerciseData) {
     return (
@@ -402,32 +393,22 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
       </main>
 
       {premio && (
-        <div className="ejercicio__fondo" onClick={(e) => { if (e.target === e.currentTarget) cerrarPremio(); }}>
-          <div className="ejercicio__premio" role="dialog" aria-modal="true" aria-labelledby="premio-titulo" ref={dialogo}>
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="10.5" stroke="var(--ac-turquesa)" strokeWidth="1.4" strokeDasharray="2.2 1.6" />
-              <path d="M12 6.2l1.6 3.6 3.9.4-2.9 2.6.8 3.8L12 14.7l-3.4 1.9.8-3.8-2.9-2.6 3.9-.4z" fill="var(--ac-oro)" />
-            </svg>
-            <h2 id="premio-titulo">{esSabotaje ? '¡Sistema reparado!' : '¡Ejercicio superado!'}</h2>
-            <p className="ejercicio__premio-sub">{titulo} · se ha encendido una estrella</p>
-            <div className="ejercicio__premio-datos">
-              <div><b>+{premio.puntos}</b><span>puntos</span></div>
-              <div><b>{premio.tiempo}</b><span>tiempo</span></div>
+        <Enhorabuena
+          titulo={esSabotaje ? '¡Sistema reparado!' : '¡Ejercicio superado!'}
+          subtitulo={`${titulo} · se ha encendido una estrella`}
+          datos={[{ valor: `+${premio.puntos}`, etiqueta: 'puntos' }, { valor: premio.tiempo, etiqueta: 'tiempo' }]}
+          alVolver={() => onBackToDashboard?.()}
+          alCerrar={cerrarPremio}
+        >
+          {premio.mensaje && <p className="ui-premio__mensaje">{premio.mensaje}</p>}
+          {revelacion && (
+            <div className="ejercicio__premio-revelacion">
+              <p>Así era el sabotaje{revelacion.linea ? ` (línea ${revelacion.linea})` : ''}:</p>
+              <DiffSabotaje diff={revelacion.diff} />
             </div>
-            {premio.mensaje && <p className="ejercicio__premio-mensaje">{premio.mensaje}</p>}
-            {revelacion && (
-              <div className="ejercicio__premio-revelacion">
-                <p>Así era el sabotaje{revelacion.linea ? ` (línea ${revelacion.linea})` : ''}:</p>
-                <DiffSabotaje diff={revelacion.diff} />
-              </div>
-            )}
-            {cirujano && <p className="ejercicio__insignia"><Award size={18} aria-hidden="true" /><span>Insignia nueva: <strong>Cirujano</strong></span></p>}
-            <div className="ejercicio__premio-botones">
-              <Boton variante="primario" tamano="grande" onClick={onBackToDashboard}>Volver al mapa</Boton>
-              <Boton variante="fantasma" onClick={cerrarPremio}>Quedarme aquí</Boton>
-            </div>
-          </div>
-        </div>
+          )}
+          {cirujano && <p className="ejercicio__insignia"><Award size={18} aria-hidden="true" /><span>Insignia nueva: <strong>Cirujano</strong></span></p>}
+        </Enhorabuena>
       )}
 
       {cajaNegra && (

@@ -45,11 +45,11 @@ const VisorGenerico: React.FC<PropsVisor> = ({ escena, fotogramas, exito, idVuel
       )}
       <div className="visor-generico-datos">
         <section>
-          <h4>Escenario</h4>
+          <h3>Escenario</h3>
           <pre>{JSON.stringify(escena, null, 2)}</pre>
         </section>
         <section>
-          <h4>Estado en este paso</h4>
+          <h3>Estado en este paso</h3>
           <pre>{JSON.stringify(fotogramas[indice], null, 2)}</pre>
         </section>
       </div>

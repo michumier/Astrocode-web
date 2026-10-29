@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { gql, useQuery, ApolloError } from '@apollo/client';
 import { BookOpen, ChevronRight, Trophy } from 'lucide-react';
 import client from '../../apollo/client';
-import { mapTareaToExercise } from '../../utils/tareas';
+import { limpiarTitulo, mapTareaToExercise } from '../../utils/tareas';
 import { ejerciciosDelPlaneta, NIVEL_PLANETA, PUNTOS_PLANETA } from '../../utils/planetas';
 import { Aviso, BarraSuperior, Boton, Constelacion, Panel } from '../../components/ui';
 import type { Estrella } from '../../components/ui';
@@ -310,7 +310,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
                 {reto && <span>+{reto.puntosBase} pts</span>}
                 {reto && !retoHecho && <span>Quedan {horasHastaMedianoche()} h</span>}
               </div>
-              <h2 id="mapa-diario-titulo">{reto ? reto.titulo : diario.loading ? 'Buscando el reto de hoy…' : 'Hoy no hay reto'}</h2>
+              <h2 id="mapa-diario-titulo">{reto ? limpiarTitulo(reto.titulo) : diario.loading ? 'Buscando el reto de hoy…' : 'Hoy no hay reto'}</h2>
               <p>{reto ? (retoHecho ? 'Ya lo has resuelto hoy. Puedes repetirlo cuando quieras.' : 'Un reto nuevo cada día. Resuélvelo antes de medianoche.')
                 : diario.loading ? '' : 'Vuelve mañana: cada día hay uno nuevo.'}</p>
               {reto && (
