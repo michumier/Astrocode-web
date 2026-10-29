@@ -1,0 +1,43 @@
+/* Páginas del alumno con barra y título (fase 6.5) */
+.pagina {
+  min-height: 100vh;
+  background: var(--ac-noche);
+  color: var(--ac-texto);
+  font-family: var(--ac-ui);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.pagina__cuerpo {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 28px 56px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pagina__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pagina__cabecera h1 {
+  margin: 0;
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.pagina__cabecera p { margin: 6px 0 0; color: var(--ac-suave); max-width: 60ch; }
+
+@media (max-width: 640px) {
+  .pagina__cuerpo { padding: 24px 16px 40px; gap: 20px; }
+}

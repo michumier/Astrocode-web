@@ -3,9 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLoca
 import { gql, useQuery, useApolloClient } from '@apollo/client';
 import Acceso from './views/acceso/Acceso';
 import Dashboard from './views/dashboard/Dashboard';
-import PythonGuide from './views/python-guide/PythonGuide';
-import Profile from './views/profile/Profile';
-import FullRanking from './views/ranking/FullRanking';
+import Guia from './views/python-guide/Guia';
+import Perfil from './views/profile/Perfil';
+import Ranking from './views/ranking/Ranking';
 import { GET_TAREA, mapTareaToExercise } from './utils/tareas';
 import { esSimulacion } from './components/visor-reto/etiquetas';
 import { Lock } from 'lucide-react';
@@ -163,12 +163,9 @@ const Rutas: React.FC = () => {
         )}
       />
       <Route path="/ejercicio/:id" element={protegida(<RutaEjercicio />)} />
-      <Route path="/guia" element={protegida(<PythonGuide onBackToDashboard={() => navigate('/')} />)} />
-      <Route path="/ranking" element={protegida(<FullRanking onBack={() => navigate('/')} />)} />
-      <Route
-        path="/perfil"
-        element={protegida(<Profile onBackToDashboard={() => navigate('/')} onNavigateToAdmin={() => navigate('/admin')} />)}
-      />
+      <Route path="/guia" element={protegida(<Guia onLogout={handleLogout} />)} />
+      <Route path="/ranking" element={protegida(<Ranking onLogout={handleLogout} />)} />
+      <Route path="/perfil" element={protegida(<Perfil onLogout={handleLogout} />)} />
       <Route path="/admin" element={protegida(<AdminPanel onBack={() => navigate('/perfil')} />, ['admin'])} />
       {GuiaDiseno && <Route path="/diseno" element={<GuiaDiseno />} />}
       <Route path="*" element={<Navigate to="/" replace />} />

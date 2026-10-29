@@ -1,0 +1,204 @@
+/* Perfil del alumno (fase 6.5) */
+.perfil__cargando { margin: 0; color: var(--ac-suave); }
+
+/* ---------- Ficha: quién y rumbo ---------- */
+.perfil__ficha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
+  gap: 28px;
+  align-items: center;
+  padding: 28px;
+  border-radius: var(--ac-radio-panel);
+  background: var(--ac-sarga);
+}
+
+.perfil__quien { display: flex; align-items: center; gap: 20px; min-width: 0; }
+
+.perfil__avatar {
+  flex-shrink: 0;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--ac-oro);
+  color: var(--ac-tinta-oro);
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: 38px;
+  box-shadow: 0 0 0 4px var(--ac-sarga), 0 0 0 6px rgba(244, 185, 66, 0.4);
+}
+
+.perfil__quien h2 {
+  margin: 0;
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.perfil__usuario { margin: 4px 0 0; color: var(--ac-suave); overflow-wrap: anywhere; }
+.perfil__desde { margin: 2px 0 0; color: var(--ac-tenue); font-size: 14px; }
+
+.perfil__rumbo { display: flex; flex-direction: column; gap: 10px; }
+.perfil__rumbo p { margin: 0; color: var(--ac-texto-2); font-size: 14px; }
+.perfil__rumbo strong { color: var(--ac-texto); }
+
+.perfil__puntos { display: flex; align-items: baseline; gap: 8px; }
+
+.perfil__puntos b {
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ac-oro);
+  font-variant-numeric: tabular-nums;
+}
+
+.perfil__puntos span { color: var(--ac-suave); }
+
+.perfil__barra {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--ac-noche);
+  overflow: hidden;
+}
+
+.perfil__barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ac-turquesa);
+  transition: width 600ms var(--ac-ease-out);
+}
+
+/* ---------- Cifras ---------- */
+.perfil__cifras {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.perfil__cifras div {
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--ac-sarga);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.perfil__cifras b {
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.perfil__cifras span { color: var(--ac-suave); font-size: 14px; }
+
+/* ---------- Secciones ---------- */
+.perfil__seccion h2 {
+  margin: 8px 0 14px;
+  font-family: var(--ac-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.perfil__planetas,
+.perfil__hitos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.perfil__planetas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.perfil__planeta {
+  padding: 16px;
+  border-radius: var(--ac-radio-panel);
+  background: var(--ac-sarga);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.perfil__planeta-cabecera { display: flex; align-items: center; gap: 10px; }
+.perfil__planeta-cabecera h3 { margin: 0; flex: 1; font-size: 17px; font-weight: 700; }
+
+.perfil__astro { width: 26px; height: 26px; flex-shrink: 0; cursor: default; }
+/* El anillo de Saturno sobresale por los lados */
+.perfil__astro.ss-saturno { margin: 0 9px; }
+.perfil__planeta.cerrado .perfil__astro { filter: grayscale(0.8) brightness(0.6); }
+.perfil__planeta.cerrado h3 { color: var(--ac-suave); }
+
+.perfil__cielo { border-radius: 12px; }
+
+.perfil__cerrado {
+  margin: 0;
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px dashed var(--ac-linea);
+  color: var(--ac-tenue);
+  font-size: 14px;
+  text-align: center;
+}
+
+.perfil__hitos { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+
+.perfil__hitos li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--ac-linea);
+  color: var(--ac-tenue);
+}
+
+.perfil__hitos li.conseguido { background: var(--ac-sarga); box-shadow: none; color: var(--ac-texto); }
+
+.perfil__hito-icono {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--ac-relieve);
+}
+
+.perfil__hitos li.conseguido .perfil__hito-icono { background: var(--ac-oro-fondo); color: var(--ac-oro); }
+
+.perfil__hitos strong { display: block; font-size: 15px; }
+.perfil__hitos li:not(.conseguido) strong { color: var(--ac-suave); }
+.perfil__hitos li span:not(.perfil__hito-icono):not(.ac-oculto) { font-size: 13px; }
+
+/* ---------- Pantallas medianas y móvil ---------- */
+@media (max-width: 900px) {
+  .perfil__ficha { grid-template-columns: minmax(0, 1fr); padding: 22px; }
+  .perfil__cifras { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .perfil__planetas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .perfil__quien { gap: 14px; }
+  .perfil__avatar { width: 64px; height: 64px; font-size: 28px; }
+  .perfil__quien h2 { font-size: 23px; }
+  .perfil__planetas { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .perfil__barra span { transition: none; }
+}

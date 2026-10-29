@@ -16,7 +16,7 @@ const EJEMPLO: Estrella[] = ['hecha', 'hecha', 'siguiente', 'pendiente', 'pendie
 const PASOS: { titulo: string; texto: string; dibujo: React.ReactNode }[] = [
   {
     titulo: 'Tu mapa es el sistema solar',
-    texto: 'Cada planeta es un nivel. Mercurio, Venus y la Tierra están abiertos desde el principio; Marte, Júpiter y Saturno se abren al sumar 500, 1.000 y 1.500 puntos.',
+    texto: 'Cada planeta es un nivel. Mercurio, Venus y la Tierra están abiertos desde el principio; Marte, Júpiter y Saturno se abren al sumar 500, 1000 y 1500 puntos.',
     dibujo: <div className="bienvenida__sistema"><SistemaDecorativo /></div>,
   },
   {

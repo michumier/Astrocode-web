@@ -33,3 +33,9 @@ export function ejerciciosDelPlaneta(planeta: string, ejerciciosDelNivel: any[])
   const porId = [...ejerciciosDelNivel].sort((a, b) => Number(a.id) - Number(b.id));
   return ['codigo', 'reto', 'pilotaje'].flatMap((g) => trozo(porId.filter((e) => grupo(e) === g), posicion, companeros.length));
 }
+
+// Planeta más lejano que los puntos ya abren y el siguiente que falta (null si están todos)
+export const planetaActual = (puntos: number) =>
+  [...ORDEN_PLANETAS].reverse().find((p) => puntos >= PUNTOS_PLANETA[p]) || ORDEN_PLANETAS[0];
+
+export const siguientePlaneta = (puntos: number) => ORDEN_PLANETAS.find((p) => puntos < PUNTOS_PLANETA[p]) || null;
