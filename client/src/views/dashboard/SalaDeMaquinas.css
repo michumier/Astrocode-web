@@ -44,3 +44,7 @@
 
 .sala__resumen span { display: inline-flex; align-items: center; gap: 5px; }
 .sala__resumen span:first-child svg { color: var(--ac-turquesa); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sala__item { transition: none; }
+}

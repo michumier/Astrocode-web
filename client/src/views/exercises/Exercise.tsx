@@ -5,7 +5,7 @@ import CodeEditor, { lineaDeError } from '../../components/code-editor/CodeEdito
 import TextoIA from '../../components/texto-ia/TextoIA';
 import DiffSabotaje from '../../components/diff-sabotaje/DiffSabotaje';
 import CajaNegra, { Traza } from '../../components/caja-negra/CajaNegra';
-import Enunciado from '../../components/enunciado/Enunciado';
+import Enunciado, { enLinea } from '../../components/enunciado/Enunciado';
 import { Aviso, Boton, Enhorabuena, Etiqueta, tonoDeNivel } from '../../components/ui';
 import './Ejercicio.css';
 
@@ -382,7 +382,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
               {revelacion && (
                 <div className="ejercicio__revelacion" data-testid="revelacion">
                   <strong>Así era el sabotaje{revelacion.linea ? ` (línea ${revelacion.linea})` : ''}</strong>
-                  <p>{revelacion.descripcion}</p>
+                  <p>{enLinea(revelacion.descripcion)}</p>
                   <DiffSabotaje diff={revelacion.diff} />
                   {cirujano && <p className="ejercicio__insignia"><Award size={18} aria-hidden="true" /><span>Insignia nueva: <strong>Cirujano</strong>. Lo arreglaste tocando lo mínimo.</span></p>}
                 </div>

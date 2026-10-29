@@ -33,7 +33,7 @@ const Tarjeta: React.FC<{ concepto: Concepto }> = ({ concepto }) => (
         <span>Ejemplo</span>
         <Copiar codigo={concepto.codigo} titulo={concepto.titulo} />
       </div>
-      <CodigoResaltado codigo={concepto.codigo} className="guia__codigo" />
+      <CodigoResaltado codigo={concepto.codigo} etiqueta={`Ejemplo: ${concepto.titulo}`} className="guia__codigo" />
     </div>
   </article>
 );

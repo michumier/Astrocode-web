@@ -3,9 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLoca
 import { gql, useQuery, useApolloClient } from '@apollo/client';
 import Acceso from './views/acceso/Acceso';
 import Dashboard from './views/dashboard/Dashboard';
-import Guia from './views/python-guide/Guia';
-import Perfil from './views/profile/Perfil';
-import Ranking from './views/ranking/Ranking';
 import { GET_TAREA, mapTareaToExercise } from './utils/tareas';
 import { esSimulacion } from './components/visor-reto/etiquetas';
 import { Lock } from 'lucide-react';
@@ -15,6 +12,10 @@ import { Boton } from './components/ui';
 const Exercise = lazy(() => import('./views/exercises/Exercise'));
 const VistaReto = lazy(() => import('./views/reto/VistaReto'));
 const AdminPanel = lazy(() => import('./views/admin/AdminPanel'));
+// Páginas secundarias: fuera del primer paquete, que solo necesita el acceso y el mapa
+const Guia = lazy(() => import('./views/python-guide/Guia'));
+const Perfil = lazy(() => import('./views/profile/Perfil'));
+const Ranking = lazy(() => import('./views/ranking/Ranking'));
 // Muestrario del sistema de diseño de la fase 6: solo en desarrollo
 const GuiaDiseno = process.env.NODE_ENV !== 'production' ? lazy(() => import('./views/diseno/GuiaDiseno')) : null;
 
@@ -166,7 +167,7 @@ const Rutas: React.FC = () => {
       <Route path="/guia" element={protegida(<Guia onLogout={handleLogout} />)} />
       <Route path="/ranking" element={protegida(<Ranking onLogout={handleLogout} />)} />
       <Route path="/perfil" element={protegida(<Perfil onLogout={handleLogout} />)} />
-      <Route path="/admin" element={protegida(<AdminPanel onBack={() => navigate('/perfil')} />, ['admin'])} />
+      <Route path="/admin" element={protegida(<AdminPanel onLogout={handleLogout} />, ['admin'])} />
       {GuiaDiseno && <Route path="/diseno" element={<GuiaDiseno />} />}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

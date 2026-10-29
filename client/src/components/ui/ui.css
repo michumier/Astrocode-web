@@ -121,9 +121,10 @@
   white-space: nowrap;
 }
 
-.ui-etiqueta--facil, .ui-etiqueta--turquesa { background: var(--ac-turquesa-fondo); color: var(--ac-turquesa); }
-.ui-etiqueta--intermedio, .ui-etiqueta--oro { background: var(--ac-oro-fondo); color: var(--ac-oro); }
-.ui-etiqueta--dificil { background: var(--ac-coral-fondo); color: var(--ac-coral); }
+/* El texto va un punto más claro que el color de marca: así pasa AA (≥4,9:1) también sobre relieve */
+.ui-etiqueta--facil, .ui-etiqueta--turquesa { background: var(--ac-turquesa-fondo); color: #86dcd7; }
+.ui-etiqueta--intermedio, .ui-etiqueta--oro { background: var(--ac-oro-fondo); color: var(--ac-oro-claro); }
+.ui-etiqueta--dificil { background: var(--ac-coral-fondo); color: #ffa58f; }
 
 /* ---------- Panel ---------- */
 .ui-panel {
@@ -179,6 +180,18 @@
 }
 
 .ui-campo textarea { padding: 12px 14px; min-height: 96px; }
+.ui-campo--codigo textarea { font-family: var(--ac-mono); font-size: 14px; line-height: 1.6; background: var(--ac-codigo); tab-size: 4; }
+
+/* El desplegable lleva su flecha propia (la del sistema no se ve sobre el fondo oscuro) */
+.ui-campo--selector select {
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a9bccf' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+.ui-campo--selector option { background: var(--ac-sarga); color: var(--ac-texto); }
 
 .ui-campo input::placeholder,
 .ui-campo textarea::placeholder {

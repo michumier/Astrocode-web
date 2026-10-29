@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
+import { Save, Sparkles } from 'lucide-react';
+import { Aviso, Boton, Campo, CampoArea, CampoSelector, Etiqueta, Panel } from '../../components/ui';
+import { AvisoMensaje, Mensaje, errorDe } from './comun';
+import PaginaAlumno from '../comun/PaginaAlumno';
 import AdminSabotajes from './AdminSabotajes';
 import './AdminPanel.css';
 
-const GET_OPCIONES = gql`
+export const GET_OPCIONES = gql`
   query OpcionesAdmin {
     iaDisponible
     categorias {
@@ -46,11 +50,7 @@ const CREAR_TAREA = gql`
   }
 `;
 
-interface AdminPanelProps {
-  onBack: () => void;
-}
-
-const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
+const GenerarEjercicio: React.FC = () => {
   const { data, loading } = useQuery(GET_OPCIONES);
   const [generarEjercicio, { loading: generando }] = useMutation(GENERAR_EJERCICIO);
   const [crearTarea, { loading: guardando }] = useMutation(CREAR_TAREA, { refetchQueries: ['TareasPorNivel'] });
@@ -59,23 +59,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [nivelId, setNivelId] = useState('');
   const [categoriaId, setCategoriaId] = useState('');
   const [borrador, setBorrador] = useState<any>(null);
-  const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
+  const [mensaje, setMensaje] = useState<Mensaje | null>(null);
 
-  const errorDe = (error: any) => error.graphQLErrors?.[0]?.message || error.message;
-
-  const handleGenerar = async (e: React.FormEvent) => {
+  const generar = async (e: React.FormEvent) => {
     e.preventDefault();
     setMensaje(null);
     setBorrador(null);
     try {
       const { data: res } = await generarEjercicio({ variables: { tema, nivelId, categoriaId } });
       setBorrador(res.generarEjercicio);
-    } catch (error: any) {
+    } catch (error) {
       setMensaje({ tipo: 'error', texto: errorDe(error) });
     }
   };
 
-  const handleGuardar = async () => {
+  const guardar = async () => {
     try {
       const { data: res } = await crearTarea({
         variables: {
@@ -91,10 +89,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
           },
         },
       });
-      setMensaje({ tipo: 'ok', texto: `Ejercicio "${res.crearTarea.titulo}" guardado (id ${res.crearTarea.id}).` });
+      setMensaje({ tipo: 'ok', texto: `Ejercicio «${res.crearTarea.titulo}» guardado (id ${res.crearTarea.id}).` });
       setBorrador(null);
       setTema('');
-    } catch (error: any) {
+    } catch (error) {
       setMensaje({ tipo: 'error', texto: errorDe(error) });
     }
   };
@@ -103,97 +101,102 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     setBorrador({ ...borrador, [campo]: e.target.value });
 
   return (
-    <div className="admin-container">
-      <header className="admin-header">
-        <button onClick={onBack} className="admin-back">← Volver al perfil</button>
-        <h1>🛠️ Panel de admin</h1>
-      </header>
+    <>
+      <Panel titulo="Generar un ejercicio con IA">
+        {loading ? (
+          <p className="admin__nota">Cargando…</p>
+        ) : !data?.iaDisponible ? (
+          <Aviso tono="info" titulo="La IA no está activada">
+            Añade <code>NVIDIA_API_KEY</code> al <code>.env</code> de la API y reiníciala.
+          </Aviso>
+        ) : (
+          <form onSubmit={generar} className="admin__formulario">
+            <Campo etiqueta="Tema" value={tema} onChange={(e) => setTema(e.target.value)} required maxLength={300}
+              placeholder="p. ej. contar vocales en un mensaje de radio" ayuda="La IA escribe enunciado, código base, solución y tests; los tests se comprueban en el sandbox." />
+            <div className="admin__fila">
+              <CampoSelector etiqueta="Nivel" value={nivelId} onChange={(e) => setNivelId(e.target.value)} required>
+                <option value="">Elige…</option>
+                {data.niveles.map((n: any) => <option key={n.id} value={n.id}>{n.nombre}</option>)}
+              </CampoSelector>
+              <CampoSelector etiqueta="Categoría" value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)} required>
+                <option value="">Elige…</option>
+                {data.categorias.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+              </CampoSelector>
+            </div>
+            <div>
+              <Boton type="submit" variante="primario" cargando={generando} icono={<Sparkles size={18} aria-hidden="true" />}>
+                {generando ? 'Generando y comprobando tests…' : 'Generar borrador'}
+              </Boton>
+            </div>
+          </form>
+        )}
+        <AvisoMensaje mensaje={mensaje} />
+      </Panel>
 
-      <main className="admin-main">
-        <section className="admin-card">
-          <h2>Generar ejercicio con IA</h2>
-          {loading ? (
-            <p>Cargando...</p>
-          ) : !data?.iaDisponible ? (
-            <p className="admin-aviso">
-              La IA no está activada. Añade <code>NVIDIA_API_KEY</code> al <code>.env</code> de la API y reinicia.
-            </p>
-          ) : (
-            <form onSubmit={handleGenerar} className="admin-form">
-              <label>
-                Tema
-                <input
-                  value={tema}
-                  onChange={(e) => setTema(e.target.value)}
-                  placeholder="p. ej. contar vocales en un mensaje de radio"
-                  required
-                  maxLength={300}
-                />
-              </label>
-              <div className="admin-row">
-                <label>
-                  Nivel
-                  <select value={nivelId} onChange={(e) => setNivelId(e.target.value)} required>
-                    <option value="">Elige...</option>
-                    {data.niveles.map((n: any) => <option key={n.id} value={n.id}>{n.nombre}</option>)}
-                  </select>
-                </label>
-                <label>
-                  Categoría
-                  <select value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)} required>
-                    <option value="">Elige...</option>
-                    {data.categorias.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                  </select>
-                </label>
-              </div>
-              <button type="submit" className="admin-primary" disabled={generando}>
-                {generando ? 'Generando y comprobando tests...' : '✨ Generar borrador'}
-              </button>
-            </form>
-          )}
-
-          {mensaje && <p className={`admin-mensaje ${mensaje.tipo}`}>{mensaje.texto}</p>}
-        </section>
-
-        {borrador && (
-          <section className="admin-card">
-            <h2>Revisar borrador</h2>
-            <p className="admin-nota">
-              {borrador.tests.length} de {borrador.testsGenerados} tests verificados en el sandbox con la solución de referencia.
-            </p>
-            {borrador.avisos.map((a: string) => <p key={a} className="admin-aviso">⚠️ {a}</p>)}
-
-            <label>Título<input value={borrador.titulo} onChange={editar('titulo')} /></label>
-            <label>Enunciado<textarea rows={6} value={borrador.descripcion} onChange={editar('descripcion')} /></label>
-            <label>Código base (lo ve el alumno)<textarea rows={5} className="mono" value={borrador.codigoBase} onChange={editar('codigoBase')} /></label>
-            <label>Ejemplo que ve el alumno<textarea rows={2} className="mono" value={borrador.resultadoEsperado} onChange={editar('resultadoEsperado')} /></label>
-            <details>
+      {borrador && (
+        <Panel titulo="Revisar el borrador"
+          extra={<Etiqueta tono="turquesa">{borrador.tests.length} de {borrador.testsGenerados} tests verificados</Etiqueta>}>
+          <div className="admin__formulario">
+            {borrador.avisos.map((a: string) => <Aviso key={a} tono="atencion" titulo="Revísalo">{a}</Aviso>)}
+            <Campo etiqueta="Título" value={borrador.titulo} onChange={editar('titulo')} />
+            <CampoArea etiqueta="Enunciado" rows={6} value={borrador.descripcion} onChange={editar('descripcion')} />
+            <CampoArea etiqueta="Código base (lo ve el alumno)" codigo rows={5} value={borrador.codigoBase} onChange={editar('codigoBase')} />
+            <CampoArea etiqueta="Ejemplo que ve el alumno" codigo rows={2} value={borrador.resultadoEsperado} onChange={editar('resultadoEsperado')} />
+            <details className="admin__solucion">
               <summary>Solución de referencia (no la ve el alumno)</summary>
-              <pre className="mono">{borrador.solucion}</pre>
+              <pre>{borrador.solucion}</pre>
             </details>
 
-            <h3>Tests</h3>
-            <ul className="admin-tests">
+            <h3 className="admin__subtitulo">Tests</h3>
+            <ul className="admin__tests">
               {borrador.tests.map((t: any, i: number) => (
                 <li key={i}>
-                  <span className={`badge ${t.oculto ? 'oculto' : 'visible'}`}>{t.oculto ? 'oculto' : 'visible'}</span>
-                  <strong>{t.descripcion}</strong>
-                  <code>{t.codigoTest}</code> → <code>{t.salidaEsperada}</code>
+                  <Etiqueta tono={t.oculto ? 'neutro' : 'turquesa'}>{t.oculto ? 'Oculto' : 'Visible'}</Etiqueta>
+                  <div>
+                    <strong>{t.descripcion}</strong>
+                    <code>{t.codigoTest}</code> → <code>{t.salidaEsperada}</code>
+                  </div>
                 </li>
               ))}
             </ul>
 
-            <div className="admin-row">
-              <button className="admin-primary" onClick={handleGuardar} disabled={guardando}>
-                {guardando ? 'Guardando...' : '💾 Guardar ejercicio'}
-              </button>
-              <button className="admin-secondary" onClick={() => setBorrador(null)}>Descartar</button>
+            <div className="admin__acciones">
+              <Boton variante="primario" onClick={guardar} cargando={guardando} icono={<Save size={18} aria-hidden="true" />}>
+                {guardando ? 'Guardando…' : 'Guardar ejercicio'}
+              </Boton>
+              <Boton variante="fantasma" onClick={() => setBorrador(null)}>Descartar</Boton>
             </div>
-          </section>
-        )}
-        <AdminSabotajes />
-      </main>
-    </div>
+          </div>
+        </Panel>
+      )}
+    </>
+  );
+};
+
+interface AdminPanelProps {
+  onLogout?: () => void;
+}
+
+type Seccion = 'ejercicios' | 'sabotajes';
+
+const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
+  const [seccion, setSeccion] = useState<Seccion>('ejercicios');
+  const pestana = (id: Seccion, texto: string) => (
+    <button type="button" role="tab" id={`admin-tab-${id}`} aria-selected={seccion === id} aria-controls="admin-panel"
+      onClick={() => setSeccion(id)}>{texto}</button>
+  );
+
+  return (
+    <PaginaAlumno titulo="Panel de administración" onLogout={onLogout}
+      subtitulo="Crea ejercicios con IA y prepara sabotajes. Todo se comprueba en el sandbox antes de que lo vea un alumno.">
+      <div className="admin__secciones" role="tablist" aria-label="Secciones">
+        {pestana('ejercicios', 'Ejercicios con IA')}
+        {pestana('sabotajes', 'Sabotajes')}
+      </div>
+      <div id="admin-panel" role="tabpanel" aria-labelledby={`admin-tab-${seccion}`} className="admin__contenido">
+        {seccion === 'ejercicios' ? <GenerarEjercicio /> : <AdminSabotajes />}
+      </div>
+    </PaginaAlumno>
   );
 };
 

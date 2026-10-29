@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Play, RotateCcw, Rocket } from 'lucide-react';
-import { Aviso, BarraSuperior, Boton, Campo, Constelacion, Etiqueta, Panel } from '../../components/ui';
+import { Aviso, BarraSuperior, Boton, Calificacion, Campo, CampoArea, CampoSelector, Constelacion, Enhorabuena, Etiqueta, Panel } from '../../components/ui';
+import CodigoResaltado from '../../components/code-editor/CodigoResaltado';
 import type { Estrella } from '../../components/ui';
 import './GuiaDiseno.css';
 
@@ -30,6 +31,7 @@ const marte: Estrella[] = Array.from({ length: 12 }, (_, i) => ({ id: String(i),
 
 const GuiaDiseno: React.FC = () => {
   const [cargando, setCargando] = useState(false);
+  const [premio, setPremio] = useState(false);
   const probarCarga = () => {
     setCargando(true);
     setTimeout(() => setCargando(false), 1500);
@@ -97,6 +99,9 @@ const GuiaDiseno: React.FC = () => {
             <Campo etiqueta="Correo electrónico" type="email" placeholder="tu@correo.com" />
             <Campo etiqueta="Nombre de cadete" defaultValue="lucia" ayuda="Así te verán en el ranking." />
             <Campo etiqueta="Contraseña" type="password" defaultValue="12345" error="Usa al menos 8 caracteres." />
+            <CampoSelector etiqueta="Nivel" defaultValue="1"><option value="1">Fácil</option><option value="2">Intermedio</option></CampoSelector>
+            <CampoArea etiqueta="Código base" codigo rows={3} defaultValue={`def saludar(nombre):
+    return "Hola, " + nombre`} />
           </div>
         </Panel>
 
@@ -116,7 +121,21 @@ const GuiaDiseno: React.FC = () => {
             <figure><Constelacion planeta="Marte" estrellas={marte} /><figcaption>Marte · recién abierto</figcaption></figure>
           </div>
         </Panel>
+        <Panel titulo="Código de solo lectura y calificación">
+          <div className="guia-diseno__campos">
+            <CodigoResaltado etiqueta="Ejemplo" className="guia-diseno__codigo" codigo={`# Cuenta atrás
+for segundo in range(3, 0, -1):
+    print(segundo)
+print("¡Despegue!")`} />
+            <div className="guia-diseno__fila"><Calificacion estrellas={0} /><Calificacion estrellas={2} /><Calificacion estrellas={3} tamano={24} /></div>
+            <div><Boton variante="secundario" onClick={() => setPremio(true)}>Abrir la enhorabuena</Boton></div>
+          </div>
+        </Panel>
       </main>
+      {premio && (
+        <Enhorabuena titulo="¡Misión cumplida!" subtitulo="Aterrizaje de emergencia" alVolver={() => setPremio(false)} alCerrar={() => setPremio(false)}
+          datos={[{ valor: '+150', etiqueta: 'puntos' }, { valor: <Calificacion estrellas={2} tamano={24} />, etiqueta: 'estrellas' }]} />
+      )}
     </div>
   );
 };

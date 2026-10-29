@@ -1,6 +1,6 @@
 {
   "short_name": "AstroCode",
-  "name": "AstroCode - Plataforma de Aprendizaje de Programación",
+  "name": "AstroCode: aprende Python viajando por el sistema solar",
   "icons": [
     {
       "src": "img/Logo.png",
@@ -20,6 +20,7 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#0e1c2b",
+  "background_color": "#0e1c2b",
+  "lang": "es"
 }

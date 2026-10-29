@@ -76,6 +76,37 @@ export const Campo: React.FC<PropsCampo> = ({ etiqueta, error, ayuda, accesorio,
   );
 };
 
+// Texto largo y desplegable con la misma etiqueta, ayuda y error que Campo
+type PropsArea = React.TextareaHTMLAttributes<HTMLTextAreaElement> & { etiqueta: string; error?: string | null; ayuda?: string; codigo?: boolean };
+
+export const CampoArea: React.FC<PropsArea> = ({ etiqueta, error, ayuda, codigo, id, className, ...area }) => {
+  const propio = useId();
+  const idCampo = id || propio;
+  const idDescripcion = error || ayuda ? `${idCampo}-desc` : undefined;
+  return (
+    <div className={['ui-campo', codigo && 'ui-campo--codigo', error && 'ui-campo--error', className].filter(Boolean).join(' ')}>
+      <label htmlFor={idCampo}>{etiqueta}</label>
+      <textarea id={idCampo} aria-invalid={error ? true : undefined} aria-describedby={idDescripcion} spellCheck={codigo ? false : undefined} {...area} />
+      {error ? <span className="ui-campo__error" id={idDescripcion} role="alert">{error}</span>
+        : ayuda ? <span className="ui-campo__ayuda" id={idDescripcion}>{ayuda}</span> : null}
+    </div>
+  );
+};
+
+type PropsSelector = React.SelectHTMLAttributes<HTMLSelectElement> & { etiqueta: string; ayuda?: string };
+
+export const CampoSelector: React.FC<PropsSelector> = ({ etiqueta, ayuda, id, className, children, ...select }) => {
+  const propio = useId();
+  const idCampo = id || propio;
+  return (
+    <div className={['ui-campo', 'ui-campo--selector', className].filter(Boolean).join(' ')}>
+      <label htmlFor={idCampo}>{etiqueta}</label>
+      <select id={idCampo} aria-describedby={ayuda ? `${idCampo}-desc` : undefined} {...select}>{children}</select>
+      {ayuda && <span className="ui-campo__ayuda" id={`${idCampo}-desc`}>{ayuda}</span>}
+    </div>
+  );
+};
+
 // ---------- Aviso ----------
 type TonoAviso = 'exito' | 'info' | 'atencion' | 'error';
 const ICONOS_AVISO: Record<TonoAviso, React.ReactNode> = {

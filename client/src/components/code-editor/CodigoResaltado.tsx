@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { parser } from '@lezer/python';
 import { highlightCode, tagHighlighter } from '@lezer/highlight';
-import { REGLAS_RESALTADO } from './tema';
+import { REGLAS_RESALTADO } from './colores';
 
 // Mismas reglas que el editor, pero dando nombres de clase para pintarlos aquí sin CodeMirror
 const resaltador = tagHighlighter(REGLAS_RESALTADO.map(({ tag, clase }) => ({ tag, class: clase })));
@@ -10,7 +10,8 @@ const ESTILOS: Record<string, React.CSSProperties> = Object.fromEntries(
 );
 
 // Código Python de solo lectura con los colores del editor (guía de Python)
-const CodigoResaltado: React.FC<{ codigo: string; className?: string }> = ({ codigo, className }) => {
+// Se puede enfocar con el teclado: en pantallas estrechas el código se desplaza de lado
+const CodigoResaltado: React.FC<{ codigo: string; etiqueta: string; className?: string }> = ({ codigo, etiqueta, className }) => {
   const lineas = useMemo(() => {
     const salida: React.ReactNode[][] = [[]];
     let n = 0;
@@ -28,7 +29,7 @@ const CodigoResaltado: React.FC<{ codigo: string; className?: string }> = ({ cod
   }, [codigo]);
 
   return (
-    <pre className={className}>
+    <pre className={className} tabIndex={0} aria-label={etiqueta}>
       <code>{lineas.map((linea, i) => <React.Fragment key={i}>{linea}{i < lineas.length - 1 ? '\n' : null}</React.Fragment>)}</code>
     </pre>
   );
