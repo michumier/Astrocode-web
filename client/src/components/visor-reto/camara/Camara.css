@@ -8,7 +8,7 @@
   border: 1px solid rgba(255, 210, 127, 0.35);
 }
 
-.camara-visor.exito { border-color: rgba(0, 255, 136, 0.6); }
+.camara-visor.exito { border-color: rgba(92, 200, 194, 0.6); }
 
 .camara-rodillo-zona,
 .camara-dial-zona,
@@ -91,8 +91,8 @@
   margin: 0;
   padding: 6px;
   border-radius: 8px;
-  background: #070b18;
-  font-family: 'Fira Code', Consolas, monospace;
+  background: var(--ac-codigo);
+  font-family: var(--ac-mono);
   font-size: 0.85rem;
   min-height: 110px;
 }
@@ -108,8 +108,8 @@
 
 .camara-rodillo li.coincide {
   opacity: 1;
-  background: rgba(0, 255, 136, 0.18);
-  color: #b8ffd9;
+  background: rgba(92, 200, 194, 0.18);
+  color: #a8e6e2;
   font-weight: bold;
 }
 
@@ -125,7 +125,7 @@
   gap: 8px;
   padding: 10px 14px;
   border-radius: 10px;
-  background: #070b18;
+  background: var(--ac-codigo);
   border: 2px solid #3a3f4d;
   animation: camara-giro 0.35s ease-out;
 }
@@ -136,16 +136,16 @@
 }
 
 .camara-dial-numero {
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 1.8rem;
-  color: #ffd27f;
+  color: var(--ac-oro);
 }
 
 .camara-dial-flecha { font-weight: bold; }
 .camara-dial-flecha.mayor { color: #7cb8ff; }
 .camara-dial-flecha.menor { color: #ffb47c; }
-.camara-dial-flecha.abierta { color: #00ff88; }
-.camara-dial-flecha.invalido { color: #ff8080; }
+.camara-dial-flecha.abierta { color: var(--ac-turquesa); }
+.camara-dial-flecha.invalido { color: #ff8f9c; }
 
 .camara-bombillas {
   display: flex;
@@ -157,8 +157,8 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #00ff88;
-  box-shadow: 0 0 6px rgba(0, 255, 136, 0.7);
+  background: var(--ac-turquesa);
+  box-shadow: 0 0 6px rgba(92, 200, 194, 0.7);
 }
 
 .camara-bombillas span.usada {
@@ -178,7 +178,7 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  background: linear-gradient(90deg, #ffd27f, #ffb347);
+  background: linear-gradient(90deg, var(--ac-oro), #ffb347);
   transition: left 0.4s ease, width 0.4s ease;
 }
 
@@ -216,7 +216,7 @@
 }
 
 .camara-fichas {
-  color: #ffd27f;
+  color: var(--ac-oro);
   letter-spacing: 2px;
 }
 
@@ -232,7 +232,7 @@
   margin: 0;
   padding: 8px 10px;
   border-radius: 8px;
-  background: rgba(255, 82, 82, 0.14);
+  background: rgba(255, 107, 125, 0.14);
 }
 
 /* ---------- Material ---------- */
@@ -242,7 +242,7 @@
   gap: 10px;
 }
 
-.camara-material h4 {
+.camara-material h3 {
   margin: 0 0 4px;
 }
 
@@ -256,7 +256,7 @@
 }
 
 .camara-lista {
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 0.8rem;
   opacity: 0.85;
 }

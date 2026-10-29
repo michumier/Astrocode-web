@@ -1,0 +1,373 @@
+/* Mapa (fase 6.1). Prediseño: https://claude.ai/artifact/EhzYLRtiZoSsgY135Ff24G */
+.mapa-pagina {
+  position: relative;
+  min-height: 100vh;
+  /* clip (y no hidden) no crea una caja de scroll: el panel del planeta sigue pegado arriba */
+  overflow-x: clip;
+  display: flex;
+  flex-direction: column;
+  background: var(--ac-noche);
+  color: var(--ac-texto);
+  font-family: var(--ac-ui);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* El fondo de estrellas (Starfield, fijo) queda detrás de todo */
+.mapa-pagina > header,
+.mapa-pagina > main {
+  position: relative;
+  z-index: 1;
+}
+
+.mapa {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) minmax(260px, 340px);
+  gap: 24px;
+  padding: 24px 28px;
+  align-items: start;
+}
+
+.mapa--panel {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 520px);
+  padding-right: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  align-items: stretch;
+}
+
+.mapa--panel .mapa__izq { display: none; }
+
+.mapa__columna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.mapa__contador { color: var(--ac-suave); font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mapa__contador b { color: var(--ac-texto); }
+.mapa__nota { margin: 0; color: var(--ac-suave); font-size: 14px; }
+
+.mapa__cielo { margin-bottom: 10px; }
+
+/* «Siguiente estrella»: el atajo al ejercicio que toca */
+.mapa__siguiente {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--ac-radio);
+  background: var(--ac-relieve);
+  color: var(--ac-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--ac-pulsar) var(--ac-ease-out), background-color 160ms ease;
+}
+
+.mapa__siguiente:active { transform: scale(0.98); }
+@media (hover: hover) { .mapa__siguiente:hover { background: var(--ac-relieve-2); } }
+
+.mapa__siguiente i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--ac-estrella);
+  box-shadow: 0 0 0 2px var(--ac-relieve), 0 0 0 4px var(--ac-oro);
+}
+
+.mapa__siguiente span { flex: 1; min-width: 0; }
+.mapa__siguiente small { display: block; color: var(--ac-suave); font-size: 12px; }
+.mapa__siguiente strong { display: block; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mapa__siguiente svg { color: var(--ac-oro); flex-shrink: 0; }
+
+.mapa__proximo {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ac-linea);
+}
+
+.mapa__proximo-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ac-suave);
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mapa__proximo-fila b { color: var(--ac-texto); }
+
+.mapa__barra {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--ac-noche);
+  overflow: hidden;
+}
+
+.mapa__barra i {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+  background: var(--ac-oro);
+  transition: width 600ms var(--ac-ease-out);
+}
+
+/* ---------- Ranking ---------- */
+.mapa__ranking ol {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mapa__ranking li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.mapa__ranking .n { font-family: var(--ac-display); font-weight: 800; color: var(--ac-tenue); }
+.mapa__ranking .podio .n { color: var(--ac-oro); }
+.mapa__ranking .nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mapa__ranking .p { font-variant-numeric: tabular-nums; color: var(--ac-suave); }
+.mapa__ranking .yo { background: var(--ac-relieve); font-weight: 700; }
+.mapa__ranking .yo .p { color: var(--ac-texto); }
+
+/* ---------- Sistema solar ---------- */
+.mapa__centro {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 720px;
+}
+
+.mapa__escala {
+  display: flex;
+  justify-content: center;
+}
+
+.mapa__aviso {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: min(440px, 100%);
+  animation: mapa-aviso 220ms var(--ac-ease-out);
+}
+
+@keyframes mapa-aviso {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+}
+
+.mapa__pie {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  text-align: center;
+}
+
+.mapa__pie h1 {
+  margin: 0;
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: 34px;
+  letter-spacing: -0.025em;
+  font-stretch: 85%;
+  line-height: 1.1;
+}
+
+.mapa__leyenda { display: flex; gap: 18px; color: var(--ac-suave); font-size: 13px; }
+.mapa__leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+.mapa__leyenda i { width: 16px; height: 0; border-top: 2px dashed var(--ac-turquesa); }
+.mapa__leyenda i.b { border-color: rgba(169, 188, 207, 0.45); }
+
+/* ---------- Columna derecha ---------- */
+.mapa__diario {
+  background: var(--ac-oro);
+  color: var(--ac-tinta-oro);
+  border-radius: var(--ac-radio-panel);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.mapa__diario-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; font-size: 12px; font-weight: 700; }
+.mapa__diario-meta span { background: rgba(42, 28, 4, 0.12); padding: 3px 9px; border-radius: 999px; }
+.mapa__diario h2 { margin: 0; font-family: var(--ac-display); font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.08; }
+.mapa__diario p { margin: 8px 0 18px; font-size: 14px; color: #4a3509; }
+.mapa__diario p:empty { display: none; }
+
+.mapa__guia {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.mapa__guia .ui-panel__titulo { margin-bottom: 4px; }
+
+/* ---------- Panel del planeta ---------- */
+.panel-planeta {
+  background: var(--ac-sarga);
+  border-left: 1px solid var(--ac-linea);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-height: calc(100vh - 69px);
+  position: sticky;
+  top: 0;
+  animation: panel-entrar 280ms var(--ac-ease-out);
+}
+
+@keyframes panel-entrar {
+  from { transform: translateX(24px); opacity: 0; }
+}
+
+.panel-planeta__cabecera {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 22px 20px 12px 24px;
+}
+
+.panel-planeta__cabecera h2 {
+  margin: 0;
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: 40px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  outline: none;
+}
+
+.panel-planeta__cabecera p { margin: 6px 0 0; color: var(--ac-suave); font-size: 14px; }
+.panel-planeta__cerrar { margin-left: auto; }
+.panel-planeta__cielo { margin: 0 24px 14px; width: auto; flex-shrink: 0; max-height: 190px; }
+
+.panel-planeta__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 24px 14px;
+  border-bottom: 1px solid var(--ac-linea);
+}
+
+.panel-planeta__filtro {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--ac-relieve);
+  color: var(--ac-suave);
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform var(--ac-pulsar) var(--ac-ease-out);
+}
+
+.panel-planeta__filtro:active { transform: scale(0.96); }
+.panel-planeta__filtro.activo { background: var(--ac-texto); color: var(--ac-noche); }
+
+.panel-planeta__lista {
+  list-style: none;
+  margin: 0;
+  padding: 10px 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.panel-planeta__item {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 14px;
+}
+
+@media (hover: hover) { .panel-planeta__item:hover { background: var(--ac-relieve); } }
+
+.panel-planeta__item.siguiente { background: var(--ac-relieve); box-shadow: inset 0 0 0 1.5px var(--ac-oro); }
+
+.panel-planeta__icono {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--ac-noche);
+  display: grid;
+  place-items: center;
+  color: var(--ac-turquesa);
+}
+
+.panel-planeta__icono--reto { color: var(--ac-oro); }
+.panel-planeta__icono--pilotaje { color: var(--ac-estrella); }
+
+.panel-planeta__texto { min-width: 0; }
+.panel-planeta__texto strong { display: block; font-size: 15px; line-height: 1.3; }
+.panel-planeta__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 13px; color: var(--ac-suave); margin-top: 4px; }
+.panel-planeta__accion { display: flex; align-items: center; gap: 4px; }
+.panel-planeta__hecho { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--ac-turquesa); }
+.panel-planeta__vacio { padding: 24px; margin: 0; color: var(--ac-suave); }
+
+/* ---------- Pantallas medianas y móvil ---------- */
+@media (max-width: 1240px) {
+  .mapa { grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); }
+  .mapa__izq { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .mapa__centro { min-height: 0; }
+  .mapa__escala .ss-sistema { --ss-escala: 0.82; transform: scale(0.82); margin: -58px; }
+  .mapa--panel .mapa__izq { display: none; }
+}
+
+@media (max-width: 900px) {
+  .mapa, .mapa--panel { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+  .mapa__izq { grid-template-columns: minmax(0, 1fr); }
+  .mapa__centro { order: -1; }
+  .mapa__escala .ss-sistema { --ss-escala: 0.56; transform: scale(0.56); margin: -141px; }
+  .mapa__pie h1 { font-size: 26px; }
+  /* En el móvil el panel del planeta ocupa la pantalla entera */
+  .panel-planeta {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    max-height: none;
+    border-left: 0;
+    animation-name: panel-subir;
+  }
+  @keyframes panel-subir {
+    from { transform: translateY(24px); opacity: 0; }
+  }
+}
+
+@media (max-width: 420px) {
+  .mapa__escala .ss-sistema { --ss-escala: 0.52; transform: scale(0.52); margin: -154px; }
+  .panel-planeta__item { grid-template-columns: 40px minmax(0, 1fr); }
+  .panel-planeta__item > :last-child { grid-column: 2; justify-self: start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-planeta, .mapa__aviso { animation: none; }
+  .mapa__barra i { transition: none; }
+}

@@ -1,0 +1,482 @@
+/* Kit de componentes de la fase 6 (ver estilos/base.css para los tokens) */
+
+/* ---------- Botón ---------- */
+.ui-boton {
+  position: relative;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--ac-radio);
+  border: 0;
+  font-family: var(--ac-ui);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--ac-pulsar) var(--ac-ease-out), background-color 160ms ease, color 160ms ease;
+}
+
+.ui-boton:active:not(:disabled):not([aria-disabled='true']) {
+  transform: scale(0.97);
+}
+
+.ui-boton:disabled,
+.ui-boton[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Principal: oro con la puntada interior. Uno por pantalla */
+.ui-boton--primario {
+  background: var(--ac-oro);
+  color: var(--ac-tinta-oro);
+}
+
+.ui-boton--primario::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1.5px dashed rgba(42, 28, 4, 0.45);
+  border-radius: calc(var(--ac-radio) - 3px);
+  pointer-events: none;
+}
+
+.ui-boton--secundario {
+  background: var(--ac-relieve);
+  color: var(--ac-texto);
+  box-shadow: inset 0 0 0 1px var(--ac-linea);
+}
+
+.ui-boton--fantasma {
+  background: transparent;
+  color: var(--ac-turquesa);
+  padding: 0 10px;
+}
+
+.ui-boton--peligro {
+  background: transparent;
+  color: var(--ac-error);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 107, 125, 0.6);
+}
+
+/* Sobre un bloque de oro (el reto diario) el principal se invierte */
+.ui-boton--oscuro {
+  background: var(--ac-noche);
+  color: var(--ac-texto);
+}
+
+.ui-boton--oscuro::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.4);
+  border-radius: calc(var(--ac-radio) - 3px);
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .ui-boton--primario:hover:not(:disabled) { background: var(--ac-oro-claro); }
+  .ui-boton--secundario:hover:not(:disabled) { background: var(--ac-relieve-2); }
+  .ui-boton--fantasma:hover:not(:disabled) { background: var(--ac-relieve); }
+  .ui-boton--peligro:hover:not(:disabled) { background: var(--ac-error-fondo); }
+}
+
+.ui-boton--peq { min-height: 36px; padding: 0 12px; font-size: 14px; border-radius: 10px; }
+.ui-boton--grande { min-height: 52px; padding: 0 24px; font-size: 16px; }
+.ui-boton--icono { width: 44px; padding: 0; }
+.ui-boton--peq.ui-boton--icono { width: 36px; }
+.ui-boton--ancho { width: 100%; }
+
+.ui-giro {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2.5px solid currentColor;
+  border-right-color: transparent;
+  animation: ui-girar 0.7s linear infinite;
+}
+
+@keyframes ui-girar {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- Etiqueta ---------- */
+.ui-etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  background: var(--ac-relieve);
+  color: var(--ac-suave);
+  white-space: nowrap;
+}
+
+/* El texto va un punto más claro que el color de marca: así pasa AA (≥4,9:1) también sobre relieve */
+.ui-etiqueta--facil, .ui-etiqueta--turquesa { background: var(--ac-turquesa-fondo); color: #86dcd7; }
+.ui-etiqueta--intermedio, .ui-etiqueta--oro { background: var(--ac-oro-fondo); color: var(--ac-oro-claro); }
+.ui-etiqueta--dificil { background: var(--ac-coral-fondo); color: #ffa58f; }
+
+/* ---------- Panel ---------- */
+.ui-panel {
+  background: var(--ac-sarga);
+  border-radius: var(--ac-radio-panel);
+  padding: 20px;
+  min-width: 0;
+}
+
+.ui-panel__cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ui-panel__titulo {
+  margin: 0;
+  font-family: var(--ac-display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* ---------- Campo ---------- */
+.ui-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ui-campo label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ac-texto);
+}
+
+.ui-campo input,
+.ui-campo textarea,
+.ui-campo select {
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: var(--ac-radio);
+  border: 1.5px solid var(--ac-linea);
+  background: var(--ac-sarga);
+  color: var(--ac-texto);
+  font: inherit;
+  font-size: 16px;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.ui-campo textarea { padding: 12px 14px; min-height: 96px; }
+.ui-campo--codigo textarea { font-family: var(--ac-mono); font-size: 14px; line-height: 1.6; background: var(--ac-codigo); tab-size: 4; }
+
+/* El desplegable lleva su flecha propia (la del sistema no se ve sobre el fondo oscuro) */
+.ui-campo--selector select {
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a9bccf' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+.ui-campo--selector option { background: var(--ac-sarga); color: var(--ac-texto); }
+
+.ui-campo input::placeholder,
+.ui-campo textarea::placeholder {
+  color: var(--ac-tenue);
+}
+
+.ui-campo input:focus,
+.ui-campo textarea:focus,
+.ui-campo select:focus {
+  outline: none;
+  border-color: var(--ac-turquesa);
+  box-shadow: 0 0 0 4px rgba(92, 200, 194, 0.18);
+}
+
+.ui-campo--error input,
+.ui-campo--error textarea { border-color: var(--ac-error); }
+
+.ui-campo__ayuda { font-size: 13px; color: var(--ac-suave); }
+
+.ui-campo__caja { position: relative; display: flex; }
+.ui-campo__caja input { flex: 1; min-width: 0; padding-right: 52px; }
+.ui-campo__accesorio { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: flex; }
+.ui-campo__error { font-size: 13px; color: var(--ac-error); }
+
+/* ---------- Aviso ---------- */
+.ui-aviso {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--ac-relieve);
+  color: var(--ac-texto);
+}
+
+.ui-aviso__icono { flex-shrink: 0; margin-top: 1px; }
+.ui-aviso--exito .ui-aviso__icono { color: var(--ac-turquesa); }
+.ui-aviso--info .ui-aviso__icono { color: var(--ac-suave); }
+.ui-aviso--atencion .ui-aviso__icono { color: var(--ac-oro); }
+.ui-aviso--error { background: var(--ac-error-fondo); }
+.ui-aviso--error .ui-aviso__icono { color: var(--ac-error); }
+.ui-aviso__titulo { display: block; font-weight: 700; }
+.ui-aviso__texto { color: var(--ac-suave); font-size: 14px; }
+
+/* ---------- Barra superior ---------- */
+.ui-barra {
+  min-height: 68px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 28px;
+  padding: 10px 28px;
+  background: var(--ac-sarga);
+  border-bottom: 1px solid var(--ac-linea);
+  font-family: var(--ac-ui);
+}
+
+.ui-barra__marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ac-texto);
+  text-decoration: none;
+}
+
+.ui-barra__marca img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+}
+
+.ui-barra__nombre {
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  font-stretch: 90%;
+}
+
+.ui-barra__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ui-barra__nav a {
+  padding: 9px 14px;
+  border-radius: 10px;
+  color: var(--ac-suave);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.ui-barra__nav a:hover { color: var(--ac-texto); }
+.ui-barra__nav a.active { background: var(--ac-relieve); color: var(--ac-texto); }
+
+.ui-barra__der {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ui-puntos {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  border-radius: 999px;
+  background: var(--ac-relieve);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ac-texto);
+}
+
+.ui-puntos svg { color: var(--ac-oro); }
+
+.ui-avatar { position: relative; }
+
+.ui-avatar__boton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--ac-turquesa);
+  color: var(--ac-noche);
+  font-family: var(--ac-ui);
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform var(--ac-pulsar) var(--ac-ease-out);
+}
+
+.ui-avatar__boton:active { transform: scale(0.95); }
+
+.ui-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 190px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--ac-relieve);
+  box-shadow: var(--ac-sombra);
+  z-index: 50;
+  transform-origin: top right;
+  animation: ui-abrir 160ms var(--ac-ease-out);
+}
+
+@keyframes ui-abrir {
+  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+}
+
+.ui-menu button {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ac-texto);
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ui-menu button:hover { background: var(--ac-relieve-2); }
+
+@media (max-width: 640px) {
+  .ui-barra { padding: 10px 16px; gap: 8px 14px; }
+  .ui-barra__nav { order: 3; width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+}
+
+/* ---------- Constelación ---------- */
+.ui-constelacion {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at 30% 20%, #18304a 0%, var(--ac-noche) 75%);
+}
+
+.ui-constelacion__siguiente {
+  animation: ui-titilar 2.6s ease-in-out infinite;
+}
+
+@keyframes ui-titilar {
+  50% { opacity: 0.5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-constelacion__siguiente,
+  .ui-giro,
+  .ui-menu { animation: none; }
+  .ui-boton,
+  .ui-avatar__boton { transition: none; }
+}
+
+/* ---------- Enhorabuena ---------- */
+.ui-premio-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(5, 10, 18, 0.72);
+  animation: ui-fundido 200ms ease-out;
+}
+
+@keyframes ui-fundido {
+  from { opacity: 0; }
+}
+
+.ui-premio {
+  width: min(460px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 28px 28px 22px;
+  border-radius: 22px;
+  background: var(--ac-sarga);
+  box-shadow: var(--ac-sombra);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  animation: ui-premio-entrar 320ms var(--ac-ease-out);
+}
+
+@keyframes ui-premio-entrar {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+}
+
+.ui-premio h2 {
+  margin: 4px 0 0;
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: 34px;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.ui-premio__sub { margin: 0; color: var(--ac-suave); font-size: 14px; }
+
+.ui-premio__datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin: 8px 0 4px;
+}
+
+.ui-premio__datos div {
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--ac-relieve);
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-premio__datos b { font-family: var(--ac-display); font-size: 26px; font-weight: 800; color: var(--ac-oro); font-variant-numeric: tabular-nums; }
+.ui-premio__datos span { font-size: 13px; color: var(--ac-suave); }
+
+.ui-premio__botones {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.ui-premio__mensaje { margin: 0; color: var(--ac-texto-2); font-size: 14px; }
+
+/* ---------- Calificación (0 a 3 estrellas) ---------- */
+.ui-calificacion { display: inline-flex; gap: 2px; color: var(--ac-tenue); vertical-align: middle; }
+.ui-calificacion .llena { color: var(--ac-oro); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-premio-fondo, .ui-premio { animation: none; }
+}

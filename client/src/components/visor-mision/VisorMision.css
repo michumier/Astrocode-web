@@ -8,8 +8,8 @@
   width: 100%;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(124, 140, 255, 0.3);
-  background: #070b24;
+  border: 1px solid var(--ac-linea);
+  background: var(--ac-codigo);
 }
 
 .visor-lienzo canvas {
@@ -26,33 +26,43 @@
 
 .visor-controles button,
 .visor-controles select {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: white;
-  border-radius: 8px;
+  min-height: 36px;
+  background: var(--ac-relieve);
+  border: 1px solid var(--ac-linea);
+  color: var(--ac-texto);
+  border-radius: 10px;
   padding: 6px 10px;
   cursor: pointer;
-  font-size: 0.95rem;
+  font: inherit;
+  font-size: 14px;
+  transition: transform var(--ac-pulsar) var(--ac-ease-out), background-color 160ms var(--ac-ease-out);
 }
 
+.visor-controles button:hover { background: var(--ac-relieve-2); }
+.visor-controles button:active { transform: scale(0.97); }
+
 .visor-controles select option {
-  color: black;
+  background: var(--ac-sarga);
+  color: var(--ac-texto);
 }
 
 .visor-controles .visor-play {
-  background: rgba(0, 255, 136, 0.2);
-  border-color: rgba(0, 255, 136, 0.5);
+  background: var(--ac-oro);
+  border-color: var(--ac-oro);
+  color: var(--ac-tinta-oro);
   min-width: 42px;
 }
+
+.visor-controles .visor-play:hover { background: var(--ac-oro-claro); }
 
 .visor-controles input[type='range'] {
   flex: 1;
   min-width: 120px;
-  accent-color: #00ff88;
+  accent-color: var(--ac-turquesa);
 }
 
 .visor-tick {
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 0.8rem;
   opacity: 0.8;
   min-width: 70px;
@@ -62,8 +72,8 @@
 .grafica-vuelo {
   width: 100%;
   height: 70px;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 8px;
+  background: var(--ac-codigo);
+  border-radius: 10px;
 }
 
 .grafica-altura,
@@ -73,11 +83,11 @@
   vector-effect: non-scaling-stroke;
 }
 
-.grafica-altura { stroke: #7cb8ff; }
-.grafica-velocidad { stroke: #ffb066; }
+.grafica-altura { stroke: var(--ac-turquesa); }
+.grafica-velocidad { stroke: var(--ac-oro); }
 
 .grafica-limite {
-  stroke: rgba(255, 82, 82, 0.5);
+  stroke: rgba(255, 107, 125, 0.5);
   stroke-dasharray: 4 4;
   vector-effect: non-scaling-stroke;
 }
@@ -85,4 +95,8 @@
 .grafica-cursor {
   stroke: rgba(255, 255, 255, 0.6);
   vector-effect: non-scaling-stroke;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visor-controles button { transition: none; }
 }

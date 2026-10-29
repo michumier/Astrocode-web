@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Pause, Play, SkipBack, SkipForward } from 'lucide-react';
 import { PropsVisor } from '../VisorGenerico';
 import MapaColonia from './MapaColonia';
 import './Colonia.css';
@@ -67,11 +68,11 @@ const VisorColonia: React.FC<PropsVisor> = ({ escena, fotogramas, exito, idVuelo
     <div className={`colonia-visor ${exito ? 'exito' : 'fallo'}`}>
       <div className="colonia-controles">
         <span>Generación <strong>{g}</strong> / {escena.generaciones}</span>
-        <button onClick={() => { setJugando(false); setG(0); }} aria-label="Al principio">⏮</button>
+        <button onClick={() => { setJugando(false); setG(0); }} aria-label="Al principio"><SkipBack size={16} aria-hidden="true" /></button>
         <button onClick={() => { if (g >= ultima) setG(0); setJugando((j) => !j); }} aria-label={jugando ? 'Pausa' : 'Reproducir'}>
-          {jugando ? '⏸' : '⏯'}
+          {jugando ? <Pause size={16} aria-hidden="true" fill="currentColor" /> : <Play size={16} aria-hidden="true" fill="currentColor" />}
         </button>
-        <button onClick={() => { setJugando(false); setG(ultima); }} aria-label="Al final">⏭</button>
+        <button onClick={() => { setJugando(false); setG(ultima); }} aria-label="Al final"><SkipForward size={16} aria-hidden="true" /></button>
         <input type="range" min={0} max={ultima} value={g} aria-label="Generación"
           onChange={(e) => { setJugando(false); setG(Number(e.target.value)); }} />
         {VELOCIDADES.map((v) => (

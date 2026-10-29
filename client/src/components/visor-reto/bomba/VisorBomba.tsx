@@ -72,7 +72,7 @@ const VisorBomba: React.FC<PropsVisor> = ({ escena, fotogramas, exito, idVuelo }
 
         <div className={variante === 'modulos' ? 'bomba-modulos' : ''}>
           <section className="bomba-modulo" aria-label="Módulo de cables">
-            {variante === 'modulos' && <h4>Cables</h4>}
+            {variante === 'modulos' && <h3>Cables</h3>}
             <svg className="bomba-cables" viewBox={`0 0 320 ${bomba.cables.length * 34 + 10}`} role="img"
               aria-label={`Cables: ${bomba.cables.join(', ')}`}>
               {bomba.cables.map((color: string, i: number) => (
@@ -87,11 +87,11 @@ const VisorBomba: React.FC<PropsVisor> = ({ escena, fotogramas, exito, idVuelo }
           {variante === 'modulos' && (
             <>
               <section className="bomba-modulo" aria-label="Módulo del botón">
-                <h4>Botón</h4>
+                <h3>Botón</h3>
                 <BotonBomba boton={bomba.boton} accion={boton} />
               </section>
               <section className="bomba-modulo" aria-label="Módulo del teclado">
-                <h4>Teclado</h4>
+                <h3>Teclado</h3>
                 <div className="bomba-teclado">
                   {bomba.teclado.map((s: string) => (
                     <TeclaBomba key={s} simbolo={s} orden={teclas.indexOf(s)} />

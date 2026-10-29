@@ -4,21 +4,21 @@
   gap: 10px;
   padding: 14px;
   border-radius: 12px;
-  background: radial-gradient(circle at 70% 10%, #1d2338 0%, #070a14 85%);
+  background: radial-gradient(circle at 70% 10%, #1d2338 0%, var(--ac-codigo) 85%);
   border: 1px solid rgba(124, 184, 255, 0.35);
   min-width: 0;
 }
 
-.impostor-visor.exito { border-color: rgba(0, 255, 136, 0.6); }
-.impostor-visor.fallo { border-color: rgba(255, 82, 82, 0.55); }
+.impostor-visor.exito { border-color: rgba(92, 200, 194, 0.6); }
+.impostor-visor.fallo { border-color: rgba(255, 107, 125, 0.55); }
 
 .impostor-cabecera {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 8px;
-  color: #ff8080;
-  font-family: 'Fira Code', Consolas, monospace;
+  color: #ff8f9c;
+  font-family: var(--ac-mono);
   font-size: 0.9rem;
 }
 
@@ -39,7 +39,7 @@
   height: auto;
   max-height: 260px;
   border-radius: 10px;
-  background: #0b1020;
+  background: var(--ac-codigo);
 }
 
 .impostor-pasillo {
@@ -49,13 +49,13 @@
 }
 
 .impostor-pasillo.denegado {
-  stroke: #ff8080;
+  stroke: #ff8f9c;
   stroke-dasharray: 6 5;
   stroke-width: 3;
 }
 
 .impostor-pasillo-nota {
-  fill: #ff9d9d;
+  fill: #ffb3bd;
   font-size: 8px;
   text-anchor: middle;
 }
@@ -68,35 +68,35 @@
   animation: impostor-trazo 0.5s ease forwards;
 }
 
-.impostor-ruta.ida { stroke: #ffd27f; }
+.impostor-ruta.ida { stroke: var(--ac-oro); }
 .impostor-ruta.vuelta { stroke: #b48cff; transform: translate(0, 3px); }
-.impostor-ruta.mal { stroke: #ff5252; }
+.impostor-ruta.mal { stroke: var(--ac-error); }
 
 @keyframes impostor-trazo {
   to { stroke-dashoffset: 0; }
 }
 
 .impostor-sala rect {
-  fill: #1a2238;
+  fill: var(--ac-relieve);
   stroke: #5d6b8f;
   stroke-width: 1.5;
 }
 
 .impostor-sala text {
-  fill: #dfe6ff;
+  fill: var(--ac-texto);
   font-size: 11px;
   text-anchor: middle;
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
 }
 
 .impostor-sala.crimen rect {
   fill: #3a1218;
-  stroke: #ff5252;
+  stroke: var(--ac-error);
   stroke-width: 2.5;
 }
 
 .impostor-sala text.impostor-ocupante {
-  fill: #ffd27f;
+  fill: var(--ac-oro);
   font-size: 9px;
 }
 
@@ -126,15 +126,15 @@
   gap: 1px;
   padding: 6px 8px;
   border-radius: 8px;
-  background: #121a2e;
-  border: 1px solid #2a3450;
+  background: var(--ac-sarga);
+  border: 1px solid var(--ac-linea);
   font-size: 0.8rem;
   overflow: hidden;
 }
 
 .impostor-ficha small { opacity: 0.6; }
-.impostor-ficha.en-crimen { border-color: #ff5252; }
-.impostor-ficha.acusada { box-shadow: 0 0 0 2px #ffd27f inset; }
+.impostor-ficha.en-crimen { border-color: var(--ac-error); }
+.impostor-ficha.acusada { box-shadow: 0 0 0 2px var(--ac-oro) inset; }
 
 .impostor-sello {
   position: absolute;
@@ -142,9 +142,9 @@
   top: 8px;
   transform: rotate(12deg);
   padding: 1px 6px;
-  border: 2px solid #ff5252;
+  border: 2px solid var(--ac-error);
   border-radius: 4px;
-  color: #ff5252;
+  color: var(--ac-error);
   font-weight: bold;
   font-size: 0.7rem;
   letter-spacing: 1px;
@@ -169,9 +169,9 @@
   border-radius: 8px;
 }
 
-.impostor-veredicto.ok { background: rgba(0, 255, 136, 0.14); }
+.impostor-veredicto.ok { background: rgba(92, 200, 194, 0.14); }
 .impostor-veredicto.mal,
-.impostor-veredicto.revelacion { background: rgba(255, 82, 82, 0.14); }
+.impostor-veredicto.revelacion { background: rgba(255, 107, 125, 0.14); }
 
 /* ---------- I2: apagón ---------- */
 .impostor-linea-tiempo {
@@ -185,7 +185,7 @@
 .impostor-tramo {
   padding: 1px 8px;
   border-radius: 10px;
-  background: #1a2238;
+  background: var(--ac-relieve);
   font-size: 0.75rem;
   opacity: 0.85;
 }
@@ -196,7 +196,7 @@
   opacity: 0.85;
 }
 
-.impostor-leyenda .ida { color: #ffd27f; }
+.impostor-leyenda .ida { color: var(--ac-oro); }
 .impostor-leyenda .vuelta { color: #b48cff; }
 
 .impostor-tabla {
@@ -214,9 +214,9 @@
 
 .impostor-tabla tbody tr { cursor: pointer; }
 .impostor-tabla tr.actual { background: rgba(124, 184, 255, 0.14); }
-.impostor-tabla tr.pudo td:first-child { color: #00ff88; }
-.impostor-tabla td.ok { color: #9dffcf; }
-.impostor-tabla td.mal { color: #ff9d9d; }
+.impostor-tabla tr.pudo td:first-child { color: var(--ac-turquesa); }
+.impostor-tabla td.ok { color: #a8e6e2; }
+.impostor-tabla td.mal { color: #ffb3bd; }
 
 /* ---------- Expediente (material) ---------- */
 .impostor-material {
@@ -235,13 +235,13 @@
 .impostor-casos button {
   padding: 4px 10px;
   border-radius: 8px;
-  border: 1px solid #2a3450;
-  background: #121a2e;
+  border: 1px solid var(--ac-linea);
+  background: var(--ac-sarga);
   color: inherit;
   cursor: pointer;
 }
 
-.impostor-casos button.activa { border-color: #7cb8ff; background: #1a2848; }
+.impostor-casos button.activa { border-color: #7cb8ff; background: var(--ac-relieve-2); }
 
 .impostor-plano-material summary,
 .impostor-filtros summary {
@@ -251,15 +251,15 @@
 
 .impostor-log {
   border-radius: 10px;
-  border: 1px solid #2a3450;
+  border: 1px solid var(--ac-linea);
   background: #060912;
   overflow: hidden;
 }
 
 .impostor-log-cabecera {
   padding: 6px 10px;
-  background: #121a2e;
-  font-family: 'Fira Code', Consolas, monospace;
+  background: var(--ac-sarga);
+  font-family: var(--ac-mono);
   font-size: 0.8rem;
 }
 
@@ -281,20 +281,20 @@
   min-width: 0;
   padding: 4px 8px;
   border-radius: 6px;
-  border: 1px solid #2a3450;
-  background: #0b1020;
+  border: 1px solid var(--ac-linea);
+  background: var(--ac-codigo);
   color: inherit;
 }
 
 .impostor-tipo {
   font-size: 0.7rem;
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   white-space: nowrap;
 }
 
 .impostor-log-lineas {
   overflow: auto;
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 0.75rem;
 }
 
@@ -315,18 +315,18 @@
 .impostor-tipo-col { min-width: 7.5em; }
 
 .t-puerta, .t-puerta .impostor-tipo-col { color: #7cd9ff; }
-.t-alerta { color: #ff5252; font-weight: bold; }
-.t-alerta.impostor-linea { background: rgba(255, 82, 82, 0.12); }
-.t-error, .t-info { color: #ffd27f; }
+.t-alerta { color: var(--ac-error); font-weight: bold; }
+.t-alerta.impostor-linea { background: rgba(255, 107, 125, 0.12); }
+.t-error, .t-info { color: var(--ac-oro); }
 .t-error.impostor-linea, .t-info.impostor-linea { background: rgba(255, 210, 127, 0.1); }
-.t-recuento { color: #9dffcf; }
-.t-tripulacion { color: #ffd27f; }
+.t-recuento { color: #a8e6e2; }
+.t-tripulacion { color: var(--ac-oro); }
 .t-energia { color: #6f7896; }
 .t-comms { color: #b48cff; }
 .t-mantenimiento { color: #7d8fbf; }
-.t-titulo { color: #dfe6ff; }
-.impostor-linea.denegado { color: #ff9d9d; }
-.impostor-linea.resaltada { outline: 2px solid #ffd27f; background: rgba(255, 210, 127, 0.2); }
+.t-titulo { color: var(--ac-texto); }
+.impostor-linea.denegado { color: #ffb3bd; }
+.impostor-linea.resaltada { outline: 2px solid var(--ac-oro); background: rgba(255, 210, 127, 0.2); }
 
 .impostor-vacio {
   padding: 10px;

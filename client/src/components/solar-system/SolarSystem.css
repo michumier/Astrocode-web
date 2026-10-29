@@ -1,0 +1,140 @@
+/* Sistema solar del mapa (fase 6.1). Intocable: los planetas giran en sus órbitas planas */
+.ss-sistema {
+  position: relative;
+  width: 640px;
+  height: 640px;
+  flex-shrink: 0;
+}
+
+.ss-sol {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 88px;
+  height: 88px;
+  margin: -44px 0 0 -44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #ffe7a3 0%, #f4b942 45%, #e58a1f 100%);
+  box-shadow: 0 0 60px 18px rgba(244, 185, 66, 0.28);
+}
+
+.ss-orbita {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  border: 1px dashed rgba(169, 188, 207, 0.22);
+  animation: ss-girar var(--ss-d) linear infinite;
+  animation-delay: var(--ss-desfase);
+  pointer-events: none;
+}
+
+.ss-orbita--abierta { border-color: rgba(92, 200, 194, 0.38); }
+.ss-orbita--activa { border: 2px dashed var(--ac-turquesa); }
+
+/* El planeta gira al revés que su órbita: así la etiqueta siempre se lee derecha */
+.ss-planeta {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -50%);
+  animation: ss-contragiro var(--ss-d) linear infinite;
+  animation-delay: var(--ss-desfase);
+  pointer-events: auto;
+}
+
+@keyframes ss-girar {
+  from { transform: translate(-50%, -50%) rotate(0); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes ss-contragiro {
+  from { transform: translate(-50%, -50%) rotate(0); }
+  to { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+/* Con «reducir movimiento» los planetas se paran donde están (no desaparecen) */
+@media (prefers-reduced-motion: reduce) {
+  .ss-orbita, .ss-planeta { animation-play-state: paused; }
+}
+
+.ss-cuerpo {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--ac-pulsar) var(--ac-ease-out), box-shadow 200ms ease;
+}
+
+.ss-cuerpo:active { transform: scale(0.94); }
+.ss-cuerpo:focus-visible { outline: 3px solid var(--ac-oro); outline-offset: 4px; }
+
+@media (hover: hover) {
+  .ss-cuerpo:not(.ss-cuerpo--bloqueado):hover { transform: scale(1.08); }
+}
+
+.ss-cuerpo--elegido { box-shadow: 0 0 0 4px var(--ac-noche), 0 0 0 7px var(--ac-turquesa); }
+.ss-cuerpo--bloqueado { filter: saturate(0.25) brightness(0.7); cursor: help; }
+
+.ss-etiqueta {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 8px);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  font-family: var(--ac-ui);
+  /* Si el sistema se muestra encogido (--ss-escala), la etiqueta se compensa para seguir leyéndose */
+  font-size: calc(12px / var(--ss-escala, 1));
+  font-weight: 700;
+  padding: calc(3px / var(--ss-escala, 1)) calc(9px / var(--ss-escala, 1));
+  border-radius: 999px;
+  background: rgba(14, 28, 43, 0.85);
+  color: var(--ac-texto);
+  pointer-events: none;
+}
+
+.ss-etiqueta--bloqueada { color: var(--ac-suave); }
+
+/* ---------- Planetas ---------- */
+.ss-mercurio { background: radial-gradient(circle at 35% 30%, #d9d4cc, #8e8a85 70%, #5e5a56); }
+.ss-venus { background: radial-gradient(circle at 35% 30%, #ffe2a8, #e9a94b 65%, #b5702a); }
+.ss-tierra {
+  background: radial-gradient(circle at 35% 30%, #9fe3ff, #2e8bd6 55%, #155a9c);
+  box-shadow: inset -6px -4px 0 rgba(0, 0, 0, 0.18);
+}
+.ss-tierra::before {
+  content: '';
+  position: absolute;
+  left: 20%;
+  top: 26%;
+  width: 35%;
+  height: 26%;
+  border-radius: 50%;
+  background: #3fbf7a;
+  box-shadow: 12px 10px 0 -2px #3fbf7a;
+}
+.ss-tierra.ss-cuerpo--elegido { box-shadow: inset -6px -4px 0 rgba(0, 0, 0, 0.18), 0 0 0 4px var(--ac-noche), 0 0 0 7px var(--ac-turquesa); }
+.ss-marte { background: radial-gradient(circle at 35% 30%, #ffb08a, #d9573a 60%, #9c3420); }
+.ss-jupiter { background: repeating-linear-gradient(170deg, #e9c9a0 0 7px, #c98b5a 7px 12px, #f0d9b5 12px 18px); }
+.ss-saturno { background: radial-gradient(circle at 35% 30%, #fff0b8, #e5bc5a 60%, #b88a2c); }
+.ss-saturno::after {
+  content: '';
+  position: absolute;
+  left: -33%;
+  top: 39%;
+  width: 166%;
+  height: 26%;
+  border-radius: 50%;
+  border: 3px solid rgba(244, 226, 170, 0.8);
+  transform: rotate(-14deg);
+  pointer-events: none;
+}
+
+/* Versión para mirar (SistemaDecorativo): sin cursor ni pulsación */
+.ss-sistema--decorativo .ss-cuerpo { cursor: default; transition: none; }
+.ss-sistema--decorativo .ss-cuerpo:active { transform: none; }

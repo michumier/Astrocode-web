@@ -4,7 +4,7 @@ import { keymap, Decoration, DecorationSet, placeholder as placeholderExt } from
 import { EditorState, StateEffect, StateField, Compartment } from '@codemirror/state';
 import { indentUnit } from '@codemirror/language';
 import { python } from '@codemirror/lang-python';
-import { oneDark } from '@codemirror/theme-one-dark';
+import { temaAstro } from './tema';
 import './CodeEditor.css';
 
 interface CodeEditorProps {
@@ -73,7 +73,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, onRun, lineaEr
           ]),
           basicSetup,
           python(),
-          oneDark,
+          temaAstro,
           indentUnit.of('    '),
           EditorState.tabSize.of(4),
           campoLineas,

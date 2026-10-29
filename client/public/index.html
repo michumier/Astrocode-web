@@ -1,27 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/img/Logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="AstroCode - Plataforma de Aprendizaje de Programación" />
+    <meta name="theme-color" content="#0e1c2b" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="AstroCode: aprende Python viajando por el sistema solar" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/img/Logo.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!-- Skulpt para ejecución de Python en el navegador -->
-    <script src="https://unpkg.com/skulpt@0.11.1/dist/skulpt.min.js"></script>
-    <script src="https://unpkg.com/skulpt@0.11.1/dist/skulpt-stdlib.js"></script>
-    <!-- Fallback CDN alternativo -->
-    <script>
-      if (typeof Sk === 'undefined') {
-        document.write('<script src="https://cdn.jsdelivr.net/npm/skulpt@0.11.1/dist/skulpt.min.js"><\/script>');
-        document.write('<script src="https://cdn.jsdelivr.net/npm/skulpt@0.11.1/dist/skulpt-stdlib.js"><\/script>');
-      }
-    </script>
     <title>AstroCode</title>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>Para usar AstroCode hay que activar JavaScript.</noscript>
     <div id="root"></div>
   </body>
 </html>

@@ -56,7 +56,7 @@ const MapaColonia: React.FC<PropsMapa> = ({ mapa, celdas, alarma, titulo }) => {
         ctx.save();
         ctx.shadowColor = '#5cffd0';
         ctx.shadowBlur = 6;
-        ctx.fillStyle = conjuntos.base.has(i) ? '#ff5252' : '#5cffd0';
+        ctx.fillStyle = conjuntos.base.has(i) ? '#ff6b7d' : '#5cffd0';
         ctx.beginPath();
         ctx.arc(x + CELDA / 2, y + CELDA / 2, CELDA / 2 - 1.5, 0, Math.PI * 2);
         ctx.fill();

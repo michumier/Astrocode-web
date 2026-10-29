@@ -1,0 +1,324 @@
+/* Acceso y bienvenida (fase 6.4): la promesa a la izquierda, la tarjeta a la derecha
+   con el sistema solar girando detrás. */
+.acceso {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--ac-noche);
+  color: var(--ac-texto);
+  font-family: var(--ac-ui);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.acceso__cuerpo {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  align-items: center;
+  gap: 56px;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 32px;
+  box-sizing: border-box;
+}
+
+/* ---------- Escaparate ---------- */
+.acceso__escaparate {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 560px;
+}
+
+.acceso__marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.acceso__marca img { width: 56px; height: 56px; border-radius: 50%; }
+
+.acceso__escaparate h1 {
+  margin: 8px 0 0;
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: clamp(36px, 4.6vw, 58px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.acceso__lema {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 18px;
+  color: var(--ac-texto-2);
+}
+
+.acceso__puntos {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--ac-suave);
+}
+
+.acceso__puntos li { display: flex; align-items: center; gap: 12px; }
+
+.acceso__puntos svg {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  border-radius: 50%;
+  background: var(--ac-relieve);
+  color: var(--ac-turquesa);
+  box-sizing: border-box;
+}
+
+/* ---------- Tarjeta con el sistema detrás ---------- */
+.acceso__lado {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.acceso__sistema {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1.15);
+  pointer-events: none;
+}
+
+.acceso__tarjeta {
+  position: relative;
+  width: 100%;
+  border-radius: 24px;
+  background: var(--ac-sarga);
+  box-shadow: 0 0 0 1px var(--ac-linea), var(--ac-sombra);
+  padding: 8px 8px 28px;
+  box-sizing: border-box;
+}
+
+.acceso__modos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--ac-noche);
+}
+
+.acceso__modos button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ac-suave);
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 180ms var(--ac-ease-out), color 180ms var(--ac-ease-out);
+}
+
+.acceso__modos button:hover { color: var(--ac-texto); }
+.acceso__modos button[aria-selected='true'] { background: var(--ac-relieve-2); color: var(--ac-texto); }
+
+.acceso__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 20px 0;
+}
+
+.acceso__cabecera h2 {
+  margin: 0;
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.acceso__cabecera p { margin: 4px 0 0; color: var(--ac-suave); }
+
+.acceso__formulario .ui-boton--primario { margin-top: 6px; }
+.acceso__formulario .ui-campo input { background: var(--ac-noche); }
+
+.acceso__cambio { margin: 0; text-align: center; color: var(--ac-suave); font-size: 14px; }
+
+.acceso__enlace {
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  color: var(--ac-turquesa);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.acceso__enlace:hover { color: #7fd8d3; }
+
+/* ---------- Bienvenida ---------- */
+.bienvenida {
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  box-sizing: border-box;
+}
+
+.bienvenida__tarjeta {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 100%);
+  padding: 28px 32px;
+  border-radius: 24px;
+  background: var(--ac-sarga);
+  box-shadow: 0 0 0 1px var(--ac-linea), var(--ac-sombra);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.bienvenida__saludo { margin: 0; color: var(--ac-suave); font-size: 14px; }
+.bienvenida__saludo strong { color: var(--ac-oro); }
+
+.bienvenida__dibujo {
+  width: 100%;
+  height: 230px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 18px;
+  background: radial-gradient(ellipse at 50% 40%, #18304a 0%, var(--ac-noche) 75%);
+  animation: bienvenida-entrar 320ms var(--ac-ease-out);
+}
+
+@keyframes bienvenida-entrar {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+.bienvenida__sistema { position: relative; width: 230px; height: 230px; }
+.bienvenida__sistema .ss-sistema { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.36); }
+
+.bienvenida__constelacion { width: min(360px, 100%); background: none; }
+
+.bienvenida__formatos {
+  list-style: none;
+  margin: 0;
+  padding: 0 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bienvenida__formatos li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 6px;
+  border-radius: 14px;
+  background: var(--ac-relieve);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ac-texto-2);
+}
+
+.bienvenida__formatos svg { color: var(--ac-oro); }
+
+.bienvenida__tarjeta h1 {
+  margin: 8px 0 0;
+  font-family: var(--ac-display);
+  font-weight: 800;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  outline: none;
+}
+
+.bienvenida__texto { margin: 0; max-width: 44ch; color: var(--ac-texto-2); }
+
+.bienvenida__pie {
+  width: 100%;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bienvenida__puntos { display: flex; gap: 2px; }
+
+.bienvenida__puntos button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.bienvenida__puntos button::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ac-linea);
+  transition: width 200ms var(--ac-ease-out), background-color 200ms var(--ac-ease-out);
+}
+
+.bienvenida__puntos button.activo::after { width: 22px; background: var(--ac-oro); }
+
+.bienvenida__botones { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+/* ---------- Pantallas medianas y móvil ---------- */
+@media (max-width: 940px) {
+  .acceso__cuerpo {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding: 28px 16px 40px;
+    align-content: start;
+  }
+  .acceso__escaparate { max-width: none; }
+  .acceso__puntos { display: none; }
+  .acceso__lado { max-width: 480px; width: 100%; justify-self: center; }
+  .acceso__sistema { transform: translate(-50%, -50%) scale(0.95); opacity: 0.7; }
+}
+
+@media (max-width: 480px) {
+  .acceso__escaparate h1 { font-size: 34px; }
+  .acceso__lema { font-size: 16px; }
+  .acceso__formulario { padding: 20px 12px 0; }
+  .bienvenida__tarjeta { padding: 22px 18px; }
+  .bienvenida__formatos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bienvenida__dibujo { height: auto; min-height: 200px; padding: 12px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bienvenida__dibujo { animation: none; }
+  .acceso__modos button, .bienvenida__puntos button::after { transition: none; }
+}

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Pause, Play, SkipBack, SkipForward } from 'lucide-react';
 import { DIBUJOS, SEGUNDOS_POR_TICK, EstadoVisor } from './dibujos';
 import './VisorMision.css';
 
@@ -141,7 +142,7 @@ const VisorMision: React.FC<VisorMisionProps> = ({ mision, escena, fotogramas, e
         />
       </div>
       <div className="visor-controles">
-        <button onClick={() => irA(0)} title="Volver al principio" aria-label="Volver al principio">⏮</button>
+        <button onClick={() => irA(0)} title="Volver al principio" aria-label="Volver al principio"><SkipBack size={16} aria-hidden="true" /></button>
         <button
           onClick={() => {
             if (posicion.current >= ultimo) irA(0);
@@ -150,9 +151,9 @@ const VisorMision: React.FC<VisorMisionProps> = ({ mision, escena, fotogramas, e
           aria-label={reproduciendo ? 'Pausa' : 'Reproducir'}
           className="visor-play"
         >
-          {reproduciendo && indice < ultimo ? '⏸' : '▶'}
+          {reproduciendo && indice < ultimo ? <Pause size={16} aria-hidden="true" fill="currentColor" /> : <Play size={16} aria-hidden="true" fill="currentColor" />}
         </button>
-        <button onClick={() => { setReproduciendo(false); irA(Math.floor(posicion.current) + 1); }} title="Avanzar un tick" aria-label="Avanzar un tick">⏭</button>
+        <button onClick={() => { setReproduciendo(false); irA(Math.floor(posicion.current) + 1); }} title="Avanzar un tick" aria-label="Avanzar un tick"><SkipForward size={16} aria-hidden="true" /></button>
         <input
           type="range"
           min={0}

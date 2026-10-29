@@ -120,7 +120,7 @@ export const Osciloscopio: React.FC<{ analizador: () => AnalyserNode | null; act
     let marco = 0;
     const dibujar = () => {
       ctx.clearRect(0, 0, width, height);
-      ctx.strokeStyle = '#00ff88';
+      ctx.strokeStyle = '#5cc8c2';
       ctx.lineWidth = 2;
       ctx.beginPath();
       const a = analizador();

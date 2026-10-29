@@ -1,0 +1,33 @@
+.enunciado {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--ac-texto-2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.enunciado p { margin: 0; max-width: 68ch; }
+
+.enunciado h2 {
+  margin: 8px 0 -2px;
+  font-family: var(--ac-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ac-texto);
+  letter-spacing: -0.005em;
+}
+
+.enunciado ul { margin: 0; padding-left: 20px; max-width: 66ch; }
+.enunciado li { margin: 3px 0; }
+.enunciado li::marker { color: var(--ac-turquesa); }
+.enunciado strong { color: var(--ac-texto); }
+
+.enunciado code {
+  font-family: var(--ac-mono);
+  font-size: 0.88em;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--ac-noche);
+  color: var(--ac-oro);
+}

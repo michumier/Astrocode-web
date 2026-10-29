@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
+import { Bot, Dna, Send } from 'lucide-react';
 import DiffSabotaje from '../../components/diff-sabotaje/DiffSabotaje';
+import { enLinea } from '../../components/enunciado/Enunciado';
+import { Aviso, Boton, CampoArea, CampoSelector, Etiqueta, Panel } from '../../components/ui';
+import { AvisoMensaje, Mensaje, errorDe } from './comun';
 
 const GET_SABOTEABLES = gql`
   query TareasSaboteables {
@@ -43,14 +47,17 @@ const DESCARTAR = gql`
   }
 `;
 
-const ETIQUETA_DIFICULTAD: Record<string, string> = { facil: 'Fácil', media: 'Media', dificil: 'Difícil' };
+const DIFICULTAD: Record<string, { texto: string; tono: 'facil' | 'intermedio' | 'dificil' }> = {
+  facil: { texto: 'Fácil', tono: 'facil' },
+  media: { texto: 'Media', tono: 'intermedio' },
+  dificil: { texto: 'Difícil', tono: 'dificil' },
+};
 
-const errorDe = (error: any) => error.graphQLErrors?.[0]?.message || error.message;
-
-const TarjetaSabotaje: React.FC<{ s: any; onCambio: () => void; onMensaje: (m: { tipo: 'ok' | 'error'; texto: string }) => void }> = ({ s, onCambio, onMensaje }) => {
+const TarjetaSabotaje: React.FC<{ s: any; onCambio: () => void; onMensaje: (m: Mensaje) => void }> = ({ s, onCambio, onMensaje }) => {
   const [contexto, setContexto] = useState(s.contexto || '');
   const [publicar, { loading: publicando }] = useMutation(PUBLICAR);
   const [descartar, { loading: descartando }] = useMutation(DESCARTAR);
+  const dificultad = DIFICULTAD[s.dificultad];
 
   const handlePublicar = async () => {
     try {
@@ -72,31 +79,29 @@ const TarjetaSabotaje: React.FC<{ s: any; onCambio: () => void; onMensaje: (m: {
   };
 
   return (
-    <li className={`sabotaje-card ${s.tareaId ? 'publicado' : ''}`} data-testid="sabotaje-card">
-      <div className="sabotaje-cabecera">
-        <span className={`badge dificultad-${s.dificultad}`}>{ETIQUETA_DIFICULTAD[s.dificultad] || s.dificultad}</span>
-        <span className="badge visible">{s.origen === 'ia' ? '🤖 IA' : `🧬 ${s.operador}`}</span>
-        <strong>{s.descripcion}</strong>
+    <li className={`admin__sabotaje${s.tareaId ? ' publicado' : ''}`} data-testid="sabotaje-card">
+      <div className="admin__sabotaje-cabecera">
+        <Etiqueta tono={dificultad?.tono || 'neutro'}>{dificultad?.texto || s.dificultad}</Etiqueta>
+        <Etiqueta icono={s.origen === 'ia' ? <Bot size={13} aria-hidden="true" /> : <Dna size={13} aria-hidden="true" />}>
+          {s.origen === 'ia' ? 'IA' : s.operador}
+        </Etiqueta>
+        <strong className="admin__descripcion">{enLinea(s.descripcion)}</strong>
       </div>
-      <p className="admin-nota">
+      <p className="admin__nota">
         Falla {s.testsFallidos} de {s.testsTotales} tests · línea {s.linea ?? '?'} · {s.lineasCambiadas} línea(s) cambiada(s)
       </p>
       <DiffSabotaje diff={s.diff} />
       {s.tareaId ? (
-        <p className="admin-mensaje ok">✅ Publicado como tarea {s.tareaId}</p>
+        <Aviso tono="exito" titulo="Publicado">Es la tarea {s.tareaId}.</Aviso>
       ) : (
         <>
-          <label>
-            Ambientación que verá el alumno (sin revelar el bug)
-            <textarea rows={2} value={contexto} onChange={(e) => setContexto(e.target.value)} />
-          </label>
-          <div className="admin-row">
-            <button className="admin-primary" onClick={handlePublicar} disabled={publicando}>
-              {publicando ? 'Publicando...' : '🚀 Publicar'}
-            </button>
-            <button className="admin-secondary" onClick={handleDescartar} disabled={descartando}>
-              Descartar
-            </button>
+          <CampoArea etiqueta="Ambientación que verá el alumno" ayuda="Sin revelar dónde está el fallo." rows={2}
+            value={contexto} onChange={(e) => setContexto(e.target.value)} />
+          <div className="admin__acciones">
+            <Boton variante="primario" onClick={handlePublicar} cargando={publicando} icono={<Send size={16} aria-hidden="true" />}>
+              {publicando ? 'Publicando…' : 'Publicar'}
+            </Boton>
+            <Boton variante="fantasma" onClick={handleDescartar} cargando={descartando}>Descartar</Boton>
           </div>
         </>
       )}
@@ -108,7 +113,7 @@ const AdminSabotajes: React.FC = () => {
   const { data, refetch: refetchTareas } = useQuery(GET_SABOTEABLES, { fetchPolicy: 'network-only' });
   const [tareaId, setTareaId] = useState('');
   const [usarIa, setUsarIa] = useState(false);
-  const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
+  const [mensaje, setMensaje] = useState<Mensaje | null>(null);
   const { data: sabData, refetch } = useQuery(GET_SABOTAJES, { variables: { tareaId }, skip: !tareaId, fetchPolicy: 'network-only' });
   const [generar, { loading: generando }] = useMutation(GENERAR);
 
@@ -134,46 +139,42 @@ const AdminSabotajes: React.FC = () => {
   const sabotajes = sabData?.sabotajesDeTarea || [];
 
   return (
-    <section className="admin-card">
-      <h2>🕵️ Sabotajes</h2>
-      <p className="admin-nota">
-        Elige un ejercicio con solución y tests. El sistema introduce un bug en la solución y comprueba en el sandbox
+    <Panel titulo="Sabotajes">
+      <p className="admin__nota">
+        Elige un ejercicio con solución y tests. El sistema introduce un fallo en la solución y comprueba en el sandbox
         que de verdad rompe algún test. Publica los que te gusten: se desbloquean al completar el ejercicio original.
       </p>
-      <div className="admin-row">
-        <label>
-          Ejercicio
-          <select value={tareaId} onChange={(e) => { setTareaId(e.target.value); setMensaje(null); }}>
-            <option value="">Elige...</option>
-            {(data?.tareasSaboteables || []).map((t: any) => (
-              <option key={t.id} value={t.id}>
-                {t.titulo} (#{t.id}) · {t.tests} tests · {t.publicados}/{t.sabotajes} publicados
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <CampoSelector etiqueta="Ejercicio" value={tareaId} onChange={(e) => { setTareaId(e.target.value); setMensaje(null); }}>
+        <option value="">Elige…</option>
+        {(data?.tareasSaboteables || []).map((t: any) => (
+          <option key={t.id} value={t.id}>
+            {t.titulo} (#{t.id}) · {t.tests} tests · {t.publicados}/{t.sabotajes} publicados
+          </option>
+        ))}
+      </CampoSelector>
       {tareaId && (
-        <div className="admin-row admin-row-centrada">
-          <button className="admin-primary" onClick={handleGenerar} disabled={generando}>
-            {generando ? 'Generando y verificando...' : '🧬 Generar 5 sabotajes'}
-          </button>
+        <div className="admin__acciones">
+          <Boton variante="primario" onClick={handleGenerar} cargando={generando} icono={<Dna size={18} aria-hidden="true" />}>
+            {generando ? 'Generando y verificando…' : 'Generar 5 sabotajes'}
+          </Boton>
           {data?.iaDisponible && (
-            <label className="admin-check">
+            <label className="admin__check">
               <input type="checkbox" checked={usarIa} onChange={(e) => setUsarIa(e.target.checked)} />
               Incluir uno inventado por la IA
             </label>
           )}
         </div>
       )}
-      {mensaje && <p className={`admin-mensaje ${mensaje.tipo}`}>{mensaje.texto}</p>}
-      {tareaId && sabotajes.length === 0 && <p className="admin-nota">Todavía no hay sabotajes para este ejercicio.</p>}
-      <ul className="admin-tests">
-        {sabotajes.map((s: any) => (
-          <TarjetaSabotaje key={s.id} s={s} onCambio={recargar} onMensaje={setMensaje} />
-        ))}
-      </ul>
-    </section>
+      <AvisoMensaje mensaje={mensaje} />
+      {tareaId && sabotajes.length === 0 && <p className="admin__nota">Todavía no hay sabotajes para este ejercicio.</p>}
+      {sabotajes.length > 0 && (
+        <ul className="admin__sabotajes">
+          {sabotajes.map((s: any) => (
+            <TarjetaSabotaje key={s.id} s={s} onCambio={recargar} onMensaje={setMensaje} />
+          ))}
+        </ul>
+      )}
+    </Panel>
   );
 };
 

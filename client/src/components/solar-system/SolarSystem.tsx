@@ -1,24 +1,28 @@
 import React, { useRef, useCallback } from 'react';
+import { Lock } from 'lucide-react';
 import PlanetParticles, { PlanetParticlesHandle } from './PlanetParticles';
+import './SolarSystem.css';
 
 interface PlanetConfig {
   name: string;
   key: string;
-  orbitClass: string;
-  planetClass: string;
   orbitSize: number;
   planetSize: number;
   orbitDuration: number;
+  // Punto de la órbita en el que arranca (0-1): así no salen todos en fila
+  inicio: number;
 }
 
-const PLANETS: PlanetConfig[] = [
-  { name: 'Mercurio', key: 'mercurio', orbitClass: 'orbit-mercury', planetClass: 'mercury', orbitSize: 130, planetSize: 24, orbitDuration: 12 },
-  { name: 'Venus', key: 'venus', orbitClass: 'orbit-venus', planetClass: 'venus', orbitSize: 165, planetSize: 30, orbitDuration: 16 },
-  { name: 'Tierra', key: 'tierra', orbitClass: 'orbit-earth', planetClass: 'earth', orbitSize: 200, planetSize: 40, orbitDuration: 20 },
-  { name: 'Marte', key: 'marte', orbitClass: 'orbit-mars', planetClass: 'mars', orbitSize: 350, planetSize: 38, orbitDuration: 30 },
-  { name: 'Júpiter', key: 'jupiter', orbitClass: 'orbit-jupiter', planetClass: 'jupiter', orbitSize: 430, planetSize: 46, orbitDuration: 38 },
-  { name: 'Saturno', key: 'saturno', orbitClass: 'orbit-saturn', planetClass: 'saturn', orbitSize: 500, planetSize: 50, orbitDuration: 45 },
+export const PLANETS: PlanetConfig[] = [
+  { name: 'Mercurio', key: 'mercurio', orbitSize: 150, planetSize: 30, orbitDuration: 14, inicio: 0.08 },
+  { name: 'Venus', key: 'venus', orbitSize: 236, planetSize: 38, orbitDuration: 20, inicio: 0.42 },
+  { name: 'Tierra', key: 'tierra', orbitSize: 324, planetSize: 46, orbitDuration: 27, inicio: 0.7 },
+  { name: 'Marte', key: 'marte', orbitSize: 418, planetSize: 42, orbitDuration: 35, inicio: 0.18 },
+  { name: 'Júpiter', key: 'jupiter', orbitSize: 518, planetSize: 62, orbitDuration: 44, inicio: 0.55 },
+  { name: 'Saturno', key: 'saturno', orbitSize: 620, planetSize: 54, orbitDuration: 54, inicio: 0.86 },
 ];
+
+const formatear = (n: number) => n.toLocaleString('es-ES');
 
 interface SolarSystemProps {
   selectedPlanet: string | null;
@@ -34,52 +38,53 @@ const SolarSystem: React.FC<SolarSystemProps> = ({
   planetRequirements
 }) => {
   const particlesRef = useRef<PlanetParticlesHandle>(null);
-  const planetRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const planetRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const handlePlanetClick = useCallback((planetKey: string) => {
     const el = planetRefs.current[planetKey];
-    if (el && particlesRef.current) {
+    if (el && particlesRef.current && isPlanetUnlocked(planetKey)) {
       const rect = el.getBoundingClientRect();
-      const parentRect = el.closest('.solar-system')?.getBoundingClientRect() || el.parentElement?.getBoundingClientRect();
+      const parentRect = el.closest('.ss-sistema')?.getBoundingClientRect();
       if (parentRect) {
-        const x = rect.left - parentRect.left + rect.width / 2;
-        const y = rect.top - parentRect.top + rect.height / 2;
-        particlesRef.current.explode(x, y);
+        // El lienzo de partículas mide lo mismo que el sistema en pantalla (también si está escalado)
+        particlesRef.current.explode(rect.left - parentRect.left + rect.width / 2, rect.top - parentRect.top + rect.height / 2);
       }
     }
     onPlanetSelect(planetKey);
-  }, [onPlanetSelect]);
+  }, [onPlanetSelect, isPlanetUnlocked]);
 
   return (
-    <>
-      <div className="sun"></div>
-      {PLANETS.map((planet) => (
-        <div
-          key={planet.key}
-          className={`orbit ${planet.orbitClass}`}
-          style={{
-            width: planet.orbitSize,
-            height: planet.orbitSize,
-            animationDuration: `${planet.orbitDuration}s`,
-          }}
-        >
-          <div
-            ref={(el) => { planetRefs.current[planet.key] = el; }}
-            className={`planet ${planet.planetClass} ${selectedPlanet === planet.key ? 'selected' : ''} ${isPlanetUnlocked(planet.key) ? 'unlocked' : 'locked'}`}
-            onClick={() => handlePlanetClick(planet.key)}
-            title={!isPlanetUnlocked(planet.key) ? `Requiere ${planetRequirements[planet.key]} puntos` : ''}
-          >
-            <span className="planet-label">{planet.name}</span>
-            {!isPlanetUnlocked(planet.key) && <span className="lock-icon">🔒</span>}
-            {!isPlanetUnlocked(planet.key) && planetRequirements[planet.key] > 0 && (
-              <span className="points-required">{planetRequirements[planet.key]}pts</span>
-            )}
-            {planet.key === 'saturno' && <div className="saturn-rings"></div>}
+    <div className="ss-sistema">
+      <div className="ss-sol" />
+      {PLANETS.map((planet) => {
+        const abierto = isPlanetUnlocked(planet.key);
+        const puntos = planetRequirements[planet.key];
+        const estilo = {
+          width: planet.orbitSize,
+          height: planet.orbitSize,
+          '--ss-d': `${planet.orbitDuration}s`,
+          '--ss-desfase': `-${(planet.orbitDuration * planet.inicio).toFixed(1)}s`,
+        } as React.CSSProperties;
+        return (
+          <div key={planet.key} className={`ss-orbita ${abierto ? 'ss-orbita--abierta' : ''} ${selectedPlanet === planet.key ? 'ss-orbita--activa' : ''}`} style={estilo}>
+            <div className="ss-planeta">
+              <button
+                ref={(el) => { planetRefs.current[planet.key] = el; }}
+                className={`ss-cuerpo ss-${planet.key} ${abierto ? '' : 'ss-cuerpo--bloqueado'} ${selectedPlanet === planet.key ? 'ss-cuerpo--elegido' : ''}`}
+                style={{ width: planet.planetSize, height: planet.planetSize }}
+                onClick={() => handlePlanetClick(planet.key)}
+                aria-label={abierto ? `${planet.name}: ver sus ejercicios` : `${planet.name}: se abre con ${formatear(puntos)} puntos`}
+                aria-pressed={selectedPlanet === planet.key}
+              />
+              <span className={`ss-etiqueta ${abierto ? '' : 'ss-etiqueta--bloqueada'}`} aria-hidden="true">
+                {abierto ? planet.name : <><Lock size={11} strokeWidth={2.6} />{formatear(puntos)} pts</>}
+              </span>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       <PlanetParticles ref={particlesRef} />
-    </>
+    </div>
   );
 };
 

@@ -9,8 +9,8 @@
   min-width: 0;
 }
 
-.colonia-visor.exito { border-color: rgba(0, 255, 136, 0.6); }
-.colonia-visor.fallo { border-color: rgba(255, 82, 82, 0.55); }
+.colonia-visor.exito { border-color: rgba(92, 200, 194, 0.6); }
+.colonia-visor.fallo { border-color: rgba(255, 107, 125, 0.55); }
 
 .colonia-controles {
   display: flex;
@@ -21,8 +21,11 @@
 }
 
 .colonia-controles button {
+  display: inline-grid;
+  place-items: center;
+  min-height: 30px;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #2a4a44;
   background: #0b1a1a;
   color: inherit;
@@ -49,10 +52,10 @@
   box-sizing: border-box;
 }
 
-.colonia-mapa.alarma { animation: colonia-alarma 0.6s steps(2) 3; border-color: #ff5252; }
+.colonia-mapa.alarma { animation: colonia-alarma 0.6s steps(2) 3; border-color: var(--ac-error); }
 
 @keyframes colonia-alarma {
-  50% { box-shadow: 0 0 16px rgba(255, 82, 82, 0.8); }
+  50% { box-shadow: 0 0 16px rgba(255, 107, 125, 0.8); }
 }
 
 .colonia-panel {
@@ -72,14 +75,14 @@
 }
 
 .colonia-grafica polyline { fill: none; stroke: #5cffd0; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
-.colonia-grafica line { stroke: #ffd27f; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.colonia-grafica line { stroke: var(--ac-oro); stroke-width: 1; vector-effect: non-scaling-stroke; }
 
-.colonia-ok { color: #9dffcf; }
-.colonia-mal { color: #ff5252; }
+.colonia-ok { color: #a8e6e2; }
+.colonia-mal { color: var(--ac-error); }
 
 .colonia-tabla {
   border-collapse: collapse;
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 0.75rem;
 }
 
@@ -87,13 +90,13 @@
 .colonia-tabla th, .colonia-tabla td { padding: 2px 4px; text-align: center; }
 .colonia-tabla th:first-child { text-align: left; }
 .colonia-tabla td.si { color: #5cffd0; }
-.colonia-tabla td.no { color: #ff8080; opacity: 0.7; }
+.colonia-tabla td.no { color: #ff8f9c; opacity: 0.7; }
 
 .colonia-aviso {
   margin: 0;
   padding: 8px 10px;
   border-radius: 8px;
-  background: rgba(255, 82, 82, 0.14);
+  background: rgba(255, 107, 125, 0.14);
 }
 
 .colonia-material {
@@ -136,7 +139,7 @@
 
 .colonia-leyenda i.viva { background: #5cffd0; border-radius: 50%; }
 .colonia-leyenda i.roca { background: #5b5f6b; }
-.colonia-leyenda i.base { background: repeating-linear-gradient(45deg, #3a1218 0 3px, #ff5252 3px 4px); }
+.colonia-leyenda i.base { background: repeating-linear-gradient(45deg, #3a1218 0 3px, var(--ac-error) 3px 4px); }
 .colonia-leyenda i.zona { background: #0d2a17; border: 1px dashed #3ddc84; }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,90 +1,50 @@
-.sala-maquinas-container {
-  width: 100%;
-  max-width: 280px;
-  margin: 0;
-}
+/* Sala de máquinas (sabotajes) en el mapa, con el sistema de la fase 6 */
+.sala__texto { margin: 0 0 12px; color: var(--ac-suave); font-size: 14px; }
 
-.sala-maquinas {
-  background: rgba(255, 82, 82, 0.08);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 120, 120, 0.35);
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  color: white;
-  text-align: center;
-}
-
-.sala-titulo {
-  font-size: 1.5rem;
-  margin: 0 0 12px 0;
-}
-
-.sala-descripcion {
-  font-size: 0.95rem;
-  opacity: 0.9;
-  margin: 0 0 14px 0;
-}
-
-.sala-lista {
+.sala__lista {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
-.sala-item {
+.sala__item {
   width: 100%;
+  min-height: 44px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.25);
-  color: white;
-  cursor: pointer;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--ac-relieve);
+  color: var(--ac-texto);
+  font: inherit;
+  font-size: 14px;
   text-align: left;
-  transition: transform 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+  transition: transform var(--ac-pulsar) var(--ac-ease-out), background-color 160ms ease;
 }
 
-.sala-item:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 82, 82, 0.2);
-}
+.sala__item:active { transform: scale(0.98); }
+@media (hover: hover) { .sala__item:hover { background: var(--ac-relieve-2); } }
+.sala__item svg { color: var(--ac-suave); flex-shrink: 0; }
+.sala__titulo { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.sala-item-titulo {
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sala-dificultad {
-  flex-shrink: 0;
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 999px;
-}
-
-.sala-dificultad.facil { background: rgba(0, 255, 136, 0.25); }
-.sala-dificultad.media { background: rgba(255, 204, 102, 0.3); }
-.sala-dificultad.dificil { background: rgba(255, 82, 82, 0.4); }
-
-.sala-resumen {
+.sala__resumen {
   display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin: 12px 0 0 0;
-  font-size: 0.85rem;
-  opacity: 0.85;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--ac-suave);
 }
 
-@media (max-width: 1024px) {
-  .sala-maquinas-container {
-    max-width: 400px;
-  }
+.sala__resumen span { display: inline-flex; align-items: center; gap: 5px; }
+.sala__resumen span:first-child svg { color: var(--ac-turquesa); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sala__item { transition: none; }
 }

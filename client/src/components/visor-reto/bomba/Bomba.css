@@ -11,8 +11,8 @@
   overflow: hidden;
 }
 
-.bomba-visor.desactivada { border-color: rgba(0, 255, 136, 0.6); }
-.bomba-visor.explotada { border-color: rgba(255, 82, 82, 0.7); animation: bomba-sacudida 0.5s ease-in-out; }
+.bomba-visor.desactivada { border-color: rgba(92, 200, 194, 0.6); }
+.bomba-visor.explotada { border-color: rgba(255, 107, 125, 0.7); animation: bomba-sacudida 0.5s ease-in-out; }
 
 .bomba-destello {
   position: absolute;
@@ -53,7 +53,7 @@
 }
 
 .bomba-lcd {
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   font-size: 1.5rem;
   color: #ff3b3b;
   background: #140404;
@@ -64,12 +64,12 @@
 }
 
 .bomba-lcd.parada {
-  color: #00ff88;
-  text-shadow: 0 0 8px rgba(0, 255, 136, 0.8);
+  color: var(--ac-turquesa);
+  text-shadow: 0 0 8px rgba(92, 200, 194, 0.8);
 }
 
 .bomba-serie {
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
   background: #f1efe6;
   color: #111;
   padding: 2px 8px;
@@ -91,7 +91,7 @@
 }
 
 .bomba-led.parpadeo { background: #ff3b3b; animation: bomba-parpadeo 0.8s steps(2) infinite; }
-.bomba-led.verde { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
+.bomba-led.verde { background: var(--ac-turquesa); box-shadow: 0 0 10px var(--ac-turquesa); }
 .bomba-led.rojo { background: #ff3b3b; box-shadow: 0 0 10px #ff3b3b; }
 
 @keyframes bomba-parpadeo {
@@ -106,7 +106,7 @@
 .bomba-cable-indice {
   fill: #cfd3e0;
   font-size: 12px;
-  font-family: 'Fira Code', Consolas, monospace;
+  font-family: var(--ac-mono);
 }
 
 .bomba-cable-nombre {
@@ -127,7 +127,7 @@
 
 .bomba-chispa {
   font-size: 12px;
-  fill: #ffd27f;
+  fill: var(--ac-oro);
 }
 
 .bomba-debia {
@@ -157,7 +157,7 @@
   padding: 8px;
 }
 
-.bomba-modulo h4 {
+.bomba-modulo h3 {
   margin: 0 0 6px;
   font-size: 0.8rem;
   text-transform: uppercase;
@@ -235,8 +235,8 @@
   border-radius: 8px;
 }
 
-.bomba-resultado.ok { background: rgba(0, 255, 136, 0.14); }
-.bomba-resultado.fallo { background: rgba(255, 82, 82, 0.16); }
+.bomba-resultado.ok { background: rgba(92, 200, 194, 0.14); }
+.bomba-resultado.fallo { background: rgba(255, 107, 125, 0.16); }
 
 .bomba-resultado p {
   margin: 6px 0 0;

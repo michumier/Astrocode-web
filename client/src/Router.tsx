@@ -1,18 +1,23 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { gql, useQuery, useApolloClient } from '@apollo/client';
-import LoginApp from './views/login/App';
+import Acceso from './views/acceso/Acceso';
 import Dashboard from './views/dashboard/Dashboard';
-import PythonGuide from './views/python-guide/PythonGuide';
-import Profile from './views/profile/Profile';
-import FullRanking from './views/ranking/FullRanking';
 import { GET_TAREA, mapTareaToExercise } from './utils/tareas';
 import { esSimulacion } from './components/visor-reto/etiquetas';
+import { Lock } from 'lucide-react';
+import { Boton } from './components/ui';
 
 // Carga diferida: el editor (CodeMirror) y el panel de admin solo se descargan cuando se usan
 const Exercise = lazy(() => import('./views/exercises/Exercise'));
 const VistaReto = lazy(() => import('./views/reto/VistaReto'));
 const AdminPanel = lazy(() => import('./views/admin/AdminPanel'));
+// Páginas secundarias: fuera del primer paquete, que solo necesita el acceso y el mapa
+const Guia = lazy(() => import('./views/python-guide/Guia'));
+const Perfil = lazy(() => import('./views/profile/Perfil'));
+const Ranking = lazy(() => import('./views/ranking/Ranking'));
+// Muestrario del sistema de diseño de la fase 6: solo en desarrollo
+const GuiaDiseno = process.env.NODE_ENV !== 'production' ? lazy(() => import('./views/diseno/GuiaDiseno')) : null;
 
 const GET_ROL = gql`
   query RolActual {
@@ -49,10 +54,11 @@ const Pantalla: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     justifyContent: 'center',
     alignItems: 'center',
     gap: '16px',
-    height: '100vh',
-    background: 'linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%)',
-    color: 'white',
-    fontSize: '1.3rem',
+    minHeight: '100vh',
+    background: 'var(--ac-noche)',
+    color: 'var(--ac-texto)',
+    fontFamily: 'var(--ac-ui)',
+    fontSize: '1.15rem',
     textAlign: 'center',
     padding: '0 16px'
   }}>
@@ -69,7 +75,7 @@ const RutaProtegida: React.FC<{ autenticado: boolean; roles?: string[]; children
     return <Navigate to="/login" replace state={{ desde: location.pathname }} />;
   }
   if (roles) {
-    if (loading) return <Pantalla>Cargando...</Pantalla>;
+    if (loading) return <Pantalla>Cargando…</Pantalla>;
     if (!roles.includes(data?.me?.rol)) return <Navigate to="/" replace />;
   }
   return children;
@@ -91,19 +97,18 @@ const RutaEjercicio: React.FC = () => {
       ? <VistaReto key={id} tareaId={String(id)} onBack={volver} />
       : <Exercise key={id} onBackToDashboard={volver} exerciseData={desdeDashboard} />;
   }
-  if (loading) return <Pantalla>Cargando ejercicio...</Pantalla>;
+  if (loading) return <Pantalla>Cargando ejercicio…</Pantalla>;
   if (error || !data?.tarea) {
     const bloqueado = error?.graphQLErrors?.some((e) => e.extensions?.code === 'FORBIDDEN');
     return (
       <Pantalla>
-        <p>
+        {bloqueado && <Lock size={32} aria-hidden="true" style={{ color: 'var(--ac-oro)' }} />}
+        <p style={{ margin: 0, maxWidth: '36ch' }}>
           {bloqueado
-            ? '🔒 Este sabotaje se desbloquea al completar el ejercicio original.'
+            ? 'Este sabotaje se desbloquea al completar el ejercicio original.'
             : 'No se ha encontrado este ejercicio.'}
         </p>
-        <button onClick={volver} style={{ padding: '10px 20px', borderRadius: 8, border: 'none', cursor: 'pointer' }}>
-          Volver al inicio
-        </button>
+        <Boton variante="primario" onClick={volver}>Volver al mapa</Boton>
       </Pantalla>
     );
   }
@@ -139,11 +144,11 @@ const Rutas: React.FC = () => {
   );
 
   return (
-    <Suspense fallback={<Pantalla>Cargando...</Pantalla>}>
+    <Suspense fallback={<Pantalla>Cargando…</Pantalla>}>
     <Routes>
       <Route
         path="/login"
-        element={autenticado ? <Navigate to={destinoTrasLogin} replace /> : <LoginApp onLoginSuccess={handleLoginSuccess} />}
+        element={autenticado ? <Navigate to={destinoTrasLogin} replace /> : <Acceso onLoginSuccess={handleLoginSuccess} />}
       />
       <Route
         path="/"
@@ -159,13 +164,11 @@ const Rutas: React.FC = () => {
         )}
       />
       <Route path="/ejercicio/:id" element={protegida(<RutaEjercicio />)} />
-      <Route path="/guia" element={protegida(<PythonGuide onBackToDashboard={() => navigate('/')} />)} />
-      <Route path="/ranking" element={protegida(<FullRanking onBack={() => navigate('/')} />)} />
-      <Route
-        path="/perfil"
-        element={protegida(<Profile onBackToDashboard={() => navigate('/')} onNavigateToAdmin={() => navigate('/admin')} />)}
-      />
-      <Route path="/admin" element={protegida(<AdminPanel onBack={() => navigate('/perfil')} />, ['admin'])} />
+      <Route path="/guia" element={protegida(<Guia onLogout={handleLogout} />)} />
+      <Route path="/ranking" element={protegida(<Ranking onLogout={handleLogout} />)} />
+      <Route path="/perfil" element={protegida(<Perfil onLogout={handleLogout} />)} />
+      <Route path="/admin" element={protegida(<AdminPanel onLogout={handleLogout} />, ['admin'])} />
+      {GuiaDiseno && <Route path="/diseno" element={<GuiaDiseno />} />}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </Suspense>

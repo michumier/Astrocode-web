@@ -17,7 +17,7 @@ const MaterialLengua: React.FC<PropsMaterial> = ({ material }) => {
       </div>
       {material.map(({ nombre, material: m }) => (
         <section key={nombre} className="lengua-ejemplo">
-          <h4>{nombre}</h4>
+          <h3>{nombre}</h3>
           <div className="lengua-pareja">
             <Rejilla celdas={m.entrada} titulo="Entrada" numeros={numeros} maximo={110} />
             <span className="lengua-flecha" aria-hidden="true">➜</span>
