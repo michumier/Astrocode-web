@@ -102,11 +102,9 @@ const Starfield: React.FC = () => {
     <canvas
       ref={canvasRef}
       style={{
+        // inset y no 100vw: así no mide la barra de desplazamiento ni provoca scroll horizontal
         position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
+        inset: 0,
         pointerEvents: 'none',
         zIndex: 0,
       }}

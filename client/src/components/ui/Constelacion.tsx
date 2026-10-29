@@ -50,7 +50,9 @@ export function colocarEstrellas(semilla: string, cantidad: number): Punto[] {
     for (let intento = 0; intento < 30; intento++) {
       const base = cantidad === 1 ? ANCHO / 2 : MARGEN + (util * i) / (cantidad - 1);
       const x = Math.min(ANCHO - MARGEN, Math.max(MARGEN, base + (azar() - 0.5) * (util / Math.max(cantidad, 2)) * 0.8));
-      const candidataY = Math.min(ALTO - MARGEN, Math.max(MARGEN, y + (azar() - 0.5) * ALTO * 0.75));
+      // Con muchas estrellas el salto vertical se acorta: así la figura no parece un sismógrafo
+      const salto = ALTO * Math.max(0.3, 0.75 - cantidad * 0.03);
+      const candidataY = Math.min(ALTO - MARGEN, Math.max(MARGEN, y + (azar() - 0.5) * salto));
       const punto = { x, y: candidataY, r: 4.5 + azar() * 2.5 };
       mejor = punto;
       if (puntos.every((p) => Math.hypot(p.x - punto.x, p.y - punto.y) >= DISTANCIA_MINIMA)) break;
