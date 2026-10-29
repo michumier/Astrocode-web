@@ -58,7 +58,7 @@ export function analizarEnunciado(texto: string): Bloque[] {
 const Enunciado: React.FC<{ texto: string; className?: string }> = ({ texto, className }) => (
   <div className={['enunciado', className].filter(Boolean).join(' ')}>
     {analizarEnunciado(texto).map((b, i) => {
-      if (b.tipo === 'titulo') return <h3 key={i}>{enLinea(b.texto)}</h3>;
+      if (b.tipo === 'titulo') return <h2 key={i}>{enLinea(b.texto)}</h2>;
       if (b.tipo === 'lista') return <ul key={i}>{b.items.map((item, j) => <li key={j}>{enLinea(item)}</li>)}</ul>;
       return (
         <p key={i}>

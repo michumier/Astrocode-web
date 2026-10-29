@@ -119,6 +119,8 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   const [premio, setPremio] = useState<{ puntos: number; tiempo: string; mensaje: string } | null>(null);
   // Sabotajes: qué había cambiado el saboteador (se revela al resolverlo) e insignias ganadas
   const esSabotaje = exerciseData?.tipo === 'sabotaje';
+  // La API titula las copias «🕵️ Sabotaje: …»; aquí ya lo dice la etiqueta
+  const titulo = (exerciseData?.title || '').replace(/^\P{L}*Sabotaje:\s*/u, '');
   const [revelacion, setRevelacion] = useState<{ descripcion: string; linea: number | null; diff: string } | null>(null);
   const [insigniasNuevas, setInsigniasNuevas] = useState<string[]>([]);
   // Pistas del tutor de IA: cada vez que se pide una, sube el nivel (1 → 3)
@@ -130,6 +132,12 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   const [trazando, setTrazando] = useState(false);
   const dialogo = useRef<HTMLDivElement>(null);
 
+  const ejecutarRef = useRef<HTMLDivElement>(null);
+  // Al cerrar la enhorabuena, el foco vuelve a «Ejecutar»
+  const cerrarPremio = () => {
+    setPremio(null);
+    setTimeout(() => ejecutarRef.current?.querySelector<HTMLButtonElement>('.ui-boton--primario')?.focus(), 0);
+  };
   const { data: iaData } = useQuery(IA_DISPONIBLE);
   const [pedirPista] = useMutation(PEDIR_PISTA);
   const [trazar] = useMutation(TRAZAR);
@@ -154,7 +162,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   useEffect(() => {
     if (!premio) return;
     dialogo.current?.querySelector('button')?.focus();
-    const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape') setPremio(null); };
+    const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape') cerrarPremio(); };
     document.addEventListener('keydown', tecla);
     return () => document.removeEventListener('keydown', tecla);
   }, [premio]);
@@ -258,7 +266,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
       <header className="ejercicio__barra">
         <Boton variante="fantasma" onClick={onBackToDashboard} icono={<ChevronLeft size={18} aria-hidden="true" />} className="ejercicio__volver">Mapa</Boton>
         <span className="ejercicio__miga">{exerciseData.categoria}</span>
-        <Etiqueta tono={tonoDeNivel(exerciseData.difficulty)}>{exerciseData.difficulty}</Etiqueta>
+        {tonoDeNivel(exerciseData.difficulty) !== 'neutro' && <Etiqueta tono={tonoDeNivel(exerciseData.difficulty)}>{exerciseData.difficulty}</Etiqueta>}
         <Etiqueta>{exerciseData.points} pts</Etiqueta>
         {esSabotaje && <Etiqueta tono="dificil">Sabotaje</Etiqueta>}
         <div className="ejercicio__barra-der">
@@ -275,14 +283,14 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
       </header>
 
       <main className="ejercicio__cuerpo">
-        <article className="ejercicio__enunciado">
+        <article className="ejercicio__enunciado" tabIndex={0} aria-label="Enunciado">
           {esSabotaje && (
             <Aviso tono="error" titulo="Alerta de sabotaje">
               {exerciseData.contexto || 'Un saboteador ha alterado el código de la nave.'} El código del editor casi funciona:
               alguien ha introducido un único fallo. Encuéntralo y arréglalo cambiando lo mínimo posible.
             </Aviso>
           )}
-          <h1>{exerciseData.title}</h1>
+          <h1>{titulo}</h1>
           {exerciseData.description && <Enunciado texto={exerciseData.description} />}
           {exerciseData.resultadoEsperado && (
             <section className="ejercicio__esperado">
@@ -307,7 +315,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
           <div className="ejercicio__editor">
             <div className="ejercicio__editor-barra">
               <span className="ejercicio__pestana">main.py</span>
-              <div className="ejercicio__acciones">
+              <div className="ejercicio__acciones" ref={ejecutarRef}>
                 <Boton variante="fantasma" soloIcono onClick={reiniciar} icono={<RotateCcw size={18} aria-hidden="true" />}
                   aria-label={esSabotaje ? 'Volver al código saboteado original' : 'Volver al código inicial'}
                   title={esSabotaje ? 'Volver al código saboteado original' : 'Volver al código inicial'} />
@@ -337,7 +345,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
                 </span>
               )}
             </div>
-            <div className="ejercicio__consola">
+            <div className="ejercicio__consola" tabIndex={0} role="region" aria-label="Salida">
               {!resultado ? (
                 <p className="ejercicio__vacio">Pulsa <strong>Ejecutar</strong> (o Ctrl+Enter) para probar y corregir tu código.</p>
               ) : (
@@ -355,7 +363,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
                         <li key={i} className={p.superado ? 'ok' : 'mal'}>
                           {p.superado ? <CircleCheck size={16} aria-hidden="true" /> : <CircleX size={16} aria-hidden="true" />}
                           <div>
-                            <span>{p.oculto ? `${p.descripcion} (oculta)` : p.descripcion}</span>
+                            <span>{p.oculto ? 'Prueba oculta' : p.descripcion}</span>
                             {!p.superado && !p.oculto && (
                               <div className="ejercicio__detalle">
                                 {p.error ? <span>Error: {p.error}</span> : (
@@ -385,7 +393,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
                   <strong>Así era el sabotaje{revelacion.linea ? ` (línea ${revelacion.linea})` : ''}</strong>
                   <p>{revelacion.descripcion}</p>
                   <DiffSabotaje diff={revelacion.diff} />
-                  {cirujano && <p className="ejercicio__insignia"><Award size={18} aria-hidden="true" />Insignia nueva: <strong>Cirujano</strong>. Lo arreglaste tocando lo mínimo.</p>}
+                  {cirujano && <p className="ejercicio__insignia"><Award size={18} aria-hidden="true" /><span>Insignia nueva: <strong>Cirujano</strong>. Lo arreglaste tocando lo mínimo.</span></p>}
                 </div>
               )}
             </div>
@@ -394,14 +402,14 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
       </main>
 
       {premio && (
-        <div className="ejercicio__fondo" onClick={(e) => { if (e.target === e.currentTarget) setPremio(null); }}>
+        <div className="ejercicio__fondo" onClick={(e) => { if (e.target === e.currentTarget) cerrarPremio(); }}>
           <div className="ejercicio__premio" role="dialog" aria-modal="true" aria-labelledby="premio-titulo" ref={dialogo}>
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle cx="12" cy="12" r="10.5" stroke="var(--ac-turquesa)" strokeWidth="1.4" strokeDasharray="2.2 1.6" />
               <path d="M12 6.2l1.6 3.6 3.9.4-2.9 2.6.8 3.8L12 14.7l-3.4 1.9.8-3.8-2.9-2.6 3.9-.4z" fill="var(--ac-oro)" />
             </svg>
             <h2 id="premio-titulo">{esSabotaje ? '¡Sistema reparado!' : '¡Ejercicio superado!'}</h2>
-            <p className="ejercicio__premio-sub">{exerciseData.title} · se ha encendido una estrella</p>
+            <p className="ejercicio__premio-sub">{titulo} · se ha encendido una estrella</p>
             <div className="ejercicio__premio-datos">
               <div><b>+{premio.puntos}</b><span>puntos</span></div>
               <div><b>{premio.tiempo}</b><span>tiempo</span></div>
@@ -413,10 +421,10 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
                 <DiffSabotaje diff={revelacion.diff} />
               </div>
             )}
-            {cirujano && <p className="ejercicio__insignia"><Award size={18} aria-hidden="true" />Insignia nueva: <strong>Cirujano</strong></p>}
+            {cirujano && <p className="ejercicio__insignia"><Award size={18} aria-hidden="true" /><span>Insignia nueva: <strong>Cirujano</strong></span></p>}
             <div className="ejercicio__premio-botones">
               <Boton variante="primario" tamano="grande" onClick={onBackToDashboard}>Volver al mapa</Boton>
-              <Boton variante="fantasma" onClick={() => setPremio(null)}>Quedarme aquí</Boton>
+              <Boton variante="fantasma" onClick={cerrarPremio}>Quedarme aquí</Boton>
             </div>
           </div>
         </div>

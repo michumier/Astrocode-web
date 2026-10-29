@@ -29,12 +29,14 @@ const formatear = (n: number) => n.toLocaleString('es-ES');
 const BarraSuperior: React.FC<PropsBarra> = ({ puntos, nombre, enlaces = ENLACES_ALUMNO, alPerfil, alSalir }) => {
   const [abierto, setAbierto] = useState(false);
   const caja = useRef<HTMLDivElement>(null);
+  const boton = useRef<HTMLButtonElement>(null);
 
   // El menú se cierra al pulsar fuera o con Escape
   useEffect(() => {
     if (!abierto) return;
     const fuera = (e: MouseEvent) => { if (!caja.current?.contains(e.target as Node)) setAbierto(false); };
-    const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape') setAbierto(false); };
+    // Con Escape el foco vuelve al avatar, para no perderlo
+    const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape') { setAbierto(false); boton.current?.focus(); } };
     document.addEventListener('mousedown', fuera);
     document.addEventListener('keydown', tecla);
     return () => {
@@ -63,14 +65,14 @@ const BarraSuperior: React.FC<PropsBarra> = ({ puntos, nombre, enlaces = ENLACES
           </span>
         )}
         <div className="ui-avatar" ref={caja}>
-          <button className="ui-avatar__boton" aria-label={`Menú de ${nombre || 'tu cuenta'}`} aria-haspopup="menu" aria-expanded={abierto}
+          <button ref={boton} className="ui-avatar__boton" aria-label={`Menú de ${nombre || 'tu cuenta'}`} aria-expanded={abierto} aria-controls="ui-menu-cuenta"
             onClick={() => setAbierto((a) => !a)}>
             {inicial}
           </button>
           {abierto && (
-            <div className="ui-menu" role="menu">
-              {alPerfil && <button role="menuitem" onClick={() => { setAbierto(false); alPerfil(); }}><UserRound size={18} aria-hidden="true" />Mi perfil</button>}
-              {alSalir && <button role="menuitem" onClick={() => { setAbierto(false); alSalir(); }}><LogOut size={18} aria-hidden="true" />Cerrar sesión</button>}
+            <div className="ui-menu" id="ui-menu-cuenta">
+              {alPerfil && <button onClick={() => { setAbierto(false); alPerfil(); }}><UserRound size={18} aria-hidden="true" />Mi perfil</button>}
+              {alSalir && <button onClick={() => { setAbierto(false); alSalir(); }}><LogOut size={18} aria-hidden="true" />Cerrar sesión</button>}
             </div>
           )}
         </div>

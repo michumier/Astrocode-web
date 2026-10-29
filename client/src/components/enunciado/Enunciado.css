@@ -9,7 +9,7 @@
 
 .enunciado p { margin: 0; max-width: 68ch; }
 
-.enunciado h3 {
+.enunciado h2 {
   margin: 8px 0 -2px;
   font-family: var(--ac-display);
   font-weight: 700;

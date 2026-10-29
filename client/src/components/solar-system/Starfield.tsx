@@ -28,11 +28,13 @@ const Starfield: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Con «reducir movimiento» se pinta una vez, quieto, y solo se repinta al cambiar de tamaño
+    const quieto = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      if (quieto) animate(0);
     };
-    resize();
     window.addEventListener('resize', resize);
 
     // Generate stars
@@ -58,7 +60,7 @@ const Starfield: React.FC = () => {
         y: (e.clientY / window.innerHeight - 0.5) * 2,
       };
     };
-    window.addEventListener('mousemove', handleMouse);
+    if (!quieto) window.addEventListener('mousemove', handleMouse);
 
     // Animation
     let startTime = performance.now();
@@ -71,7 +73,7 @@ const Starfield: React.FC = () => {
         const parallaxX = mouseRef.current.x * layer.speed * 100;
         const parallaxY = mouseRef.current.y * layer.speed * 100;
 
-        const twinkle = Math.sin(elapsed * star.twinkleSpeed + star.twinklePhase) * 0.3 + 0.7;
+        const twinkle = quieto ? 0.85 : Math.sin(elapsed * star.twinkleSpeed + star.twinklePhase) * 0.3 + 0.7;
         const alpha = star.alpha * twinkle;
 
         ctx.globalAlpha = alpha;
@@ -87,9 +89,10 @@ const Starfield: React.FC = () => {
         ctx.fill();
       }
 
-      animFrameRef.current = requestAnimationFrame(animate);
+      if (!quieto) animFrameRef.current = requestAnimationFrame(animate);
     };
-    animFrameRef.current = requestAnimationFrame(animate);
+    resize();
+    if (!quieto) animFrameRef.current = requestAnimationFrame(animate);
 
     return () => {
       cancelAnimationFrame(animFrameRef.current);
@@ -101,6 +104,7 @@ const Starfield: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
+      aria-hidden="true"
       style={{
         // inset y no 100vw: así no mide la barra de desplazamiento ni provoca scroll horizontal
         position: 'fixed',

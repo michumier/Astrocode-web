@@ -36,11 +36,12 @@ test('un ejercicio normal: enunciado con formato, una sola acción principal y s
 });
 
 test('un sabotaje enseña la alerta y reiniciar vuelve al código saboteado', () => {
-  montar({ ...base, tipo: 'sabotaje', contexto: 'Alguien ha tocado el contador de satélites.' });
+  montar({ ...base, title: '🕵️ Sabotaje: Recuento de satélites', tipo: 'sabotaje', contexto: 'Alguien ha tocado el contador de satélites.' });
   expect(screen.getByText('Alerta de sabotaje')).toBeInTheDocument();
   expect(screen.getByText(/Alguien ha tocado el contador de satélites/)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Volver al código saboteado original' })).toBeInTheDocument();
   expect(screen.getByText('Sabotaje')).toHaveClass('ui-etiqueta--dificil');
+  expect(screen.getByRole('heading', { level: 1, name: 'Recuento de satélites' })).toBeInTheDocument();
 });
 
 test('sin ejercicio, ofrece volver al mapa', () => {

@@ -205,9 +205,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   };
 
   const cerrarPanel = useCallback(() => {
+    const planeta = planetaAbierto;
     setPlanetaAbierto(null);
     setEjerciciosPanel([]);
-  }, []);
+    if (planeta) setTimeout(() => document.querySelector<HTMLButtonElement>(`.ss-${planeta}`)?.focus(), 0);
+  }, [planetaAbierto]);
 
   const abrirEjercicio = (ejercicio: any) => onNavigateToExercise?.(ejercicio);
 
@@ -221,7 +223,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
         alPerfil={onNavigateToProfile} alSalir={onLogout} />
 
       <main className={`mapa ${planetaAbierto ? 'mapa--panel' : ''}`}>
-        <aside className="mapa__columna mapa__izq">
+        <aside className="mapa__columna mapa__izq" aria-label="Tu viaje">
           <Panel titulo={`Constelación de ${enCurso.name}`}
             extra={ejerciciosEnCurso.length > 0 && <span className="mapa__contador"><b>{estrellas.filter((e) => e.estado === 'hecha').length}</b> de {estrellas.length} estrellas</span>}>
             {ejerciciosEnCurso.length > 0 ? (
@@ -301,7 +303,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
           <PanelPlaneta planeta={nombreDe(planetaAbierto)} ejercicios={ejerciciosPanel} cargando={cargandoPanel}
             completado={completado} alCerrar={cerrarPanel} alAbrir={abrirEjercicio} />
         ) : (
-          <aside className="mapa__columna mapa__der">
+          <aside className="mapa__columna mapa__der" aria-label="Retos y ranking">
             <section className="mapa__diario" aria-labelledby="mapa-diario-titulo">
               <div className="mapa__diario-meta">
                 <span>Reto diario</span>
