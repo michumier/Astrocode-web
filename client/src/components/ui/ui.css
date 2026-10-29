@@ -197,6 +197,10 @@
 .ui-campo--error textarea { border-color: var(--ac-error); }
 
 .ui-campo__ayuda { font-size: 13px; color: var(--ac-suave); }
+
+.ui-campo__caja { position: relative; display: flex; }
+.ui-campo__caja input { flex: 1; min-width: 0; padding-right: 52px; }
+.ui-campo__accesorio { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: flex; }
 .ui-campo__error { font-size: 13px; color: var(--ac-error); }
 
 /* ---------- Aviso ---------- */

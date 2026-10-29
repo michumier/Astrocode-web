@@ -1,7 +1,7 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { gql, useQuery, useApolloClient } from '@apollo/client';
-import LoginApp from './views/login/App';
+import Acceso from './views/acceso/Acceso';
 import Dashboard from './views/dashboard/Dashboard';
 import PythonGuide from './views/python-guide/PythonGuide';
 import Profile from './views/profile/Profile';
@@ -147,7 +147,7 @@ const Rutas: React.FC = () => {
     <Routes>
       <Route
         path="/login"
-        element={autenticado ? <Navigate to={destinoTrasLogin} replace /> : <LoginApp onLoginSuccess={handleLoginSuccess} />}
+        element={autenticado ? <Navigate to={destinoTrasLogin} replace /> : <Acceso onLoginSuccess={handleLoginSuccess} />}
       />
       <Route
         path="/"

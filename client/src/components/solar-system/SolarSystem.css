@@ -134,3 +134,7 @@
   transform: rotate(-14deg);
   pointer-events: none;
 }
+
+/* Versión para mirar (SistemaDecorativo): sin cursor ni pulsación */
+.ss-sistema--decorativo .ss-cuerpo { cursor: default; transition: none; }
+.ss-sistema--decorativo .ss-cuerpo:active { transform: none; }

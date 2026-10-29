@@ -51,16 +51,25 @@ type PropsCampo = React.InputHTMLAttributes<HTMLInputElement> & {
   etiqueta: string;
   error?: string | null;
   ayuda?: string;
+  // Algo pegado al final del campo, dentro de él (por ejemplo, «mostrar contraseña»)
+  accesorio?: React.ReactNode;
 };
 
-export const Campo: React.FC<PropsCampo> = ({ etiqueta, error, ayuda, id, className, ...input }) => {
+export const Campo: React.FC<PropsCampo> = ({ etiqueta, error, ayuda, accesorio, id, className, ...input }) => {
   const propio = useId();
   const idCampo = id || propio;
   const idDescripcion = error || ayuda ? `${idCampo}-desc` : undefined;
   return (
     <div className={['ui-campo', error && 'ui-campo--error', className].filter(Boolean).join(' ')}>
       <label htmlFor={idCampo}>{etiqueta}</label>
-      <input id={idCampo} aria-invalid={error ? true : undefined} aria-describedby={idDescripcion} {...input} />
+      {accesorio ? (
+        <div className="ui-campo__caja">
+          <input id={idCampo} aria-invalid={error ? true : undefined} aria-describedby={idDescripcion} {...input} />
+          <span className="ui-campo__accesorio">{accesorio}</span>
+        </div>
+      ) : (
+        <input id={idCampo} aria-invalid={error ? true : undefined} aria-describedby={idDescripcion} {...input} />
+      )}
       {error ? <span className="ui-campo__error" id={idDescripcion} role="alert">{error}</span>
         : ayuda ? <span className="ui-campo__ayuda" id={idDescripcion}>{ayuda}</span> : null}
     </div>
