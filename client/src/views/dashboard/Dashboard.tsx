@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { gql, useQuery, ApolloError } from '@apollo/client';
 import { BookOpen, ChevronRight, Trophy } from 'lucide-react';
-import client from '../../apollo/client';
 import { limpiarTitulo, mapTareaToExercise } from '../../utils/tareas';
-import { ejerciciosDelPlaneta, NIVEL_PLANETA, PUNTOS_PLANETA } from '../../utils/planetas';
+import { GET_RUTA, ejerciciosDe, estrellasDe, motivoBloqueo, planetaEnCurso } from '../../utils/ruta';
+import type { PlanetaRuta } from '../../utils/ruta';
 import { Aviso, BarraSuperior, Boton, Constelacion, Panel } from '../../components/ui';
-import type { Estrella } from '../../components/ui';
 import SalaDeMaquinas from './SalaDeMaquinas';
 import PanelPlaneta from './PanelPlaneta';
 import SolarSystem, { PLANETS } from '../../components/solar-system/SolarSystem';
@@ -60,29 +59,7 @@ const GET_DAILY_CHALLENGE = gql`
   }
 `;
 
-const GET_TASKS_BY_LEVEL = gql`
-  query TareasPorNivel($nivelId: ID!) {
-    tareasPorNivel(nivelId: $nivelId) {
-      id
-      tipo
-      formato
-      titulo
-      descripcion
-      puntosBase
-      codigoBase
-      resultadoEsperado
-      categoria {
-        nombre
-      }
-      nivel {
-        nombre
-      }
-    }
-  }
-`;
-
 const formatear = (n: number) => n.toLocaleString('es-ES');
-const nombreDe = (clave: string) => PLANETS.find((p) => p.key === clave)?.name || clave;
 
 const horasHastaMedianoche = () => {
   const ahora = new Date();
@@ -108,8 +85,6 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, onNavigateToPythonGuide, onNavigateToProfile }) => {
   const [planetaAbierto, setPlanetaAbierto] = useState<string | null>(null);
-  const [ejerciciosPanel, setEjerciciosPanel] = useState<any[]>([]);
-  const [cargandoPanel, setCargandoPanel] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const usuario = useMemo(usuarioGuardado, []);
 
@@ -123,57 +98,42 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
   const ranking = useQuery(GET_TOP_USERS, { fetchPolicy: 'network-only', errorPolicy: 'all', onError: alError });
   const diario = useQuery(GET_DAILY_CHALLENGE, { fetchPolicy: 'network-only', errorPolicy: 'all' });
 
+  const rutaQ = useQuery(GET_RUTA, { fetchPolicy: 'network-only', errorPolicy: 'all', onError: alError });
+
   const puntos: number = yo.data?.me?.puntos ?? 0;
   const hechas = useMemo(() => new Set<string>((completadas.data?.tareasCompletadas || []).map((t: any) => t.id)), [completadas.data]);
-  const completado = useCallback((id: string) => hechas.has(id), [hechas]);
-  const abierto = useCallback((clave: string) => puntos >= PUNTOS_PLANETA[clave], [puntos]);
+  const ruta: PlanetaRuta[] = useMemo(() => rutaQ.data?.ruta || [], [rutaQ.data]);
+  const planetaDe = useCallback((clave: string) => ruta.find((p) => p.clave === clave), [ruta]);
+  // Mientras carga la ruta, solo Mercurio se ve abierto (es el que tiene todo el mundo)
+  const abierto = useCallback((clave: string) => (planetaDe(clave)?.estado ?? (clave === 'mercurio' ? 'abierto' : 'bloqueado')) !== 'bloqueado', [planetaDe]);
+  const conquistado = useCallback((clave: string) => planetaDe(clave)?.estado === 'conquistado', [planetaDe]);
+  const bloqueo = useCallback((clave: string) => motivoBloqueo(ruta, clave), [ruta]);
 
-  // Ejercicios de cada nivel abierto, repartidos entre los planetas que lo comparten
-  const opcionesNivel = (nivel: number) => ({
-    variables: { nivelId: String(nivel) }, fetchPolicy: 'network-only' as const, errorPolicy: 'all' as const, onError: alError,
-    skip: !PLANETS.some((p) => NIVEL_PLANETA[p.key] === nivel && abierto(p.key)),
-  });
-  const nivel1 = useQuery(GET_TASKS_BY_LEVEL, opcionesNivel(1));
-  const nivel2 = useQuery(GET_TASKS_BY_LEVEL, opcionesNivel(2));
-  const nivel3 = useQuery(GET_TASKS_BY_LEVEL, opcionesNivel(3));
-  const cargandoNiveles = nivel1.loading || nivel2.loading || nivel3.loading;
-  const porPlaneta = useMemo(() => {
-    const porNivel: Record<number, any[]> = {
-      1: (nivel1.data?.tareasPorNivel || []).map(mapTareaToExercise),
-      2: (nivel2.data?.tareasPorNivel || []).map(mapTareaToExercise),
-      3: (nivel3.data?.tareasPorNivel || []).map(mapTareaToExercise),
-    };
-    return Object.fromEntries(PLANETS.map((p) => [p.key, ejerciciosDelPlaneta(p.key, porNivel[NIVEL_PLANETA[p.key]])]));
-  }, [nivel1.data, nivel2.data, nivel3.data]);
-
-  // El planeta en curso es el primero abierto al que le quedan estrellas (o, si no queda ninguna, el más lejano)
-  const abiertos = PLANETS.filter((p) => abierto(p.key));
-  const enCurso = abiertos.find((p) => (porPlaneta[p.key] || []).some((e: any) => !hechas.has(e.id)))
-    || abiertos[abiertos.length - 1] || PLANETS[0];
-  const proximo = PLANETS.find((p) => !abierto(p.key));
-  const ejerciciosEnCurso: any[] = useMemo(() => porPlaneta[enCurso.key] || [], [porPlaneta, enCurso.key]);
-  const siguienteEstrella = ejerciciosEnCurso.find((e: any) => !hechas.has(e.id));
-  const estrellas: Estrella[] = useMemo(() => ejerciciosEnCurso.map((e: any) => ({
-    id: e.id,
-    titulo: e.title,
-    estado: hechas.has(e.id) ? 'hecha' : e === siguienteEstrella ? 'siguiente' : 'pendiente',
-  })), [ejerciciosEnCurso, hechas, siguienteEstrella]);
+  // El planeta en curso: el primero abierto que aún no está conquistado
+  const enCurso = planetaEnCurso(ruta);
+  const nombreEnCurso = enCurso?.nombre || PLANETS[0].name;
+  const ejerciciosEnCurso = useMemo(() => ejerciciosDe(enCurso), [enCurso]);
+  const estrellas = useMemo(() => estrellasDe(enCurso), [enCurso]);
+  const siguienteEstrella = ejerciciosEnCurso.find((e) => e.estado === 'siguiente');
+  const siguientePlaneta = enCurso ? ruta.find((p) => p.orden === enCurso.orden + 1) : undefined;
 
   // Al volver a la pestaña (por ejemplo, tras resolver un ejercicio) se refrescan puntos, estrellas y ranking
   const { refetch: refetchCompletadas } = completadas;
   const { refetch: refetchYo } = yo;
   const { refetch: refetchRanking } = ranking;
+  const { refetch: refetchRuta } = rutaQ;
   useEffect(() => {
     const alVolver = () => {
       if (document.visibilityState === 'visible') {
         refetchYo();
         refetchCompletadas();
         refetchRanking();
+        refetchRuta();
       }
     };
     document.addEventListener('visibilitychange', alVolver);
     return () => document.removeEventListener('visibilitychange', alVolver);
-  }, [refetchCompletadas, refetchYo, refetchRanking]);
+  }, [refetchCompletadas, refetchYo, refetchRanking, refetchRuta]);
 
   useEffect(() => {
     if (!aviso) return;
@@ -181,33 +141,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
     return () => clearTimeout(t);
   }, [aviso]);
 
-  const abrirPlaneta = async (clave: string) => {
+  const abrirPlaneta = (clave: string) => {
     if (!abierto(clave)) {
-      const faltan = PUNTOS_PLANETA[clave] - puntos;
-      setAviso(`${nombreDe(clave)} se abre con ${formatear(PUNTOS_PLANETA[clave])} pts. Te faltan ${formatear(faltan)}.`);
+      setAviso(bloqueo(clave));
       return;
     }
     setPlanetaAbierto(clave);
-    setCargandoPanel(true);
-    try {
-      const { data } = await client.query({
-        query: GET_TASKS_BY_LEVEL,
-        variables: { nivelId: String(NIVEL_PLANETA[clave]) },
-        fetchPolicy: 'network-only',
-      });
-      setEjerciciosPanel(ejerciciosDelPlaneta(clave, (data?.tareasPorNivel || []).map(mapTareaToExercise)));
-    } catch (error: any) {
-      setEjerciciosPanel([]);
-      if (error?.message?.includes('autenticado') && onLogout) onLogout();
-    } finally {
-      setCargandoPanel(false);
-    }
   };
 
   const cerrarPanel = useCallback(() => {
     const planeta = planetaAbierto;
     setPlanetaAbierto(null);
-    setEjerciciosPanel([]);
     if (planeta) setTimeout(() => document.querySelector<HTMLButtonElement>(`.ss-${planeta}`)?.focus(), 0);
   }, [planetaAbierto]);
 
@@ -224,11 +168,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
 
       <main className={`mapa ${planetaAbierto ? 'mapa--panel' : ''}`}>
         <aside className="mapa__columna mapa__izq" aria-label="Tu viaje">
-          <Panel titulo={`Constelación de ${enCurso.name}`}
+          <Panel titulo={`Constelación de ${nombreEnCurso}`}
             extra={ejerciciosEnCurso.length > 0 && <span className="mapa__contador"><b>{estrellas.filter((e) => e.estado === 'hecha').length}</b> de {estrellas.length} estrellas</span>}>
+            {enCurso && <p className="mapa__tema">{enCurso.tema}</p>}
             {ejerciciosEnCurso.length > 0 ? (
               <>
-                <Constelacion planeta={enCurso.name} estrellas={estrellas} className="mapa__cielo" />
+                <Constelacion planeta={nombreEnCurso} estrellas={estrellas} className="mapa__cielo" />
                 {siguienteEstrella ? (
                   <button className="mapa__siguiente" onClick={() => abrirEjercicio(siguienteEstrella)}>
                     <i aria-hidden="true" />
@@ -236,28 +181,24 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
                     <ChevronRight size={18} aria-hidden="true" />
                   </button>
                 ) : (
-                  <p className="mapa__nota">¡Constelación completa! Prueba con otro planeta.</p>
+                  <p className="mapa__nota">¡{nombreEnCurso} conquistado! Has completado toda la ruta.</p>
                 )}
               </>
             ) : (
-              <p className="mapa__nota">{cargandoNiveles ? 'Cargando tus estrellas…' : 'Aún no hay ejercicios en este planeta.'}</p>
+              <p className="mapa__nota">{rutaQ.loading ? 'Cargando tu ruta…' : 'Aún no hay ejercicios en este planeta.'}</p>
             )}
-            <div className="mapa__proximo">
-              {proximo ? (
-                <>
-                  <div className="mapa__proximo-fila">
-                    <span>Siguiente parada: <b>{proximo.name}</b></span>
-                    <span><b>{formatear(puntos)}</b> / {formatear(PUNTOS_PLANETA[proximo.key])} pts</span>
-                  </div>
-                  <div className="mapa__barra" role="progressbar" aria-label={`Puntos para abrir ${proximo.name}`}
-                    aria-valuenow={puntos} aria-valuemin={0} aria-valuemax={PUNTOS_PLANETA[proximo.key]}>
-                    <i style={{ width: `${Math.min(100, (100 * puntos) / PUNTOS_PLANETA[proximo.key])}%` }} />
-                  </div>
-                </>
-              ) : (
-                <p className="mapa__nota">Has abierto todos los planetas del sistema.</p>
-              )}
-            </div>
+            {enCurso && enCurso.estado === 'abierto' && (
+              <div className="mapa__proximo">
+                <div className="mapa__proximo-fila">
+                  <span>Conquista <b>{enCurso.nombre}</b>{siguientePlaneta ? <> y se abre <b>{siguientePlaneta.nombre}</b></> : null}</span>
+                  <span>+{formatear(enCurso.bonus)} pts</span>
+                </div>
+                <div className="mapa__barra" role="progressbar" aria-label={`Pasos completados de ${enCurso.nombre}`}
+                  aria-valuenow={enCurso.hechos} aria-valuemin={0} aria-valuemax={enCurso.total}>
+                  <i style={{ width: `${enCurso.total ? (100 * enCurso.hechos) / enCurso.total : 0}%` }} />
+                </div>
+              </div>
+            )}
           </Panel>
 
           <Panel titulo="Ranking" className="mapa__ranking">
@@ -288,20 +229,20 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
           )}
           <div className="mapa__escala">
             <SolarSystem selectedPlanet={planetaAbierto} onPlanetSelect={abrirPlaneta} isPlanetUnlocked={abierto}
-              planetRequirements={PUNTOS_PLANETA} />
+              isPlanetConquered={conquistado} motivoBloqueo={bloqueo} />
           </div>
           <div className="mapa__pie">
             <h1>Elige tu próximo planeta</h1>
             <div className="mapa__leyenda">
               <span><i />Abierto</span>
-              <span><i className="b" />Se abre con puntos</span>
+              <span><i className="b" />Conquista el anterior para abrirlo</span>
             </div>
           </div>
         </section>
 
         {planetaAbierto ? (
-          <PanelPlaneta planeta={nombreDe(planetaAbierto)} ejercicios={ejerciciosPanel} cargando={cargandoPanel}
-            completado={completado} alCerrar={cerrarPanel} alAbrir={abrirEjercicio} />
+          <PanelPlaneta planeta={planetaDe(planetaAbierto)} cargando={rutaQ.loading && !rutaQ.data}
+            alCerrar={cerrarPanel} alAbrir={abrirEjercicio} />
         ) : (
           <aside className="mapa__columna mapa__der" aria-label="Retos y ranking">
             <section className="mapa__diario" aria-labelledby="mapa-diario-titulo">

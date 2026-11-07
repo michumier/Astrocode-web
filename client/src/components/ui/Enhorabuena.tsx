@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Star } from 'lucide-react';
+import { Flag, Star } from 'lucide-react';
 import Boton from './Boton';
 import './ui.css';
 
@@ -19,6 +19,19 @@ interface PropsEnhorabuena {
   alCerrar: () => void;
   textoCerrar?: string;
 }
+
+export interface PlanetaConquistado {
+  nombre: string;
+  puntos: number;
+}
+
+// Con el último paso de un planeta se conquista (ruta, fase 11): su bonus y el aviso de que se abre el siguiente
+export const Conquista: React.FC<{ planeta: PlanetaConquistado }> = ({ planeta }) => (
+  <p className="ui-premio__conquista">
+    <Flag size={18} aria-hidden="true" />
+    <span>¡Has conquistado <strong>{planeta.nombre}</strong>! <strong>+{planeta.puntos} pts</strong> y se abre el siguiente planeta.</span>
+  </p>
+);
 
 // Insignia de la enhorabuena: estrella en oro dentro de un aro cosido en turquesa
 const Insignia = () => (

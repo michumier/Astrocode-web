@@ -1,34 +1,48 @@
 import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import PanelPlaneta from './PanelPlaneta';
+import type { PlanetaRuta } from '../../utils/ruta';
 
-const ejercicios = [
-  { id: '1', title: 'Variables espaciales', difficulty: 'Fácil', points: 50, tipo: 'codigo', categoria: 'Variables' },
-  { id: '2', title: 'Cuenta regresiva', difficulty: 'Fácil', points: 100, tipo: 'codigo', categoria: 'Bucles' },
-  { id: '3', title: 'La huella del PIN', difficulty: 'Fácil', points: 150, tipo: 'reto', formato: 'camara' },
-  { id: '4', title: 'Aterrizaje lunar', difficulty: 'Intermedio', points: 200, tipo: 'pilotaje' },
-];
+const tarea = (id: string, titulo: string, tipo: string, puntosBase: number, extra: any = {}) =>
+  ({ id, titulo, tipo, puntosBase, nivel: { nombre: 'Fácil' }, categoria: { nombre: 'Variables' }, ...extra });
 
-const montar = (hechos: string[] = ['1']) => {
+const venus = (estados: PlanetaRuta['pasos'][number]['estado'][], estado: PlanetaRuta['estado'] = 'abierto'): PlanetaRuta => ({
+  clave: 'venus', nombre: 'Venus', tema: 'Tomar decisiones', orden: 2, bonus: 150, estado,
+  hechos: estados.filter((e) => e === 'hecho').length, total: 4,
+  pasos: [
+    tarea('1', 'Variables espaciales', 'codigo', 50),
+    tarea('2', 'Cuenta regresiva', 'codigo', 100),
+    tarea('3', 'La huella del PIN', 'reto', 150, { formato: 'camara' }),
+    tarea('4', 'Aterrizaje lunar', 'pilotaje', 200),
+  ].map((t, i) => ({ orden: i + 1, tipo: 'tarea', estado: estados[i], tarea: t })),
+});
+
+const montar = (planeta = venus(['hecho', 'siguiente', 'bloqueado', 'bloqueado'])) => {
   const alCerrar = jest.fn();
   const alAbrir = jest.fn();
-  render(<PanelPlaneta planeta="Venus" ejercicios={ejercicios} cargando={false}
-    completado={(id) => hechos.includes(id)} alCerrar={alCerrar} alAbrir={alAbrir} />);
+  render(<PanelPlaneta planeta={planeta} cargando={false} alCerrar={alCerrar} alAbrir={alAbrir} />);
   return { alCerrar, alAbrir };
 };
 
-test('el primero sin hacer es la acción principal; los hechos se pueden repetir', () => {
+test('los pasos van numerados; solo el siguiente se empieza, los hechos se repiten y los demás están bloqueados', () => {
   const { alAbrir } = montar();
-  const siguiente = screen.getByRole('button', { name: 'Empezar Cuenta regresiva' });
-  expect(siguiente).toHaveClass('ui-boton--primario');
-  expect(screen.getByRole('button', { name: 'Empezar La huella del PIN' })).toHaveClass('ui-boton--secundario');
+  expect(screen.getByRole('button', { name: 'Empezar Cuenta regresiva' })).toHaveClass('ui-boton--primario');
+  expect(screen.queryByRole('button', { name: 'Empezar La huella del PIN' })).toBeNull();
+  expect(screen.getAllByText('Bloqueado: completa antes los pasos anteriores')).toHaveLength(2);
+  expect(screen.getByLabelText('Paso 3')).toHaveTextContent('3');
   fireEvent.click(screen.getByRole('button', { name: 'Repetir Variables espaciales' }));
-  expect(alAbrir).toHaveBeenCalledWith(ejercicios[0]);
-  expect(screen.getByText('1 de 4 hechos')).toBeInTheDocument();
+  expect(alAbrir).toHaveBeenCalledWith(expect.objectContaining({ id: '1', estado: 'hecho' }));
+  expect(screen.getByText('1 de 4 hechos · +150 pts al conquistarlo')).toBeInTheDocument();
+  expect(screen.getByText('Tomar decisiones')).toBeInTheDocument();
+});
+
+test('un planeta conquistado lo dice en la cabecera', () => {
+  montar(venus(['hecho', 'hecho', 'hecho', 'hecho'], 'conquistado'));
+  expect(screen.getByText(/Conquistado · 4 de 4/)).toBeInTheDocument();
 });
 
 test('la constelación del planeta sale en la cabecera', () => {
-  montar(['1', '2']);
+  montar(venus(['hecho', 'hecho', 'siguiente', 'bloqueado']));
   expect(screen.getByRole('img')).toHaveAccessibleName(
     'Constelación de Venus: 2 de 4 ejercicios hechos; el siguiente es La huella del PIN'
   );

@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Bomb, CircleCheck, Code, Dna, FlaskConical, Languages, Palette, Radio, Rocket, ScanSearch, Vault, Wrench, X } from 'lucide-react';
+import { Bomb, CircleCheck, Code, Dna, Flag, FlaskConical, Languages, Lock, Palette, Radio, Rocket, ScanSearch, Vault, Wrench, X } from 'lucide-react';
 import { Boton, Constelacion, Etiqueta, tonoDeNivel } from '../../components/ui';
-import type { Estrella } from '../../components/ui';
 import { etiquetaFormato } from '../../components/visor-reto/etiquetas';
+import { ejerciciosDe, estrellasDe } from '../../utils/ruta';
+import type { PlanetaRuta } from '../../utils/ruta';
 
 // Icono de cada tipo y formato de ejercicio (iconos de trazo, nunca emojis)
 const ICONOS_FORMATO: Record<string, React.ElementType> = {
@@ -33,16 +34,15 @@ const tipoLegible = (ejercicio: any) => {
 };
 
 interface PropsPanel {
-  planeta: string;
-  ejercicios: any[];
+  planeta?: PlanetaRuta;
   cargando: boolean;
-  completado: (id: string) => boolean;
   alCerrar: () => void;
   alAbrir: (ejercicio: any) => void;
 }
 
-// Hoja lateral con los ejercicios de un planeta: el sistema solar sigue a la vista
-const PanelPlaneta: React.FC<PropsPanel> = ({ planeta, ejercicios, cargando, completado, alCerrar, alAbrir }) => {
+// Hoja lateral con la ruta de un planeta: los pasos en orden, y solo se abre el siguiente.
+// El sistema solar sigue a la vista.
+const PanelPlaneta: React.FC<PropsPanel> = ({ planeta, cargando, alCerrar, alAbrir }) => {
   const [grupo, setGrupo] = useState('todo');
   const titulo = useRef<HTMLHeadingElement>(null);
 
@@ -52,17 +52,15 @@ const PanelPlaneta: React.FC<PropsPanel> = ({ planeta, ejercicios, cargando, com
     const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape') alCerrar(); };
     document.addEventListener('keydown', tecla);
     return () => document.removeEventListener('keydown', tecla);
-  }, [planeta, alCerrar]);
+  }, [planeta?.clave, alCerrar]);
 
-  useEffect(() => setGrupo('todo'), [planeta]);
+  useEffect(() => setGrupo('todo'), [planeta?.clave]);
 
-  const siguiente = ejercicios.find((e) => !completado(e.id));
-  const hechos = ejercicios.filter((e) => completado(e.id)).length;
-  const estrellas: Estrella[] = useMemo(() => ejercicios.map((e) => ({
-    id: e.id,
-    titulo: e.title,
-    estado: completado(e.id) ? 'hecha' : e === siguiente ? 'siguiente' : 'pendiente',
-  })), [ejercicios, completado, siguiente]);
+  const nombre = planeta?.nombre || '';
+  // Cada ejercicio con su número de paso dentro del planeta (el orden de la ruta)
+  const ejercicios = useMemo(() => ejerciciosDe(planeta).map((e, i) => ({ ...e, paso: i + 1 })), [planeta]);
+  const estrellas = useMemo(() => estrellasDe(planeta), [planeta]);
+  const hechos = ejercicios.filter((e) => e.estado === 'hecho').length;
 
   const grupos = GRUPOS.filter((g) => g.id === 'todo' || ejercicios.some((e) => grupoDe(e) === g.id))
     .map((g) => ({ ...g, cuantos: g.id === 'todo' ? ejercicios.length : ejercicios.filter((e) => grupoDe(e) === g.id).length }));
@@ -72,14 +70,19 @@ const PanelPlaneta: React.FC<PropsPanel> = ({ planeta, ejercicios, cargando, com
     <aside className="panel-planeta" aria-labelledby="panel-planeta-titulo">
       <div className="panel-planeta__cabecera">
         <div>
-          <h2 id="panel-planeta-titulo" ref={titulo} tabIndex={-1}>{planeta}</h2>
-          <p>{cargando ? 'Cargando ejercicios…' : `${hechos} de ${ejercicios.length} hechos`}</p>
+          <h2 id="panel-planeta-titulo" ref={titulo} tabIndex={-1}>{nombre}</h2>
+          {planeta && <p className="panel-planeta__tema">{planeta.tema}</p>}
+          <p>
+            {cargando ? 'Cargando la ruta…' : planeta?.estado === 'conquistado'
+              ? <span className="panel-planeta__conquistado"><Flag size={14} aria-hidden="true" />Conquistado · {hechos} de {ejercicios.length}</span>
+              : `${hechos} de ${ejercicios.length} hechos · +${planeta?.bonus ?? 0} pts al conquistarlo`}
+          </p>
         </div>
         <Boton variante="fantasma" soloIcono aria-label="Cerrar y volver al mapa" onClick={alCerrar}
           icono={<X size={22} aria-hidden="true" />} className="panel-planeta__cerrar" />
       </div>
       {!cargando && ejercicios.length > 0 && (
-        <Constelacion planeta={planeta} estrellas={estrellas} className="panel-planeta__cielo" />
+        <Constelacion planeta={nombre} estrellas={estrellas} className="panel-planeta__cielo" />
       )}
       {grupos.length > 2 && (
         <div className="panel-planeta__filtros" role="group" aria-label="Filtrar por tipo">
@@ -99,10 +102,12 @@ const PanelPlaneta: React.FC<PropsPanel> = ({ planeta, ejercicios, cargando, com
         <ul className="panel-planeta__lista">
           {visibles.map((e) => {
             const Icono = iconoDeEjercicio(e);
-            const hecho = completado(e.id);
-            const esSiguiente = e === siguiente;
+            const hecho = e.estado === 'hecho';
+            const esSiguiente = e.estado === 'siguiente';
+            const bloqueado = e.estado === 'bloqueado';
             return (
-              <li key={e.id} className={`panel-planeta__item ${esSiguiente ? 'siguiente' : ''}`}>
+              <li key={e.id} className={`panel-planeta__item ${esSiguiente ? 'siguiente' : ''} ${bloqueado ? 'bloqueado' : ''}`}>
+                <span className="panel-planeta__paso" aria-label={`Paso ${e.paso}`}>{e.paso}</span>
                 <span className={`panel-planeta__icono panel-planeta__icono--${grupoDe(e)}`}><Icono size={20} aria-hidden="true" /></span>
                 <div className="panel-planeta__texto">
                   <strong>{e.title}</strong>
@@ -116,6 +121,10 @@ const PanelPlaneta: React.FC<PropsPanel> = ({ planeta, ejercicios, cargando, com
                   <span className="panel-planeta__accion">
                     <span className="panel-planeta__hecho"><CircleCheck size={18} aria-hidden="true" />Hecho</span>
                     <Boton variante="fantasma" tamano="peq" onClick={() => alAbrir(e)} aria-label={`Repetir ${e.title}`}>Repetir</Boton>
+                  </span>
+                ) : bloqueado ? (
+                  <span className="panel-planeta__bloqueado" title="Completa antes los pasos anteriores">
+                    <Lock size={16} aria-hidden="true" /><span className="ac-oculto">Bloqueado: completa antes los pasos anteriores</span>
                   </span>
                 ) : (
                   <Boton variante={esSiguiente ? 'primario' : 'secundario'} onClick={() => alAbrir(e)} aria-label={`Empezar ${e.title}`}>
