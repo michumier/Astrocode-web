@@ -5,7 +5,7 @@ import VisorMision from '../../components/visor-mision/VisorMision';
 import { Bot, ChevronLeft, CircleCheck, CircleX, Lightbulb, Lock, RotateCcw, Send, X } from 'lucide-react';
 import TextoIA from '../../components/texto-ia/TextoIA';
 import Enunciado from '../../components/enunciado/Enunciado';
-import { Aviso, Boton, Calificacion, Enhorabuena, Etiqueta } from '../../components/ui';
+import { Aviso, Boton, Calificacion, Conquista, Enhorabuena, Etiqueta } from '../../components/ui';
 import { formatoDe } from './formatos';
 import { limpiarTitulo } from '../../utils/tareas';
 import './VistaReto.css';
@@ -67,6 +67,7 @@ const ENVIAR = gql`
       yaCompletada
       puntos
       mensaje
+      planetaConquistado { nombre puntos }
       mision { ${CAMPOS_RESULTADO} }
     }
   }
@@ -155,7 +156,7 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
   const [modo, setModo] = useState<'probar' | 'enviar' | null>(null);
   // ok: superado · mal: corregido pero no pasa · error: no se pudo ejecutar
   const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'mal' | 'error'; texto: string } | null>(null);
-  const [completado, setCompletado] = useState<{ puntos: number; estrellas: number } | null>(null);
+  const [completado, setCompletado] = useState<{ puntos: number; estrellas: number; conquista: { nombre: string; puntos: number } | null } | null>(null);
   const [pista, setPista] = useState<{ texto: string; nivel: number } | null>(null);
   const [nivelPista, setNivelPista] = useState(1);
   const [inicio] = useState(() => Date.now());
@@ -208,7 +209,7 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
       mostrar(r.mision);
       if (r.correcto) {
         setMensaje({ tipo: 'ok', texto: r.yaCompletada ? '¡Misión superada otra vez! (ya la tenías completada, no suma puntos)' : r.mensaje });
-        if (!r.yaCompletada) setCompletado({ puntos: r.puntos, estrellas: r.mision.estrellas });
+        if (!r.yaCompletada) setCompletado({ puntos: r.puntos, estrellas: r.mision.estrellas, conquista: r.planetaConquistado || null });
       } else {
         setMensaje({ tipo: 'mal', texto: r.mensaje });
       }
@@ -470,6 +471,7 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
           alCerrar={cerrarPremio}
           textoCerrar={esPilotaje ? 'Ver los vuelos' : 'Ver los escenarios'}
         >
+          {completado.conquista && <Conquista planeta={completado.conquista} />}
           {completado.estrellas < 3 && (
             <p className="ui-premio__mensaje">Puedes seguir mejorando tu código para conseguir más estrellas (volver a enviarlo ya no suma puntos).</p>
           )}

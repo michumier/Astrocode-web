@@ -301,7 +301,7 @@
 
 .panel-planeta__item {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-columns: 22px 44px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
   padding: 12px;
@@ -331,6 +331,16 @@
 .panel-planeta__accion { display: flex; align-items: center; gap: 4px; }
 .panel-planeta__hecho { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--ac-turquesa); }
 .panel-planeta__vacio { padding: 24px; margin: 0; color: var(--ac-suave); }
+
+/* Ruta (fase 11): número de paso, pasos bloqueados y planeta conquistado */
+.panel-planeta__paso { font-family: var(--ac-mono); font-size: 13px; font-weight: 600; color: var(--ac-tenue); text-align: right; font-variant-numeric: tabular-nums; }
+.panel-planeta__item.siguiente .panel-planeta__paso { color: var(--ac-oro); }
+.panel-planeta__item.bloqueado .panel-planeta__texto strong { color: var(--ac-suave); }
+.panel-planeta__item.bloqueado .panel-planeta__icono { color: var(--ac-tenue); }
+.panel-planeta__bloqueado { display: grid; place-items: center; width: 40px; height: 40px; color: var(--ac-tenue); }
+.panel-planeta__cabecera .panel-planeta__tema { margin-top: 2px; color: var(--ac-texto-2); font-weight: 600; }
+.panel-planeta__conquistado { display: inline-flex; align-items: center; gap: 6px; color: var(--ac-turquesa); font-weight: 600; }
+.mapa__tema { margin: -6px 0 10px; color: var(--ac-suave); font-size: 14px; }
 
 /* ---------- Pantallas medianas y móvil ---------- */
 @media (max-width: 1240px) {

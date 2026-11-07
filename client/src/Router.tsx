@@ -99,14 +99,13 @@ const RutaEjercicio: React.FC = () => {
   }
   if (loading) return <Pantalla>Cargando ejercicio…</Pantalla>;
   if (error || !data?.tarea) {
-    const bloqueado = error?.graphQLErrors?.some((e) => e.extensions?.code === 'FORBIDDEN');
+    // Candado de la ruta o de un sabotaje: la API dice el motivo («Completa antes los pasos anteriores de…»)
+    const bloqueo = error?.graphQLErrors?.find((e) => e.extensions?.code === 'FORBIDDEN');
     return (
       <Pantalla>
-        {bloqueado && <Lock size={32} aria-hidden="true" style={{ color: 'var(--ac-oro)' }} />}
+        {bloqueo && <Lock size={32} aria-hidden="true" style={{ color: 'var(--ac-oro)' }} />}
         <p style={{ margin: 0, maxWidth: '36ch' }}>
-          {bloqueado
-            ? 'Este sabotaje se desbloquea al completar el ejercicio original.'
-            : 'No se ha encontrado este ejercicio.'}
+          {bloqueo ? `${bloqueo.message}.` : 'No se ha encontrado este ejercicio.'}
         </p>
         <Boton variante="primario" onClick={volver}>Volver al mapa</Boton>
       </Pantalla>

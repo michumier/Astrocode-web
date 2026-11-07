@@ -6,7 +6,8 @@ import TextoIA from '../../components/texto-ia/TextoIA';
 import DiffSabotaje from '../../components/diff-sabotaje/DiffSabotaje';
 import CajaNegra, { Traza } from '../../components/caja-negra/CajaNegra';
 import Enunciado, { enLinea } from '../../components/enunciado/Enunciado';
-import { Aviso, Boton, Enhorabuena, Etiqueta, tonoDeNivel } from '../../components/ui';
+import { Aviso, Boton, Conquista, Enhorabuena, Etiqueta, tonoDeNivel } from '../../components/ui';
+import type { PlanetaConquistado } from '../../components/ui';
 import './Ejercicio.css';
 
 // El servidor ejecuta, corrige y suma los puntos
@@ -16,6 +17,10 @@ const ENVIAR_SOLUCION = gql`
       correcto
       yaCompletada
       insigniasNuevas
+      planetaConquistado {
+        nombre
+        puntos
+      }
       revelacion {
         descripcion
         linea
@@ -116,7 +121,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
   const [lineaError, setLineaError] = useState<number | null>(null);
   const [segundos, setSegundos] = useState(0);
   const [relojEnMarcha, setRelojEnMarcha] = useState(true);
-  const [premio, setPremio] = useState<{ puntos: number; tiempo: string; mensaje: string } | null>(null);
+  const [premio, setPremio] = useState<{ puntos: number; tiempo: string; mensaje: string; conquista: PlanetaConquistado | null } | null>(null);
   // Sabotajes: qué había cambiado el saboteador (se revela al resolverlo) e insignias ganadas
   const esSabotaje = exerciseData?.tipo === 'sabotaje';
   // La API titula las copias «🕵️ Sabotaje: …»; aquí ya lo dice la etiqueta
@@ -232,7 +237,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
         if (r.revelacion) setRevelacion(r.revelacion);
         if (r.insigniasNuevas?.length) setInsigniasNuevas(r.insigniasNuevas);
         if (!r.yaCompletada) {
-          setPremio({ puntos: r.puntos, tiempo: r.tiempo, mensaje: r.mensaje });
+          setPremio({ puntos: r.puntos, tiempo: r.tiempo, mensaje: r.mensaje, conquista: r.planetaConquistado || null });
           setRelojEnMarcha(false);
         }
       }
@@ -401,6 +406,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
           alCerrar={cerrarPremio}
         >
           {premio.mensaje && <p className="ui-premio__mensaje">{premio.mensaje}</p>}
+          {premio.conquista && <Conquista planeta={premio.conquista} />}
           {revelacion && (
             <div className="ejercicio__premio-revelacion">
               <p>Así era el sabotaje{revelacion.linea ? ` (línea ${revelacion.linea})` : ''}:</p>

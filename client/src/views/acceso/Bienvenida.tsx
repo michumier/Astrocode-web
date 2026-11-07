@@ -16,12 +16,12 @@ const EJEMPLO: Estrella[] = ['hecha', 'hecha', 'siguiente', 'pendiente', 'pendie
 const PASOS: { titulo: string; texto: string; dibujo: React.ReactNode }[] = [
   {
     titulo: 'Tu mapa es el sistema solar',
-    texto: 'Cada planeta es un nivel. Mercurio, Venus y la Tierra están abiertos desde el principio; Marte, Júpiter y Saturno se abren al sumar 500, 1000 y 1500 puntos.',
+    texto: 'Cada planeta es un tema, de las variables a los algoritmos. Empiezas en Mercurio y, al completar todos sus pasos, lo conquistas y se abre el siguiente.',
     dibujo: <div className="bienvenida__sistema"><SistemaDecorativo /></div>,
   },
   {
     titulo: 'Cada ejercicio enciende una estrella',
-    texto: 'Los ejercicios de un planeta forman su constelación. Resuelve uno y su estrella se enciende; la que parpadea en oro es la siguiente.',
+    texto: 'Los pasos de un planeta forman su constelación y van en orden. Resuelve uno y su estrella se enciende; la que parpadea en oro es la siguiente.',
     dibujo: <Constelacion planeta="Mercurio" estrellas={EJEMPLO} className="bienvenida__constelacion" />,
   },
   {

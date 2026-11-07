@@ -472,6 +472,19 @@
 }
 
 .ui-premio__mensaje { margin: 0; color: var(--ac-texto-2); font-size: 14px; }
+.ui-premio__conquista {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--ac-radio);
+  background: var(--ac-oro-fondo);
+  color: var(--ac-texto);
+  font-size: 14px;
+  text-align: left;
+}
+.ui-premio__conquista svg { flex-shrink: 0; margin-top: 1px; color: var(--ac-oro); }
 
 /* ---------- Calificación (0 a 3 estrellas) ---------- */
 .ui-calificacion { display: inline-flex; gap: 2px; color: var(--ac-tenue); vertical-align: middle; }

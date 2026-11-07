@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from 'react';
-import { Lock } from 'lucide-react';
+import { Flag, Lock } from 'lucide-react';
 import PlanetParticles, { PlanetParticlesHandle } from './PlanetParticles';
 import './SolarSystem.css';
 
@@ -22,20 +22,22 @@ export const PLANETS: PlanetConfig[] = [
   { name: 'Saturno', key: 'saturno', orbitSize: 620, planetSize: 54, orbitDuration: 54, inicio: 0.86 },
 ];
 
-const formatear = (n: number) => n.toLocaleString('es-ES');
-
 interface SolarSystemProps {
   selectedPlanet: string | null;
   onPlanetSelect: (planetKey: string) => void;
   isPlanetUnlocked: (planetKey: string) => boolean;
-  planetRequirements: Record<string, number>;
+  // Por qué está cerrado cada planeta (p. ej. «Conquista Venus para abrir Tierra.»)
+  motivoBloqueo: (planetKey: string) => string;
+  // Planetas conquistados (ruta completa): llevan una marca
+  isPlanetConquered?: (planetKey: string) => boolean;
 }
 
 const SolarSystem: React.FC<SolarSystemProps> = ({
   selectedPlanet,
   onPlanetSelect,
   isPlanetUnlocked,
-  planetRequirements
+  motivoBloqueo,
+  isPlanetConquered = () => false,
 }) => {
   const particlesRef = useRef<PlanetParticlesHandle>(null);
   const planetRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -58,7 +60,7 @@ const SolarSystem: React.FC<SolarSystemProps> = ({
       <div className="ss-sol" />
       {PLANETS.map((planet) => {
         const abierto = isPlanetUnlocked(planet.key);
-        const puntos = planetRequirements[planet.key];
+        const conquistado = isPlanetConquered(planet.key);
         const estilo = {
           width: planet.orbitSize,
           height: planet.orbitSize,
@@ -73,11 +75,11 @@ const SolarSystem: React.FC<SolarSystemProps> = ({
                 className={`ss-cuerpo ss-${planet.key} ${abierto ? '' : 'ss-cuerpo--bloqueado'} ${selectedPlanet === planet.key ? 'ss-cuerpo--elegido' : ''}`}
                 style={{ width: planet.planetSize, height: planet.planetSize }}
                 onClick={() => handlePlanetClick(planet.key)}
-                aria-label={abierto ? `${planet.name}: ver sus ejercicios` : `${planet.name}: se abre con ${formatear(puntos)} puntos`}
+                aria-label={abierto ? `${planet.name}${conquistado ? ' (conquistado)' : ''}: ver su ruta` : `${planet.name}, cerrado. ${motivoBloqueo(planet.key)}`}
                 aria-pressed={selectedPlanet === planet.key}
               />
               <span className={`ss-etiqueta ${abierto ? '' : 'ss-etiqueta--bloqueada'}`} aria-hidden="true">
-                {abierto ? planet.name : <><Lock size={11} strokeWidth={2.6} />{formatear(puntos)} pts</>}
+                {abierto ? <>{conquistado && <Flag size={11} strokeWidth={2.6} />}{planet.name}</> : <><Lock size={11} strokeWidth={2.6} />{planet.name}</>}
               </span>
             </div>
           </div>
