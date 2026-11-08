@@ -1,0 +1,18 @@
+/* «Qué practicas / por qué» encima del enunciado (fase 13) */
+.por-que {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: var(--ac-radio);
+  background: var(--ac-noche);
+  box-shadow: inset 3px 0 0 var(--ac-turquesa);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.por-que__fila { display: flex; align-items: flex-start; gap: 8px; margin: 0; color: var(--ac-texto-2); }
+.por-que__fila svg { flex-shrink: 0; margin-top: 3px; color: var(--ac-turquesa); }
+.por-que__fila strong { color: var(--ac-texto); }
+.por-que__fila code { font-family: var(--ac-mono); background: var(--ac-relieve); padding: 1px 5px; border-radius: 5px; color: var(--ac-texto); }
+.por-que__leccion { align-self: flex-start; margin-top: 2px; }
