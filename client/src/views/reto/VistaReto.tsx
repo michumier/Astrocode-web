@@ -5,6 +5,7 @@ import VisorMision from '../../components/visor-mision/VisorMision';
 import { Bot, ChevronLeft, CircleCheck, CircleX, Lightbulb, Lock, RotateCcw, Send, X } from 'lucide-react';
 import TextoIA from '../../components/texto-ia/TextoIA';
 import Enunciado from '../../components/enunciado/Enunciado';
+import PorQue from '../../components/por-que/PorQue';
 import { Aviso, Boton, Calificacion, Conquista, Enhorabuena, Etiqueta } from '../../components/ui';
 import { formatoDe } from './formatos';
 import { limpiarTitulo } from '../../utils/tareas';
@@ -305,6 +306,7 @@ const VistaReto: React.FC<VistaRetoProps> = ({ tareaId, onBack }) => {
                 </div>
               ) : (
                 <>
+                  <PorQue tareaId={String(tarea.id)} />
                   {tarea.descripcion && <Enunciado texto={tarea.descripcion} />}
                   {tarea.resultadoEsperado && (
                     <section className="reto__objetivo">

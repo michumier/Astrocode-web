@@ -6,6 +6,7 @@ import TextoIA from '../../components/texto-ia/TextoIA';
 import DiffSabotaje from '../../components/diff-sabotaje/DiffSabotaje';
 import CajaNegra, { Traza } from '../../components/caja-negra/CajaNegra';
 import Enunciado, { enLinea } from '../../components/enunciado/Enunciado';
+import PorQue from '../../components/por-que/PorQue';
 import { Aviso, Boton, Conquista, Enhorabuena, Etiqueta, tonoDeNivel } from '../../components/ui';
 import type { PlanetaConquistado } from '../../components/ui';
 import './Ejercicio.css';
@@ -287,6 +288,7 @@ const Exercise: React.FC<ExerciseProps> = ({ onBackToDashboard, exerciseData }) 
             </Aviso>
           )}
           <h1>{titulo}</h1>
+          {!esSabotaje && exerciseData.id && <PorQue tareaId={String(exerciseData.id)} />}
           {exerciseData.description && <Enunciado texto={exerciseData.description} />}
           {exerciseData.resultadoEsperado && (
             <section className="ejercicio__esperado">
