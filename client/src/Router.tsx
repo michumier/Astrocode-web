@@ -16,6 +16,7 @@ const AdminPanel = lazy(() => import('./views/admin/AdminPanel'));
 const Guia = lazy(() => import('./views/python-guide/Guia'));
 const Perfil = lazy(() => import('./views/profile/Perfil'));
 const Ranking = lazy(() => import('./views/ranking/Ranking'));
+const VistaLeccion = lazy(() => import('./views/leccion/VistaLeccion'));
 // Muestrario del sistema de diseño de la fase 6: solo en desarrollo
 const GuiaDiseno = process.env.NODE_ENV !== 'production' ? lazy(() => import('./views/diseno/GuiaDiseno')) : null;
 
@@ -115,6 +116,17 @@ const RutaEjercicio: React.FC = () => {
   return <Exercise key={id} onBackToDashboard={volver} exerciseData={mapTareaToExercise(data.tarea)} />;
 };
 
+// /leccion/:id → la lección; «Siguiente» lleva al paso que viene en la ruta (lección o ejercicio)
+const RutaLeccion: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const alSiguiente = (paso: { tipo: string; id: string } | null) => {
+    if (!paso) navigate('/');
+    else navigate(paso.tipo === 'leccion' ? `/leccion/${paso.id}` : `/ejercicio/${paso.id}`);
+  };
+  return <VistaLeccion key={id} leccionId={String(id)} onLogout={onLogout} alSiguiente={alSiguiente} />;
+};
+
 const Rutas: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -155,7 +167,8 @@ const Rutas: React.FC = () => {
           <Dashboard
             onLogout={handleLogout}
             onNavigateToExercise={(ejercicio?: any) => {
-              if (ejercicio?.id) navigate(`/ejercicio/${ejercicio.id}`, { state: { exercise: ejercicio } });
+              if (ejercicio?.tipo === 'leccion') navigate(`/leccion/${ejercicio.leccionId}`);
+              else if (ejercicio?.id) navigate(`/ejercicio/${ejercicio.id}`, { state: { exercise: ejercicio } });
             }}
             onNavigateToPythonGuide={() => navigate('/guia')}
             onNavigateToProfile={() => navigate('/perfil')}
@@ -163,6 +176,7 @@ const Rutas: React.FC = () => {
         )}
       />
       <Route path="/ejercicio/:id" element={protegida(<RutaEjercicio />)} />
+      <Route path="/leccion/:id" element={protegida(<RutaLeccion onLogout={handleLogout} />)} />
       <Route path="/guia" element={protegida(<Guia onLogout={handleLogout} />)} />
       <Route path="/ranking" element={protegida(<Ranking onLogout={handleLogout} />)} />
       <Route path="/perfil" element={protegida(<Perfil onLogout={handleLogout} />)} />

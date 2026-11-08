@@ -39,3 +39,14 @@ test('el motivo de un candado nombra el planeta que hay que conquistar', () => {
   expect(motivoBloqueo(RUTA, 'tierra')).toBe('Conquista Venus para abrir Tierra.');
   expect(motivoBloqueo(RUTA, 'mercurio')).toBe('');
 });
+
+test('las lecciones salen como pasos con su id de lección y los puntos que pueden dar', () => {
+  const conLeccion: PlanetaRuta = {
+    ...RUTA[1],
+    pasos: [{ orden: 1, tipo: 'leccion', estado: 'siguiente', tarea: null, leccion: { id: '7', titulo: 'if y else' } }, ...RUTA[1].pasos],
+  };
+  const [leccion, primero] = ejerciciosDe(conLeccion);
+  expect(leccion).toEqual({ id: 'leccion-7', leccionId: '7', tipo: 'leccion', title: 'if y else', points: 15, estado: 'siguiente' });
+  expect(primero.id).toBe('25');
+  expect(estrellasDe(conLeccion)).toHaveLength(4);
+});

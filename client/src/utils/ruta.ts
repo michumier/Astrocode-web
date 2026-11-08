@@ -19,6 +19,10 @@ export const GET_RUTA = gql`
         orden
         tipo
         estado
+        leccion {
+          id
+          titulo
+        }
         tarea {
           id
           tipo
@@ -45,9 +49,11 @@ export type EstadoPlaneta = 'conquistado' | 'abierto' | 'bloqueado';
 
 export interface PasoRuta {
   orden: number;
+  // tarea | leccion
   tipo: string;
   estado: EstadoPaso;
   tarea: any;
+  leccion?: { id: string; titulo: string } | null;
 }
 
 export interface PlanetaRuta {
@@ -62,9 +68,18 @@ export interface PlanetaRuta {
   pasos: PasoRuta[];
 }
 
-// Ejercicio listo para el panel y el editor, con su estado en la ruta
-export const ejerciciosDe = (planeta?: PlanetaRuta) =>
-  (planeta?.pasos || []).filter((s) => s.tarea).map((s) => ({ ...mapTareaToExercise(s.tarea), estado: s.estado }));
+// Puntos de una lección: 10 al completarla y 5 más si se acierta a la primera
+export const PUNTOS_LECCION = 15;
+
+// Cada paso listo para el panel: los ejercicios como para el editor, y las lecciones con
+// tipo 'leccion' (su id lleva prefijo para no chocar con el de una tarea)
+export const ejerciciosDe = (planeta?: PlanetaRuta): any[] =>
+  (planeta?.pasos || []).flatMap((s): any[] => {
+    if (s.tipo === 'leccion' && s.leccion) {
+      return [{ id: `leccion-${s.leccion.id}`, leccionId: s.leccion.id, tipo: 'leccion', title: s.leccion.titulo, points: PUNTOS_LECCION, estado: s.estado }];
+    }
+    return s.tarea ? [{ ...mapTareaToExercise(s.tarea), estado: s.estado }] : [];
+  });
 
 export const estrellasDe = (planeta?: PlanetaRuta): Estrella[] => ejerciciosDe(planeta).map((e) => ({
   id: e.id,
