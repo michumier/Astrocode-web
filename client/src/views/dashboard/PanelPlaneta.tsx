@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Bomb, CircleCheck, Code, Dna, Flag, FlaskConical, Languages, Lock, Palette, Radio, Rocket, ScanSearch, Vault, Wrench, X } from 'lucide-react';
+import { Bomb, BookOpen, CircleCheck, Code, Dna, Flag, FlaskConical, Languages, Lock, Palette, Radio, Rocket, ScanSearch, Vault, Wrench, X } from 'lucide-react';
 import { Boton, Constelacion, Etiqueta, tonoDeNivel } from '../../components/ui';
 import { etiquetaFormato } from '../../components/visor-reto/etiquetas';
 import { ejerciciosDe, estrellasDe } from '../../utils/ruta';
@@ -12,6 +12,7 @@ const ICONOS_FORMATO: Record<string, React.ElementType> = {
 };
 
 export const iconoDeEjercicio = (ejercicio: any): React.ElementType => {
+  if (ejercicio.tipo === 'leccion') return BookOpen;
   if (ejercicio.tipo === 'pilotaje') return Rocket;
   if (ejercicio.tipo === 'sabotaje') return Wrench;
   if (ejercicio.tipo === 'reto') return ICONOS_FORMATO[ejercicio.formato] || FlaskConical;
@@ -20,14 +21,16 @@ export const iconoDeEjercicio = (ejercicio: any): React.ElementType => {
 
 const GRUPOS = [
   { id: 'todo', texto: 'Todo' },
+  { id: 'leccion', texto: 'Lecciones' },
   { id: 'codigo', texto: 'Ejercicios' },
   { id: 'reto', texto: 'Retos' },
   { id: 'pilotaje', texto: 'Misiones' },
 ];
 
-const grupoDe = (ejercicio: any) => (ejercicio.tipo === 'reto' || ejercicio.tipo === 'pilotaje' ? ejercicio.tipo : 'codigo');
+const grupoDe = (ejercicio: any) => (['reto', 'pilotaje', 'leccion'].includes(ejercicio.tipo) ? ejercicio.tipo : 'codigo');
 
 const tipoLegible = (ejercicio: any) => {
+  if (ejercicio.tipo === 'leccion') return 'Lección';
   if (ejercicio.tipo === 'reto') return `Reto · ${etiquetaFormato(ejercicio.formato)}`;
   if (ejercicio.tipo === 'pilotaje') return 'Misión de pilotaje';
   return ejercicio.categoria || 'Ejercicio';
@@ -112,8 +115,9 @@ const PanelPlaneta: React.FC<PropsPanel> = ({ planeta, cargando, alCerrar, alAbr
                 <div className="panel-planeta__texto">
                   <strong>{e.title}</strong>
                   <span className="panel-planeta__meta">
-                    <Etiqueta tono={tonoDeNivel(e.difficulty)}>{e.difficulty}</Etiqueta>
-                    <span>{e.points} pts</span>
+                    {e.tipo === 'leccion'
+                      ? <span>hasta {e.points} pts</span>
+                      : <><Etiqueta tono={tonoDeNivel(e.difficulty)}>{e.difficulty}</Etiqueta><span>{e.points} pts</span></>}
                     <span>{tipoLegible(e)}</span>
                   </span>
                 </div>
