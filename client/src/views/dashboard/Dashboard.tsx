@@ -265,8 +265,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onNavigateToExercise, o
 
             <Panel className="mapa__guia">
               <div>
-                <h2 className="ui-panel__titulo">Guía de Python</h2>
-                <p className="mapa__nota">Repasa variables, bucles y funciones.</p>
+                <h2 className="ui-panel__titulo">Biblioteca</h2>
+                <p className="mapa__nota">Repasa las lecciones que ya has visto.</p>
               </div>
               <Boton variante="fantasma" onClick={onNavigateToPythonGuide} icono={<BookOpen size={16} aria-hidden="true" />}>Abrir</Boton>
             </Panel>
