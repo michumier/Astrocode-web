@@ -12,7 +12,7 @@ export interface EnlaceBarra {
 
 export const ENLACES_ALUMNO: EnlaceBarra[] = [
   { a: '/', texto: 'Mapa', exacto: true },
-  { a: '/guia', texto: 'Guía de Python' },
+  { a: '/biblioteca', texto: 'Biblioteca' },
   { a: '/ranking', texto: 'Ranking' },
 ];
 

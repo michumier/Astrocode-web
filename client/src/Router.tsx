@@ -13,7 +13,7 @@ const Exercise = lazy(() => import('./views/exercises/Exercise'));
 const VistaReto = lazy(() => import('./views/reto/VistaReto'));
 const AdminPanel = lazy(() => import('./views/admin/AdminPanel'));
 // Páginas secundarias: fuera del primer paquete, que solo necesita el acceso y el mapa
-const Guia = lazy(() => import('./views/python-guide/Guia'));
+const Biblioteca = lazy(() => import('./views/biblioteca/Biblioteca'));
 const Perfil = lazy(() => import('./views/profile/Perfil'));
 const Ranking = lazy(() => import('./views/ranking/Ranking'));
 const VistaLeccion = lazy(() => import('./views/leccion/VistaLeccion'));
@@ -170,14 +170,16 @@ const Rutas: React.FC = () => {
               if (ejercicio?.tipo === 'leccion') navigate(`/leccion/${ejercicio.leccionId}`);
               else if (ejercicio?.id) navigate(`/ejercicio/${ejercicio.id}`, { state: { exercise: ejercicio } });
             }}
-            onNavigateToPythonGuide={() => navigate('/guia')}
+            onNavigateToPythonGuide={() => navigate('/biblioteca')}
             onNavigateToProfile={() => navigate('/perfil')}
           />
         )}
       />
       <Route path="/ejercicio/:id" element={protegida(<RutaEjercicio />)} />
       <Route path="/leccion/:id" element={protegida(<RutaLeccion onLogout={handleLogout} />)} />
-      <Route path="/guia" element={protegida(<Guia onLogout={handleLogout} />)} />
+      <Route path="/biblioteca" element={protegida(<Biblioteca onLogout={handleLogout} />)} />
+      {/* La Guía de Python pasó a ser la Biblioteca (fase 14): los enlaces antiguos siguen funcionando */}
+      <Route path="/guia" element={<Navigate to="/biblioteca" replace />} />
       <Route path="/ranking" element={protegida(<Ranking onLogout={handleLogout} />)} />
       <Route path="/perfil" element={protegida(<Perfil onLogout={handleLogout} />)} />
       <Route path="/admin" element={protegida(<AdminPanel onLogout={handleLogout} />, ['admin'])} />

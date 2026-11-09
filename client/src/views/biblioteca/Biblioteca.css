@@ -1,0 +1,170 @@
+/* Biblioteca (fase 14; antes, la Guía de Python de la fase 6.5) */
+.biblioteca__cuerpo {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+/* ---------- Índice ---------- */
+.biblioteca__indice {
+  position: sticky;
+  top: 20px;
+}
+
+.biblioteca__indice p {
+  margin: 0 0 8px;
+  color: var(--ac-tenue);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.biblioteca__indice ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+
+.biblioteca__indice a {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: var(--ac-texto-2);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.biblioteca__indice a:hover { background: var(--ac-sarga); color: var(--ac-texto); }
+
+/* ---------- Conceptos ---------- */
+.biblioteca__conceptos { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+.biblioteca__concepto {
+  scroll-margin-top: 20px;
+  padding: 24px;
+  border-radius: var(--ac-radio-panel);
+  background: var(--ac-sarga);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.biblioteca__concepto h3 {
+  margin: 0;
+  font-family: var(--ac-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.biblioteca__concepto p { margin: 0; color: var(--ac-texto-2); max-width: 70ch; }
+
+.biblioteca__ejemplo {
+  border-radius: 14px;
+  background: var(--ac-codigo);
+  box-shadow: inset 0 0 0 1px var(--ac-linea);
+  overflow: hidden;
+}
+
+.biblioteca__ejemplo-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px 6px 16px;
+  border-bottom: 1px solid var(--ac-linea);
+  color: var(--ac-tenue);
+  font-size: 13px;
+}
+
+.biblioteca__codigo {
+  margin: 0;
+  padding: 14px 16px 16px;
+  overflow-x: auto;
+  font-family: var(--ac-mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #d5e0ea;
+  tab-size: 4;
+}
+
+/* ---------- Recursos ---------- */
+.biblioteca__recursos h2 {
+  margin: 12px 0 14px;
+  font-family: var(--ac-display);
+  font-weight: 700;
+  font-size: 22px;
+}
+
+.biblioteca__recursos ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.biblioteca__recursos a {
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--ac-sarga);
+  color: var(--ac-texto);
+  text-decoration: none;
+  transition: background-color 160ms var(--ac-ease-out), transform var(--ac-pulsar) var(--ac-ease-out);
+}
+
+.biblioteca__recursos a:hover { background: var(--ac-relieve); }
+.biblioteca__recursos a:active { transform: scale(0.98); }
+.biblioteca__recursos a > svg { flex-shrink: 0; color: var(--ac-turquesa); }
+.biblioteca__recursos strong { display: block; }
+.biblioteca__recursos small { color: var(--ac-suave); font-size: 13px; }
+
+@media (max-width: 860px) {
+  .biblioteca__cuerpo { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .biblioteca__indice { position: static; }
+  .biblioteca__indice p { display: none; }
+  .biblioteca__indice ul { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+  .biblioteca__indice a { padding: 6px 12px; background: var(--ac-sarga); border-radius: 999px; font-size: 13px; }
+}
+
+@media (max-width: 560px) {
+  .biblioteca__concepto { padding: 18px 16px; }
+  .biblioteca__planetas { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .biblioteca__recursos a { transition: none; }
+}
+
+/* ---------- Secciones y lecciones por planeta (fase 14) ---------- */
+.biblioteca__seccion { display: flex; flex-direction: column; gap: 14px; }
+.biblioteca__seccion-cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.biblioteca__seccion-cabecera h2 { margin: 0; font-family: var(--ac-display); font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+.biblioteca__nota { margin: 0; color: var(--ac-suave); font-size: 14px; max-width: 70ch; }
+.biblioteca__cuenta { color: var(--ac-suave); font-size: 14px; font-variant-numeric: tabular-nums; }
+
+.biblioteca__planetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.biblioteca__planeta { padding: 16px 18px; border-radius: var(--ac-radio-panel); background: var(--ac-sarga); display: flex; flex-direction: column; gap: 10px; }
+.biblioteca__planeta-cabecera { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.biblioteca__planeta-cabecera h3 { margin: 0; font-family: var(--ac-display); font-size: 19px; font-weight: 800; }
+.biblioteca__planeta-cabecera .biblioteca__cuenta { margin-left: auto; }
+.biblioteca__tema { color: var(--ac-suave); font-size: 13px; }
+.biblioteca__astro { width: 22px; height: 22px; flex-shrink: 0; cursor: default; }
+.biblioteca__astro.ss-saturno { margin: 0 7px; }
+
+.biblioteca__lecciones { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.biblioteca__leccion { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 4px 6px 4px 8px; border-radius: var(--ac-radio); }
+.biblioteca__leccion-icono { display: grid; place-items: center; width: 22px; color: var(--ac-suave); flex-shrink: 0; }
+.biblioteca__leccion.vista .biblioteca__leccion-icono { color: var(--ac-turquesa); }
+.biblioteca__leccion-titulo { flex: 1; min-width: 0; font-size: 14px; }
+.biblioteca__leccion.cerrada .biblioteca__leccion-titulo { color: var(--ac-tenue); }
+.biblioteca__leccion.cerrada .biblioteca__leccion-icono { color: var(--ac-tenue); }
+.biblioteca__pendiente { color: var(--ac-tenue); font-size: 12px; white-space: nowrap; }
+@media (hover: hover) { .biblioteca__leccion:not(.cerrada):hover { background: var(--ac-relieve); } }
+
+.biblioteca__cuando { margin: -4px 0 0; color: var(--ac-turquesa); font-size: 14px; font-weight: 600; }
